@@ -75,41 +75,16 @@
 
         // Calculate the center of the box
         const cxy = findBoxCenterOffset(wh);
-
-        // Calculate the aspect ratio of the box
-        const aspectRatio = wh[1] / wh[0];
-
-        // Find box corners with center at 0,0
-        const tl = [-cxy[0], cxy[1]];
-        const tr = [cxy[0], cxy[1]];
-        const bl = [-cxy[0], -cxy[1]];
-        const br = [cxy[0], -cxy[1]];
         
         let x, y;
 
-        // Check which side of the box the point lies on
-        let tlRad = Math.atan2(tl[1], tl[0]);
-        let blRad = Math.atan2(bl[1], bl[0]) + 2 * Math.PI;
-        let trRad = Math.atan2(tr[1], tr[0]);
-        let brRad = Math.atan2(br[1], br[0]) + 2 * Math.PI;
+        const c = Math.cos(rad);
+        const s = Math.sin(rad);
+        console.log('angle', angle, 'cos', c, 'sin', s);
 
-        if (rad >= trRad && rad <= tlRad) {
-            // Top side
-            x = 0;
-            y = -2*cxy[1];
-        } else if (rad > tlRad && rad < blRad) {
-            // Left side
-            x = 10+cxy[0];
-            y = -(cxy[1] * Math.tan(rad));
-        } else if (rad >= blRad && rad <= brRad) {
-            // Bottom side
-            x = 0;
-            y = cxy[1];
-        } else {
-            // Right side
-            x = -cxy[0];
-            y = 2*cxy[1] * Math.tan(rad);
-        }
+        x = (cxy[0]+5) * -1.2 * c;
+        y = (cxy[1]+5) * -1.2 * s;
+
 
         // The point's position will be relative to the center, so we need to add the center's coordinates
         x -= cxy[0];
