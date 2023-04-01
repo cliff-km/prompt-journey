@@ -14,7 +14,6 @@
 		c = color;
 	}
     function _handleMouseDown(e) {
-        console.log('mousedown');
         handleMouseDown(e);
     }
 </script>

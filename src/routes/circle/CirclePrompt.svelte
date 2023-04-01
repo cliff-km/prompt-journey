@@ -1,9 +1,9 @@
 <script>
-    import Circle from "./Circle.svelte";
-    import Point from "./Point.svelte";
-    import Line from "./Line.svelte";
-    import Text from "./Text.svelte";
-    import WeightMarker from "./WeightMarker.svelte";
+    import Circle from "../components/Circle.svelte";
+    import Point from "../components/Point.svelte";
+    import Line from "../components/Line.svelte";
+    import PromptText from "../components/PromptText.svelte";
+    import WeightMarker from "../components/WeightMarker.svelte";
     import { add, multiply, subtract } from "mathjs";
 
     let center = [550, 400];
@@ -80,7 +80,6 @@
 
         const c = Math.cos(rad);
         const s = Math.sin(rad);
-        console.log('angle', angle, 'cos', c, 'sin', s);
 
         x = (cxy[0]+5) * -1.2 * c;
         y = (cxy[1]+5) * -1.2 * s;
@@ -191,6 +190,10 @@
 
         return pd;
     }
+
+    function getWeightOpacity(weight) {
+        return Math.max(1 - Math.pow(1 - weight, 2), 0.25).toFixed(2);
+    }
 </script>
 
 <style>
@@ -207,8 +210,8 @@
     {#each Object.entries(points) as [id, point]}
         <Line p1={marker} p2={pointData[id].xy} />
         <Point xy={pointData[id].xy} radius={point.radius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
-        <Text xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point))} wh={getTextBoxDimensions(point)} text={point.text} />
-        <WeightMarker xy={multiply(add(marker, pointData[id].xy), 0.5)} weight={(pointData[id].unitWeight * 100).toFixed(0)} radius={15} bgColor={'rgb(8, 11, 22)'} />
+        <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point)} text={point.text} />
+        <WeightMarker xy={multiply(add(marker, pointData[id].xy), 0.5)} weight={(pointData[id].unitWeight * 100).toFixed(0)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
     {/each}
 
     <Point xy={marker} radius={10} color='rgba(136,157,191, 1)' handleMouseDown={()=>activatePoint('main')}/>
