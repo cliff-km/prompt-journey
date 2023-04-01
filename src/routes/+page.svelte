@@ -1,1 +1,1 @@
-<canvas id="circleCanvas" width="600" height="600"></canvas>
+<div>hello</div>
