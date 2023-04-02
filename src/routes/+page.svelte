@@ -1,6 +1,5 @@
 <script lang="ts">
   import { v4 as uuidv4 } from 'uuid';
-  import { afterUpdate } from 'svelte';
   import { parsePrompts } from '../lib/prompt.js';
 	import { promptList, promptStore } from '../lib/store.js'
   import CirclePrompt from '../components/CirclePrompt.svelte';
@@ -24,7 +23,7 @@
 
   let controllerMarker = [0, 0];
   let controllerPoints = {};
-  let controllerScaling = 10;
+  let controllerScaling = 5;
 
   let controllerW;
   let controllerH;
@@ -99,7 +98,7 @@
 </script>
 <div class="max-w-md w-1/2 h-screen overflow-y-auto">
     <div class="h-screen overflow-y-auto">
-      <ul class="menu h-screen p-4 bg-base-100 overflow-y-auto text-base-content inline-block">
+      <ul class="menu h-screen p-4 w-full bg-base-100 overflow-y-auto text-base-content inline-block">
         <!-- Sidebar content here -->
         <li><a class="text-xs inline-block" on:click={clearData}>New +</a></li>
         {#each orderBy($promptList, (i) => i[1].date, 'desc') as [promptId, data] (promptId)}
