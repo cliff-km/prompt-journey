@@ -24,6 +24,7 @@
   let controllerMarker = [0, 0];
   let controllerPoints = {};
   let controllerScaling = 5;
+  let controllerMode = 'circle';
 
   let controllerW;
   let controllerH;
@@ -50,7 +51,7 @@
   }
 
   function saveToStore() {
-    promptStore.updatePrompt(uuidv4(), {...controllerData, date: Date.now()});
+    promptStore.updatePrompt(uuidv4(), {...controllerData, date: Date.now(), mode: controllerMode});
   }
 
   function copyToClipboard () {
@@ -72,11 +73,12 @@
     controllerMarker = [0, 0];
     controllerPoints = {};
     controllerScaling = 10;
+    controllerMode = 'circle';
   }
 
   function loadStoredData(data) {
     controllerData = data;
-    const {points, pointAngles, scaling, marker} = data;
+    const {points, pointAngles, scaling, marker, mode} = data;
 
     value = Object.entries(points).reduce((acc, [id, point]) => {
       acc.push(`${point.text}::${point.parsedWeight}`);
@@ -86,6 +88,7 @@
     controllerScaling = scaling;
     controllerMarker = marker;
     controllerPoints = pointAngles;
+    controllerMode = mode;
   }
 
   const handlePromptChange = debounce((e) => {
