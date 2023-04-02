@@ -5,44 +5,39 @@
     import PromptText from "../components/PromptText.svelte";
     import WeightMarker from "../components/WeightMarker.svelte";
     import { add, multiply, subtract } from "mathjs";
+    import { beforeUpdate } from "svelte";
 
-    let center = [550, 400];
-    let radius = 250;
-    let textWidth = 150;
-    let scaling = 5;
+    export let handleWeightChange = () => {};
+    export let center = [450, 450];
+    export let radius = 250;
+    export let pointRadius = 10;
+    export let textWidth = 150;
+    export let scaling = 5;
+    export let points = {};
+    export let pointAngles = initializeAngles();
 
     let marker = [650, 350];
     let mouseLocation = [0, 0];
     let activePoint = null;
-
-    let points = {
-        1: {
-            id: 1,
-            angle: 45,
-            radius: 10,
-            text: '2000s lofi photography of a chill apartment.'
-        },
-        2: {
-            id: 2,
-            angle: 201,
-            radius: 10,
-            text: 'Young woman playing modular synthesizer.'
-        },
-        3: {
-            id: 3,
-            angle: 95,
-            radius: 10,
-            text: 'Candid synthwave lofi photography.'
-        },
-        4: {
-            id: 4,
-            angle: 288,
-            radius: 10,
-            text: "The haunting melody of a lonesome minstrel's lament."
-        }
-    };
-    
     let pointData = computePointData();
+
+    function initializeAngles() {
+        return Object.entries(points).reduce((acc, [id, point], idx) => {
+            const angle = idx * (360 / Object.keys(points).length) - 90;
+            acc[id] = angle;
+            return acc;
+        }, {});
+    }
+
+    beforeUpdate(() => {
+        if(Object.keys(points).length !== Object.keys(pointAngles).length) {
+            console.log("beforeUpdate", points, pointAngles)
+            pointAngles = initializeAngles();
+            pointData = computePointData();
+        }
+    });
+
+
 
     function getTextBoxDimensions(point) {
         const estimatedLines = Math.floor(point.text.length / 25) + 1;
@@ -122,9 +117,13 @@
     }
 
     function handleMouseMove(e) {
-        mouseLocation = [e.clientX, e.clientY];
+        const svg = e.currentTarget;
+        var pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+        mouseLocation = [loc.x, loc.y];
         if (activePoint === 'main') {
-            // activePoint.angle = pointToAngle(mouseLocation, center);
             if(pointInCircle(mouseLocation, center, radius)) {
                 marker = mouseLocation;
             } else {
@@ -134,7 +133,7 @@
         } else if (activePoint) {
             const point = {...points[activePoint]};
             const c = closestPointOnCircle(mouseLocation, center, radius); 
-            point.angle = pointToAngle(c, center);
+            pointAngles[point.id] = pointToAngle(c, center);
             points[activePoint] = point;
             pointData = computePointData();
         }
@@ -157,7 +156,7 @@
     function computePointData() {
         // set points
         let pd = Object.entries(points).reduce((acc, [id, point]) => {
-            acc[id] = {xy: angleToPoint(center, radius, point.angle) };
+            acc[id] = {xy: angleToPoint(center, radius, pointAngles[id]) };
             return acc;
         }, {});
 
@@ -188,7 +187,18 @@
             return acc;
         }, pd);
 
+        // get weights by id
+        const weights = Object.entries(pd).reduce((acc, [id, data]) => {
+            acc[id] = humanizeWeight(data.unitWeight);
+            return acc;
+        }, {});
+        handleWeightChange(weights);
+
         return pd;
+    }
+
+    function humanizeWeight(weight) {
+        return Math.round(weight * 100);
     }
 
     function getWeightOpacity(weight) {
@@ -204,15 +214,17 @@
     }
 </style>
 
-<svg id="svg" on:mousemove={handleMouseMove} on:mouseup={handleMouseUp}>
+<svg id="svg" class="w-full h-full" on:mousemove={handleMouseMove} on:mouseup={handleMouseUp}>
     <Circle xy={center} radius={radius} />
 
     {#each Object.entries(points) as [id, point]}
         <Line p1={marker} p2={pointData[id].xy} />
-        <Point xy={pointData[id].xy} radius={point.radius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
+        <Point xy={pointData[id].xy} radius={pointRadius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
         <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point)} text={point.text} />
-        <WeightMarker xy={multiply(add(marker, pointData[id].xy), 0.5)} weight={(pointData[id].unitWeight * 100).toFixed(0)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
+        <WeightMarker xy={multiply(add(marker, pointData[id].xy), 0.5)} weight={humanizeWeight(pointData[id].unitWeight)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
     {/each}
 
-    <Point xy={marker} radius={10} color='rgba(136,157,191, 1)' handleMouseDown={()=>activatePoint('main')}/>
+    {#if Object.entries(points).length > 0}
+        <Point xy={marker} radius={10} color='rgba(136,157,191, 1)' handleMouseDown={()=>activatePoint('main')}/>
+    {/if}
 </svg>
