@@ -12,6 +12,9 @@
 
   let scaling = 10;
 
+  let controllerW;
+  let controllerH;
+
   let activePrompt = null;
   let value = "Minimalistic retro 80s Japanese album art::20 Minimalistic abstract geometric design::5 80s japanese movie posters::30 Minimalistic photography by Gregory Crewdson with japanese typography::50 Retro japanese typography::10 Formicapunk, cassette futurism.::30";
   $: currentPromptData = [...parsePrompts(value)].reduce((acc, { prompt, weight }, idx) => {
@@ -31,7 +34,7 @@
         const prompt = currentPromptData[id].text;
         acc.push(`${prompt}::${weight}`);
         return acc;
-      }, []).join(" ");
+      }, [] as string[]).join(" ");
     }
   }
 
@@ -50,6 +53,8 @@
   }, 500);
 
 
+  $:controllerCenter = [Math.round(controllerW / 2), Math.round(controllerH / 2)];
+  $:controllerRadius = Math.round(Math.min(controllerW, controllerH) / 2) - 150;
 </script>
 <div class="max-w-md w-1/2 h-screen overflow-y-auto">
     <div class="h-screen overflow-y-auto">
@@ -64,8 +69,8 @@
 <div class="w-full h-screen">
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
-      <div class="w-full h-full">
-        <CirclePrompt points={currentPromptData} handleWeightChange={handleWeightChange} scaling={scaling}/>
+      <div class="w-full h-full" bind:clientWidth={controllerW} bind:clientHeight={controllerH}>
+        <CirclePrompt center={controllerCenter} radius={controllerRadius} points={currentPromptData} handleWeightChange={handleWeightChange} scaling={scaling}/>
       </div>
       <div class="p-4 pb-0">
         <label class="label">

@@ -8,21 +8,22 @@
     import { add, multiply, subtract } from "mathjs";
     import { beforeUpdate } from "svelte";
 
-    export let handleWeightChange = () => {};
+    export let handleWeightChange = (weightsById) => {};
     export let center = [450, 450];
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
     export let scaling = 20;
     export let points = {};
-    export let pointAngles = initializeAngles();
+    export let pointAngles = initializeAngles(points);
 
-    let marker = [650, 350];
+    let marker = [0, 0];
     let mouseLocation = [0, 0];
     let activePoint:ActivePoint = null;
-    let pointData = computePointData();
+    let pointData = computePointData(points, center, radius);
 
-    function initializeAngles() {
+    function initializeAngles(points) {
+        if(!points) return null;
         return Object.entries(points).reduce((acc, [id, point], idx) => {
             const angle = idx * (360 / Object.keys(points).length) - 90;
             acc[id] = angle;
@@ -31,12 +32,12 @@
     }
 
     $: {
-        recomputeState(points, scaling);
+        recomputeState(points, center, radius, scaling);
     }
 
-    function recomputeState(points, scaling) {
-        pointAngles = initializeAngles();
-        pointData = computePointData();
+    function recomputeState(points, center, radius, scaling) {
+        pointAngles = initializeAngles(points);
+        pointData = computePointData(points, center, radius, scaling);
     }
 
     function getTextBoxDimensions(point) {
@@ -62,6 +63,22 @@
             const dy = pxy[1] - cxy[1];
             const angle = 360 + Math.atan2(dy, dx) * 180 / Math.PI;
             return angle % 360;
+    }
+
+    function pointToPolar(pxy, cxy, radius) {
+        const dx = pxy[0] - cxy[0];
+        const dy = pxy[1] - cxy[1];
+        const angle = 360 + Math.atan2(dy, dx) * 180 / Math.PI;
+        const r = Math.sqrt(dx * dx + dy * dy);
+        return [angle % 360, r / radius];
+    }
+
+    function polarToPoint(cxy, polar, radius) {
+        // Convert angle to radians
+        const rad = (polar[0] % 360) * Math.PI / 180;
+
+        const offset = [radius * polar[1] * Math.cos(rad), radius * polar[1] * Math.sin(rad)];
+        return add(cxy, offset);
     }
 
     function pointOnBoundary(wh, angle) {
@@ -125,17 +142,17 @@
         mouseLocation = [loc.x, loc.y];
         if (activePoint === 'main') {
             if(pointInCircle(mouseLocation, center, radius)) {
-                marker = mouseLocation;
+                marker = pointToPolar(mouseLocation, center, radius);
             } else {
-                marker = closestPointOnCircle(mouseLocation, center, radius);
+                marker = pointToPolar(closestPointOnCircle(mouseLocation, center, radius), center, radius);
             }
-            pointData = computePointData();
+            pointData = computePointData(points, center, radius, scaling);
         } else if (activePoint) {
             const point = {...points[activePoint]};
             const c = closestPointOnCircle(mouseLocation, center, radius); 
             pointAngles[point.id] = pointToAngle(c, center);
             points[activePoint] = point;
-            pointData = computePointData();
+            pointData = computePointData(points, center, radius, scaling);
         }
     }
     
@@ -153,7 +170,11 @@
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function computePointData() {
+    function computePointData(points, center, radius, scaling) {
+        if(!points || !center || !radius || !scaling) {
+            return null;
+        }
+
         // set points
         let pd = Object.entries(points).reduce((acc, [id, point]) => {
             acc[id] = {xy: angleToPoint(center, radius, pointAngles[id]) };
@@ -162,7 +183,7 @@
 
         // add distances
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            acc[id] = {...acc[id], distance: getDistance(point.xy, marker)};
+            acc[id] = {...acc[id], distance: getDistance(point.xy, polarToPoint(center, marker, radius))};
             return acc;
         }, pd);
 
@@ -215,16 +236,18 @@
 </style>
 
 <svg id="svg" class="w-full h-full" on:mousemove={handleMouseMove} on:mouseup={handleMouseUp}>
-    <Circle xy={center} radius={radius} />
+    {#if pointData && points}
+        <Circle xy={center} radius={radius} />
 
-    {#each Object.entries(points) as [id, point]}
-        <Line p1={marker} p2={pointData[id].xy} />
-        <Point xy={pointData[id].xy} radius={pointRadius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
-        <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point)} text={point.text} />
-        <WeightMarker xy={multiply(add(marker, pointData[id].xy), 0.5)} weight={humanizeWeight(pointData[id].unitWeight)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
-    {/each}
+        {#each Object.entries(points) as [id, point]}
+            <Line p1={polarToPoint(center, marker, radius)} p2={pointData[id].xy} />
+            <Point xy={pointData[id].xy} radius={pointRadius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
+            <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point)} text={point.text} />
+            <WeightMarker xy={multiply(add(polarToPoint(center, marker, radius), pointData[id].xy), 0.5)} weight={humanizeWeight(pointData[id].unitWeight)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
+        {/each}
 
-    {#if Object.entries(points).length > 0}
-        <Point xy={marker} radius={10} color='rgba(136,157,191, 1)' handleMouseDown={()=>activatePoint('main')}/>
+        {#if Object.entries(points).length > 0}
+            <Point xy={polarToPoint(center, marker, radius)} radius={10} color='rgba(136,157,191, 1)' handleMouseDown={()=>activatePoint('main')}/>
+        {/if}
     {/if}
 </svg>
