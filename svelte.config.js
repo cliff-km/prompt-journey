@@ -10,7 +10,8 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		paths: {
-			base: process.env.NODE_ENV === "production" ? "/prompt-journey" : "",
+			base: process.env.NODE_ENV === "dev" ? "" : "/prompt-journey",
+			relative: false
 		},
 	}
 };
