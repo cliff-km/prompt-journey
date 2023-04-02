@@ -6,7 +6,9 @@
     import PromptText from "../components/PromptText.svelte";
     import WeightMarker from "../components/WeightMarker.svelte";
     import { add, multiply, subtract } from "mathjs";
-    import { beforeUpdate } from "svelte";
+    import { pointToPolar, polarToPoint, closestPointOnCircle, pointInCircle } from "../lib/circle";
+    import { humanizeWeight, getWeightOpacity } from "../lib/weights";
+    import { getTextBoxDimensions, findBoxCenterOffset } from "../lib/text";
 
     export let handleWeightChange = (weightsById) => {};
     // display state
@@ -44,47 +46,6 @@
         handleDataStateChange({points, pointAngles, scaling, marker});
     }
 
-    function getTextBoxDimensions(point) {
-        const estimatedLines = Math.floor(point.text.length / 25) + 1;
-        const height = estimatedLines * 20;
-        return [textWidth, height];
-    }
-
-    function findBoxCenterOffset(textDimensions) {
-        return multiply(textDimensions, 0.5)
-    }
-
-    function angleToPoint(cxy, radius, angle) {
-        // Convert angle to radians
-        const rad = (angle % 360) * Math.PI / 180;
-
-        const offset = [radius * Math.cos(rad), radius * Math.sin(rad)];
-        return add(cxy, offset);
-    }
-
-    function pointToAngle(pxy, cxy) {
-            const dx = pxy[0] - cxy[0];
-            const dy = pxy[1] - cxy[1];
-            const angle = 360 + Math.atan2(dy, dx) * 180 / Math.PI;
-            return angle % 360;
-    }
-
-    function pointToPolar(pxy, cxy, radius) {
-        const dx = pxy[0] - cxy[0];
-        const dy = pxy[1] - cxy[1];
-        const angle = 360 + Math.atan2(dy, dx) * 180 / Math.PI;
-        const r = Math.sqrt(dx * dx + dy * dy);
-        return [angle % 360, r / radius];
-    }
-
-    function polarToPoint(cxy, polar, radius) {
-        // Convert angle to radians
-        const rad = (polar[0] % 360) * Math.PI / 180;
-
-        const offset = [radius * polar[1] * Math.cos(rad), radius * polar[1] * Math.sin(rad)];
-        return add(cxy, offset);
-    }
-
     function pointOnBoundary(wh, angle) {
         // Convert angle to radians
         const rad = (angle % 360) * Math.PI / 180;
@@ -109,7 +70,7 @@
     }
 
     function getTextLocation(pxy, textDimensions) {
-        let angle = pointToAngle(pxy, center) - 180;
+        let angle = pointToPolar(pxy, center, radius)[0] - 180;
         if (angle < 0) {
             angle += 360;
         }
@@ -118,23 +79,6 @@
         const diff = subtract(pxy, offset);
 
         return add(pxy, offset);
-    }
-
-    function pointInCircle(pxy, cxy, radius) {
-        const dx = pxy[0] - cxy[0];
-        const dy = pxy[1] - cxy[1];
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance < radius;
-    }
-
-    function closestPointOnCircle(pxy, cxy, radius) {
-        const dx = pxy[0] - cxy[0];
-        const dy = pxy[1] - cxy[1];
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const ratio = radius / distance;
-        const x = cxy[0] + dx * ratio;
-        const y = cxy[1] + dy * ratio;
-        return [x, y];
     }
 
     function handleMouseMove(e) {
@@ -154,7 +98,7 @@
         } else if (activePoint) {
             const point = {...points[activePoint]};
             const c = closestPointOnCircle(mouseLocation, center, radius); 
-            const angle = pointToAngle(c, center);
+            const angle = pointToPolar(c, center, radius)[0];
             console.log('moving point', activePoint, mouseLocation, c, angle);
             pointAngles[point.id] = angle;
             points[activePoint] = point;
@@ -183,7 +127,7 @@
 
         // set points
         let pd = Object.entries(points).reduce((acc, [id, point]) => {
-            acc[id] = {xy: angleToPoint(center, radius, pointAngles[id]) };
+            acc[id] = {xy: polarToPoint(center, [pointAngles[id], 1], radius) };
             return acc;
         }, {});
 
@@ -223,14 +167,6 @@
 
         return pd;
     }
-
-    function humanizeWeight(weight) {
-        return Math.round(weight * 100);
-    }
-
-    function getWeightOpacity(weight) {
-        return Math.max(1 - Math.pow(1 - weight, 2), 0.25).toFixed(2);
-    }
 </script>
 
 <style>
@@ -248,7 +184,7 @@
         {#each Object.entries(points) as [id, point]}
             <Line p1={polarToPoint(center, marker, radius)} p2={pointData[id].xy} />
             <Point xy={pointData[id].xy} radius={pointRadius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
-            <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point)} text={point.text} />
+            <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point.text, textWidth))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point.text, textWidth)} text={point.text} />
             <WeightMarker xy={multiply(add(polarToPoint(center, marker, radius), pointData[id].xy), 0.5)} weight={humanizeWeight(pointData[id].unitWeight)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
         {/each}
 
