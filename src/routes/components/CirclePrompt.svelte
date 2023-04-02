@@ -15,20 +15,20 @@
     export let textWidth = 150;
     export let scaling = 20;
     export let points = {};
-    export let pointAngles = initializeAngles(points);
+    export let pointAngles = initializeAngles(points, {});
 
     let marker = [0, 0];
     let mouseLocation = [0, 0];
     let activePoint:ActivePoint = null;
     let pointData = computePointData(points, center, radius);
 
-    function initializeAngles(points) {
+    function initializeAngles(points, angles) {
         if(!points) return null;
         return Object.entries(points).reduce((acc, [id, point], idx) => {
-            const angle = idx * (360 / Object.keys(points).length) - 90;
+            const angle = acc[id] || idx * (360 / Object.keys(points).length) - 90;
             acc[id] = angle;
             return acc;
-        }, {});
+        }, angles);
     }
 
     $: {
@@ -36,7 +36,7 @@
     }
 
     function recomputeState(points, center, radius, scaling) {
-        pointAngles = initializeAngles(points);
+        pointAngles = initializeAngles(points, pointAngles);
         pointData = computePointData(points, center, radius, scaling);
     }
 
@@ -150,7 +150,9 @@
         } else if (activePoint) {
             const point = {...points[activePoint]};
             const c = closestPointOnCircle(mouseLocation, center, radius); 
-            pointAngles[point.id] = pointToAngle(c, center);
+            const angle = pointToAngle(c, center);
+            console.log('moving point', activePoint, mouseLocation, c, angle);
+            pointAngles[point.id] = angle;
             points[activePoint] = point;
             pointData = computePointData(points, center, radius, scaling);
         }
