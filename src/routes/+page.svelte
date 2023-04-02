@@ -23,14 +23,14 @@
 
   let controllerMarker = [0, 0];
   let controllerPoints = {};
-  let controllerScaling = 5;
+  let controllerScaling = 15;
   let controllerMode = 'circle';
 
   let controllerW;
   let controllerH;
 
   let activePrompt = null;
-  let value = "A basic example::1 A simple prototype::1 A starting point.::1";
+  let value = "Magic potion in a beautiful bottle.::1 A beautiful decanter.::1 A beautiful tequila bottle.::1 A beautiful sake bottle.::1 A beautiful perfume bottle.::1 A beatiful glass vase of flowers.::1 A beautiful glass tea kettle.::1 A beautiful wine bottle.::1 A beautiful vinegar bottle.::1 A beautiful fishbowl.::1 A beautiful piece of tourmaline.::1 A beautiful piece of sphalerite.::1 A beautiful piece of sapphire.::1 Chihuly glass art.::1 Iittala glass art.::1";
   $: currentPromptData = [...parsePrompts(value)].reduce((acc, { prompt, weight }, idx) => {
     const id = idx;
     acc[id] = { id, text: prompt, parsedWeight: weight };
