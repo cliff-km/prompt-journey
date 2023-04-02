@@ -9,15 +9,18 @@
     import { beforeUpdate } from "svelte";
 
     export let handleWeightChange = (weightsById) => {};
+    // display state
     export let center = [450, 450];
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
-    export let scaling = 20;
+    // data state
     export let points = {};
     export let pointAngles = initializeAngles(points, {});
+    export let scaling = 20;
+    export let marker = [0, 0];
+    export let handleDataStateChange = (dataState) => {};
 
-    let marker = [0, 0];
     let mouseLocation = [0, 0];
     let activePoint:ActivePoint = null;
     let pointData = computePointData(points, center, radius);
@@ -38,6 +41,7 @@
     function recomputeState(points, center, radius, scaling) {
         pointAngles = initializeAngles(points, pointAngles);
         pointData = computePointData(points, center, radius, scaling);
+        handleDataStateChange({points, pointAngles, scaling, marker});
     }
 
     function getTextBoxDimensions(point) {

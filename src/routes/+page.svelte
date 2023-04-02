@@ -10,6 +10,8 @@
   let weights = {
   };
 
+  let controllerData = {};
+
   let scaling = 10;
 
   let controllerW;
@@ -40,6 +42,11 @@
     navigator.clipboard.writeText(value);
   };
 
+  function handleCircleDataStateChange(circleData) {
+    controllerData = circleData;
+    console.log(controllerData);
+  }
+
   const handlePromptChange = debounce((e) => {
     value = e.target.value;
   }, 500);
@@ -62,7 +69,7 @@
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
       <div class="w-full h-full" bind:clientWidth={controllerW} bind:clientHeight={controllerH}>
-        <CirclePrompt center={controllerCenter} radius={controllerRadius} points={currentPromptData} handleWeightChange={handleWeightChange} scaling={scaling}/>
+        <CirclePrompt points={currentPromptData} center={controllerCenter} radius={controllerRadius} scaling={scaling} handleWeightChange={handleWeightChange} handleDataStateChange={handleCircleDataStateChange} />
       </div>
       <div class="p-4 pb-0">
         <label class="label">
