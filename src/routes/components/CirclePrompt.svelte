@@ -1,4 +1,5 @@
-<script>
+<script lang="ts">
+    type ActivePoint = string|number|null;
     import Circle from "../components/Circle.svelte";
     import Point from "../components/Point.svelte";
     import Line from "../components/Line.svelte";
@@ -18,7 +19,7 @@
 
     let marker = [650, 350];
     let mouseLocation = [0, 0];
-    let activePoint = null;
+    let activePoint:ActivePoint = null;
     let pointData = computePointData();
 
     function initializeAngles() {
@@ -30,14 +31,10 @@
     }
 
     $: {
-        recomputeState(points);
+        recomputeState(points, scaling);
     }
 
-    $: {
-        recomputeState(scaling);
-    }
-
-    function recomputeState() {
+    function recomputeState(points, scaling) {
         pointAngles = initializeAngles();
         pointData = computePointData();
     }
@@ -141,12 +138,12 @@
             pointData = computePointData();
         }
     }
-
-    function handleMouseUp(e) {
+    
+    function handleMouseUp(e:Event) {
         activePoint = null;
     }
 
-    function activatePoint(pointId) {
+    function activatePoint(pointId:ActivePoint) {
         activePoint = pointId;
     }
 

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     export let xy = [500, 500];
     export let radius = 400;
     export let stroke = 2;

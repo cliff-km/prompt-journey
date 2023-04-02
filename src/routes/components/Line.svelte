@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     export let p1 = [100, 100];
     export let p2 = [100, 100];
     export let stroke = 2;

@@ -1,6 +1,6 @@
-<script>
-  import { v4 as uuidv4 } from 'uuid'
+<script lang="ts">
   import { afterUpdate } from 'svelte';
+  import { parsePrompts } from './lib/prompt.js';
   import CirclePrompt from './components/CirclePrompt.svelte';
   import debounce from 'lodash/debounce'
 
@@ -19,29 +19,7 @@
     acc[id] = { id, text: prompt, parsedWeight: weight };
     return acc;
   }, {});
-
-  function parsePrompt(prompt) {
-    let parsed = prompt.split("::");
-    let promptText = parsed[0];
-    let promptWeight = parsed[1];
-    return {text: promptText, weight: promptWeight};
-  }
   
-  function parsePrompts(input) {
-    const promptWeightPairs = [];
-    const regex = /((?:[^:]+|:(?!:))+)(?:::(\d+(?:\.\d+)?))?(?=\s|$)/g;
-    let match;
-
-    while ((match = regex.exec(input)) !== null) {
-      const prompt = match[1].trim();
-      const weight = match[2] ? parseFloat(match[2], 10) : 1;
-      if(prompt) {
-        promptWeightPairs.push({ prompt, weight });
-      }
-    }
-
-    return promptWeightPairs;
-  }
 
   function handleWeightChange(weightsById) {
     console.log("weightsById, ", weightsById);

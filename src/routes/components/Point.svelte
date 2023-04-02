@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
     export let xy = [100, 100];
     export let radius = 5;
     export let color = 'black';
     export let hoverColor = 'white';
-    export let handleMouseDown = ()=>{};
+    export let handleMouseDown = (e: Event)=>{};
 
     let c = color;
 
@@ -13,7 +13,7 @@
 	function handleMouseOut() {
 		c = color;
 	}
-    function _handleMouseDown(e) {
+    function _handleMouseDown(e: Event) {
         handleMouseDown(e);
     }
 </script>
