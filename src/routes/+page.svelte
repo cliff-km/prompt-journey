@@ -25,8 +25,6 @@
   
 
   function handleWeightChange(weightsById) {
-    console.log("weightsById, ", weightsById);
-
     weights = weightsById;
 
     if(Object.entries(weights).length === Object.entries(currentPromptData).length) {
@@ -38,17 +36,11 @@
     }
   }
 
-
-  afterUpdate(() => {
-		console.log(currentPromptData);
-	});
-
   function copyToClipboard () {
     navigator.clipboard.writeText(value);
   };
 
   const handlePromptChange = debounce((e) => {
-    console.log(e.target.value)
     value = e.target.value;
   }, 500);
 
