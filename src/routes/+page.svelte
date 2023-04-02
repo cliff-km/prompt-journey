@@ -1,7 +1,7 @@
 <script>
   import { v4 as uuidv4 } from 'uuid'
   import { afterUpdate } from 'svelte';
-  import CirclePrompt from './circle/CirclePrompt.svelte';
+  import CirclePrompt from './components/CirclePrompt.svelte';
   import debounce from 'lodash/debounce'
 
   let prompts = {
