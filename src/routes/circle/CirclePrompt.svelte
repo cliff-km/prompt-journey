@@ -12,7 +12,7 @@
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
-    export let scaling = 5;
+    export let scaling = 20;
     export let points = {};
     export let pointAngles = initializeAngles();
 
@@ -29,15 +29,18 @@
         }, {});
     }
 
-    beforeUpdate(() => {
-        if(Object.keys(points).length !== Object.keys(pointAngles).length) {
-            console.log("beforeUpdate", points, pointAngles)
-            pointAngles = initializeAngles();
-            pointData = computePointData();
-        }
-    });
+    $: {
+        recomputeState(points);
+    }
 
+    $: {
+        recomputeState(scaling);
+    }
 
+    function recomputeState() {
+        pointAngles = initializeAngles();
+        pointData = computePointData();
+    }
 
     function getTextBoxDimensions(point) {
         const estimatedLines = Math.floor(point.text.length / 25) + 1;

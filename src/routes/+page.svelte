@@ -10,6 +10,8 @@
   let weights = {
   };
 
+  let scaling = 10;
+
   let activePrompt = null;
   let value = "Minimalistic retro 80s Japanese album art::20 Minimalistic abstract geometric design::5 80s japanese movie posters::30 Minimalistic photography by Gregory Crewdson with japanese typography::50 Retro japanese typography::10 Formicapunk, cassette futurism.::30";
   $: currentPromptData = [...parsePrompts(value)].reduce((acc, { prompt, weight }, idx) => {
@@ -85,7 +87,13 @@
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
       <div class="w-full h-full">
-        <CirclePrompt points={currentPromptData} handleWeightChange={handleWeightChange}/>
+        <CirclePrompt points={currentPromptData} handleWeightChange={handleWeightChange} scaling={scaling}/>
+      </div>
+      <div class="p-4 pb-0">
+        <label class="label">
+          <span class="label-text">Scaling</span>
+        </label>
+        <input bind:value={scaling} type="range" min="1" max="20" class="range"/>
       </div>
       <div class="h-32 w-full p-4">
         <div class="h-32 w-full flex">
