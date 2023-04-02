@@ -1,11 +1,13 @@
 <script lang="ts">
+  import "../app.css";
   import { v4 as uuidv4 } from 'uuid';
   import { afterUpdate } from 'svelte';
-  import { parsePrompts } from './lib/prompt.js';
-	import { promptList, promptStore } from './lib/store.js'
-  import CirclePrompt from './components/CirclePrompt.svelte';
+  import { parsePrompts } from '../lib/prompt.js';
+	import { promptList, promptStore } from '../lib/store.js'
+  import CirclePrompt from '../components/CirclePrompt.svelte';
   import debounce from 'lodash/debounce'
-  import { orderBy } from 'lodash';
+  import pkg from 'lodash';
+  const { orderBy } = pkg;
 
   let storedPromptConfigs = $promptList;
 
