@@ -1,8 +1,17 @@
 <script lang="ts">
+  import { v4 as uuidv4 } from 'uuid';
   import { afterUpdate } from 'svelte';
   import { parsePrompts } from './lib/prompt.js';
+	import { promptList, promptStore } from './lib/store.js'
   import CirclePrompt from './components/CirclePrompt.svelte';
   import debounce from 'lodash/debounce'
+  import { orderBy } from 'lodash';
+
+  let storedPromptConfigs = $promptList;
+
+  $: {
+    console.log(storedPromptConfigs);
+  }
 
   let prompts = {
   };
@@ -12,7 +21,9 @@
 
   let controllerData = {};
 
-  let scaling = 10;
+  let controllerMarker = [0, 0];
+  let controllerPoints = {};
+  let controllerScaling = 10;
 
   let controllerW;
   let controllerH;
@@ -38,13 +49,37 @@
     }
   }
 
+
+  function handleCopyClick() {
+    copyToClipboard();
+    saveToStore();
+  }
+
+  function saveToStore() {
+    promptStore.updatePrompt(uuidv4(), {...controllerData, date: Date.now()});
+  }
+
   function copyToClipboard () {
     navigator.clipboard.writeText(value);
   };
 
+  function sortPromptListByDate(promptList) {
+    return promptList;
+  }
+
   function handleCircleDataStateChange(circleData) {
     controllerData = circleData;
-    console.log(controllerData);
+    // console.log(controllerData);
+  }
+
+  function loadStoredData(data) {
+    controllerData = data;
+    const {points, pointAngles, scaling, marker} = data;
+
+    prompts = points;
+    controllerScaling = scaling;
+    controllerMarker = marker;
+    controllerPoints = pointAngles;
   }
 
   const handlePromptChange = debounce((e) => {
@@ -59,9 +94,10 @@
     <div class="h-screen overflow-y-auto">
       <ul class="menu h-screen p-4 bg-base-100 overflow-y-auto text-base-content inline-block">
         <!-- Sidebar content here -->
-        <li><a class="text-xs">New +</a></li>
-        <li><a class="text-xs inline-block">Minimalistic retro 80s Japanese album art::<b>20</b> Minimalistic abstract geometric design::<b>5</b> 80s japanese movie posters::<b>30</b> Minimalistic photography by Cody Ellingham with japanese typography::<b>30</b> Retro japanese typography::<b>10</b> Formicapunk, cassette futurism.::<b>30</b></a></li>
-        <li><a class="text-xs inline-block">Minimalistic retro 80s Japanese album art::<b>20</b> Minimalistic abstract geometric design::<b>5</b> 80s japanese movie posters::<b>30</b> Minimalistic photography by Cody Ellingham with japanese typography::<b>30</b> Retro japanese typography::<b>10</b> Formicapunk, cassette futurism.::<b>30</b></a></li>
+        <li><a class="text-xs inline-block">New +</a></li>
+        {#each orderBy($promptList, (i) => i[1].date, 'desc') as [promptId, data] (promptId)}
+          <li><a class="text-xs inline-block" on:click={()=>loadStoredData(data)}>{#each Object.entries(data.points) as [id, point]}{point.text}::<b>{point.parsedWeight}</b> {/each}</a></li>
+        {/each}
       </ul>
     </div>
 </div>
@@ -69,20 +105,20 @@
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
       <div class="w-full h-full" bind:clientWidth={controllerW} bind:clientHeight={controllerH}>
-        <CirclePrompt points={currentPromptData} center={controllerCenter} radius={controllerRadius} scaling={scaling} handleWeightChange={handleWeightChange} handleDataStateChange={handleCircleDataStateChange} />
+        <CirclePrompt points={currentPromptData} marker={controllerMarker} center={controllerCenter} radius={controllerRadius} scaling={controllerScaling} handleWeightChange={handleWeightChange} handleDataStateChange={handleCircleDataStateChange} />
       </div>
       <div class="p-4 pb-0">
         <label class="label">
           <span class="label-text">Scaling</span>
         </label>
-        <input bind:value={scaling} type="range" min="1" max="20" class="range"/>
+        <input bind:value={controllerScaling} type="range" min="1" max="20" class="range"/>
       </div>
       <div class="h-32 w-full p-4">
         <div class="h-32 w-full flex">
           <textarea placeholder="Prompt" class="textarea textarea-bordered w-full h-24 text-sm resize-none" value={value} on:input={handlePromptChange}/>
           <!-- Copy text value -->
           <div class="h-24 pl-2 flex flex-col justify-center">
-            <button class="btn btn-sm btn-circle btn-outline" on:click={copyToClipboard}>
+            <button class="btn btn-sm btn-circle btn-outline" on:click={handleCopyClick}>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path fill="rgba(96,117,151, 1)" d="M272 0H396.1c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H272c-26.5 0-48-21.5-48-48V48c0-26.5 21.5-48 48-48zM48 128H192v64H64V448H256V416h64v48c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V176c0-26.5 21.5-48 48-48z"/></svg>
             </button>
           </div>

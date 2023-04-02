@@ -25,7 +25,7 @@
 
     let mouseLocation = [0, 0];
     let activePoint:ActivePoint = null;
-    let pointData = computePointData(points, center, radius);
+    let pointData = computePointData(points, center, radius, scaling, marker);
 
     function initializeAngles(points, angles) {
         if(!points) return null;
@@ -37,12 +37,12 @@
     }
 
     $: {
-        recomputeState(points, center, radius, scaling);
+        recomputeState(points, center, radius, scaling, marker);
     }
 
-    function recomputeState(points, center, radius, scaling) {
+    function recomputeState(points, center, radius, scaling, marker) {
         pointAngles = initializeAngles(points, pointAngles);
-        pointData = computePointData(points, center, radius, scaling);
+        pointData = computePointData(points, center, radius, scaling, marker);
         handleDataStateChange({points, pointAngles, scaling, marker});
     }
 
@@ -94,7 +94,7 @@
             } else {
                 marker = pointToPolar(closestPointOnCircle(mouseLocation, center, radius), center, radius);
             }
-            pointData = computePointData(points, center, radius, scaling);
+            pointData = computePointData(points, center, radius, scaling, marker);
         } else if (activePoint) {
             const point = {...points[activePoint]};
             const c = closestPointOnCircle(mouseLocation, center, radius); 
@@ -102,7 +102,7 @@
             console.log('moving point', activePoint, mouseLocation, c, angle);
             pointAngles[point.id] = angle;
             points[activePoint] = point;
-            pointData = computePointData(points, center, radius, scaling);
+            pointData = computePointData(points, center, radius, scaling, marker);
         }
     }
     
@@ -120,8 +120,8 @@
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function computePointData(points, center, radius, scaling) {
-        if(!points || !center || !radius || !scaling) {
+    function computePointData(points, center, radius, scaling, marker) {
+        if(!points || !center || !radius || !scaling || !marker) {
             return null;
         }
 
