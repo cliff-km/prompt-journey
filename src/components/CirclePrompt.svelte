@@ -20,12 +20,13 @@
     export let points = {};
     export let pointAngles = initializeAngles(points, {});
     export let scaling = 20;
+    export let exponentialScaling = true;
     export let marker = [0, 0];
     export let handleDataStateChange = (dataState) => {};
 
     let mouseLocation = [0, 0];
     let activePoint:ActivePoint = null;
-    let pointData = computePointData(points, center, radius, scaling, marker);
+    let pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
 
     function initializeAngles(points, angles) {
         if(!points) return null;
@@ -37,13 +38,13 @@
     }
 
     $: {
-        recomputeState(points, center, radius, scaling, marker);
+        recomputeState(points, center, radius, scaling, exponentialScaling, marker);
     }
 
-    function recomputeState(points, center, radius, scaling, marker) {
+    function recomputeState(points, center, radius, scaling, exponentialScaling, marker) {
         pointAngles = initializeAngles(points, pointAngles);
-        pointData = computePointData(points, center, radius, scaling, marker);
-        handleDataStateChange({points, pointAngles, scaling, marker});
+        pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
+        handleDataStateChange({points, pointAngles, scaling, exponentialScaling, marker});
     }
 
     function pointOnBoundary(wh, angle) {
@@ -94,7 +95,7 @@
             } else {
                 marker = pointToPolar(closestPointOnCircle(mouseLocation, center, radius), center, radius);
             }
-            pointData = computePointData(points, center, radius, scaling, marker);
+            pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
         } else if (activePoint) {
             const point = {...points[activePoint]};
             const c = closestPointOnCircle(mouseLocation, center, radius); 
@@ -102,7 +103,7 @@
             console.log('moving point', activePoint, mouseLocation, c, angle);
             pointAngles[point.id] = angle;
             points[activePoint] = point;
-            pointData = computePointData(points, center, radius, scaling, marker);
+            pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
         }
     }
     
@@ -120,7 +121,7 @@
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function computePointData(points, center, radius, scaling, marker) {
+    function computePointData(points, center, radius, scaling, exponentialScaling, marker) {
         if(!points || !center || !radius || !scaling || !marker) {
             return null;
         }
@@ -154,7 +155,11 @@
 
         // add unit weights
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            acc[id] = {...acc[id], unitWeight: Math.round(Math.pow(point.invertedUnitDistance, scaling) * 100) / 100};
+            if(exponentialScaling) {
+                acc[id] = {...acc[id], unitWeight: Math.round(Math.pow((1 - (point.distance / (2 * radius))), scaling) * 100) / 100};
+            } else {
+                acc[id] = {...acc[id], unitWeight: Math.round((1 - (point.distance / (2 * radius))) * 100) / 100};
+            }
             return acc;
         }, pd);
 

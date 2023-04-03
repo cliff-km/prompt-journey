@@ -24,6 +24,7 @@
   let controllerMarker = [0, 0];
   let controllerPoints = {};
   let controllerScaling = 15;
+  let controllerScalingExponential = true;
   let controllerMode = 'circle';
 
   let controllerW;
@@ -51,7 +52,7 @@
   }
 
   function saveToStore() {
-    promptStore.updatePrompt(uuidv4(), {...controllerData, date: Date.now(), mode: controllerMode});
+    promptStore.updatePrompt(uuidv4(), {...controllerData, date: Date.now(), exponentialScaling: controllerScalingExponential, mode: controllerMode});
   }
 
   function copyToClipboard () {
@@ -78,7 +79,7 @@
 
   function loadStoredData(data) {
     controllerData = data;
-    const {points, pointAngles, scaling, marker, mode} = data;
+    const {points, pointAngles, scaling, exponentialScaling, marker, mode} = data;
 
     value = Object.entries(points).reduce((acc, [id, point]) => {
       acc.push(`${point.text}::${point.parsedWeight}`);
@@ -86,6 +87,7 @@
     }, [] as string[]).join(" ");
     prompts = points;
     controllerScaling = scaling;
+    controllerScalingExponential = Boolean(exponentialScaling);
     controllerMarker = marker;
     controllerPoints = pointAngles;
     controllerMode = mode;
@@ -114,13 +116,23 @@
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
       <div class="w-full h-full" bind:clientWidth={controllerW} bind:clientHeight={controllerH}>
-        <CirclePrompt points={currentPromptData} pointAngles={controllerPoints} marker={controllerMarker} center={controllerCenter} radius={controllerRadius} scaling={controllerScaling} handleWeightChange={handleWeightChange} handleDataStateChange={handleCircleDataStateChange} />
+        <CirclePrompt points={currentPromptData} pointAngles={controllerPoints} marker={controllerMarker} center={controllerCenter} radius={controllerRadius} exponentialScaling={controllerScalingExponential} scaling={controllerScaling} handleWeightChange={handleWeightChange} handleDataStateChange={handleCircleDataStateChange} />
       </div>
-      <div class="p-4 pb-0">
-        <label class="label">
-          <span class="label-text">Scaling</span>
-        </label>
-        <input bind:value={controllerScaling} type="range" min="1" max="20" class="range"/>
+      <div class="px-2 py-4 pb-0 flex">
+        <div class="w-52 px-2">
+          <label class="label">
+            <span class="label-text">Exponential Scaling</span>
+          </label>
+          <input type="checkbox" class="toggle" bind:checked={controllerScalingExponential} />
+        </div>
+        {#if controllerScalingExponential}
+          <div class="w-full px-2">
+            <label class="label">
+              <span class="label-text">Scaling Power</span>
+            </label>
+            <input bind:value={controllerScaling} type="range" min="0.5" max="3" step="0.1" class="range"/>
+          </div>
+        {/if}
       </div>
       <div class="h-32 w-full p-4">
         <div class="h-32 w-full flex">
