@@ -8,6 +8,7 @@
   import SidebarEdit from '../components/SidebarEdit.svelte';
   import SidebarGenerate from '../components/SidebarGenerate.svelte';
   import SidebarSettings from '../components/SidebarSettings.svelte';
+    import PromptBox from '../components/PromptBox.svelte';
 
   let storedPromptConfigs = $promptList;
 
@@ -167,7 +168,7 @@
       </div>
       <div class="h-32 w-full p-4">
         <div class="h-32 w-full flex">
-          <textarea placeholder="Prompt" class="textarea textarea-bordered w-full h-24 text-sm resize-none" value={value} on:input={handlePromptChange}/>
+          <PromptBox prompts={currentPromptData} weights={weights}/>
           <!-- Copy text value -->
           <div class="h-24 pl-2 flex flex-col justify-evenly">
             <button class="btn btn-sm btn-circle btn-outline" on:click={copyToClipboard}>
