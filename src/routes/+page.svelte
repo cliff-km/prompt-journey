@@ -57,11 +57,19 @@
 
   function saveToStore() {
     promptStore.updatePrompt(uuidv4(), {...controllerData, date: Date.now(), exponentialScaling: controllerScalingExponential, mode: controllerMode});
+    selectPanelMode('select');
   }
 
   function copyToClipboard () {
     navigator.clipboard.writeText(value);
   };
+
+  function pasteFromClipboard () {
+    navigator.clipboard.readText().then(text => {
+      value = text;
+    });
+  };
+
 
   function handleCircleDataStateChange(circleData) {
     controllerData = circleData;
@@ -70,15 +78,15 @@
 
   function clearData() {
     value = "";
+    activePrompt = null;
     controllerData = {};
     controllerMarker = [0, 0];
     controllerPoints = {};
     controllerScaling = 2;
     controllerMode = 'circle';
-    selectPanelMode('edit');
   }
 
-  function loadStoredData(data) {
+  function loadStoredData(id, data) {
     controllerData = data;
     const {points, pointAngles, scaling, exponentialScaling, marker, mode} = data;
 
@@ -87,6 +95,7 @@
       return acc;
     }, [] as string[]).join(" ");
     prompts = points;
+    activePrompt = id;
     controllerScaling = scaling;
     controllerScalingExponential = Boolean(exponentialScaling);
     controllerMarker = marker;
@@ -97,6 +106,12 @@
 
   function selectPanelMode(mode) {
     panelMode = mode;
+  }
+
+  function handleDeletePrompt(id) {
+    if(id) promptStore.deletePrompt(id);
+    selectPanelMode('select');
+    clearData();
   }
 
   const handlePromptChange = debounce((e) => {
@@ -134,9 +149,19 @@
       </div>
       <!-- Sidebar content here -->
       {#if panelMode==='select'}
-        <SidebarSelect selectNew={clearData} selectData={loadStoredData} />
+        <SidebarSelect 
+          selectNew={()=>{clearData(); selectPanelMode('edit');}}
+          selectData={loadStoredData}
+        />
       {:else if panelMode==='edit'}
-        <SidebarEdit prompts={currentPromptData} handlePromptChange={handleSinglePromptChange} handleNewPromptChange={handleNewPromptChange} />
+        <SidebarEdit 
+          prompts={currentPromptData}
+          handlePromptChange={handleSinglePromptChange}
+          handleNewPromptChange={handleNewPromptChange}
+          handlePaste={pasteFromClipboard}
+          handleDelete={()=>handleDeletePrompt(activePrompt)}
+          handleSave={saveToStore}
+        />
       {:else if panelMode==='generate'}
         <SidebarGenerate />
       {:else if panelMode==='settings'}
@@ -169,15 +194,6 @@
       <div class="h-32 w-full p-4">
         <div class="h-32 w-full flex">
           <PromptBox prompts={currentPromptData} weights={weights} handleClick={copyToClipboard}/>
-          <!-- Copy text value -->
-          <div class="h-24 pl-2 flex flex-col justify-evenly">
-            <button class="btn btn-sm btn-circle btn-outline" on:click={copyToClipboard}>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path fill="rgba(96,117,151, 1)" d="M272 0H396.1c12.7 0 24.9 5.1 33.9 14.1l67.9 67.9c9 9 14.1 21.2 14.1 33.9V336c0 26.5-21.5 48-48 48H272c-26.5 0-48-21.5-48-48V48c0-26.5 21.5-48 48-48zM48 128H192v64H64V448H256V416h64v48c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V176c0-26.5 21.5-48 48-48z"/></svg>
-            </button>
-            <button class="btn btn-sm btn-circle btn-outline" on:click={saveToStore}>
-              <svg id="Layer_1" style="enable-background:new 0 0 30 30;" version="1.1" class="h-4 w-4" viewBox="0 0 30 30" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path fill="rgba(96,117,151, 1)" d="M22,4h-2v6c0,0.552-0.448,1-1,1h-9c-0.552,0-1-0.448-1-1V4H6C4.895,4,4,4.895,4,6v18c0,1.105,0.895,2,2,2h18  c1.105,0,2-0.895,2-2V8L22,4z M22,24H8v-6c0-1.105,0.895-2,2-2h10c1.105,0,2,0.895,2,2V24z"/><rect height="5" width="2" x="16" y="4"/></svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>
