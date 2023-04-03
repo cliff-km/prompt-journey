@@ -24,7 +24,7 @@
   
 <ul class="h-screen p-4 w-full bg-base-100 overflow-y-auto text-base-content inline-block">
     {#each promptText as {id, text} (id)}
-        <li class="p-1"><input value={text} on:input={(e)=>handlePromptChange(id, e.target.value)} type="text" placeholder="" class="input input-bordered input-xs w-full" /></li>
+        <li class="p-1"><input value={text} on:input={(e)=>handlePromptChange(id, e.target.value)} type="text" placeholder="" class="input input-bordered input-sm w-full" /></li>
     {/each}
-    <li class="p-1"><input bind:value={newPromptText} type="text" on:input={(e)=>handleNewPromptChange(e.target.value)} placeholder="Add prompt" class="input input-bordered input-xs w-full italic"/></li>
+    <li class="p-1"><input bind:value={newPromptText} type="text" on:input={(e)=>handleNewPromptChange(e.target.value)} placeholder="Add prompt" class="input input-bordered input-sm w-full italic"/></li>
 </ul>
