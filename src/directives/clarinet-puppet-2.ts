@@ -1,2 +1,2 @@
-export const ClarinetPuppet2 = `Make more magic.
+export const ClarinetPuppet2 = `
 `;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { promptList } from '../lib/store.js';
+  import { promptList } from '../lib/promptStore.js';
   import pkg from 'lodash';
   const { orderBy } = pkg;
 

@@ -9,24 +9,29 @@ export function createOpenAI(apiKey) {
     return openai;
 }
 
-export async function createCompletion(openai, prompt) {
+export async function createCompletion(openai, model, prompt) {
     const response = await openai.createCompletion({
         model: "text-davinci-003",
         prompt,
-        temperature: 0,
-        max_tokens: 7,
+        temperature: 0.8,
+        max_tokens: 250,
     });
 
     return response
 }
 
-export async function createChatCompletion(openai, prompt) {
+export async function createChatCompletion(openai, model, prompt) {
     const response = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo-0301",
-        prompt,
-        temperature: 0,
-        max_tokens: 7,
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.8,
+        max_tokens: 250,
     });
 
     return response
+}
+
+export async function listModels(openai) {
+    const response = await openai.listModels();
+    return response;
 }

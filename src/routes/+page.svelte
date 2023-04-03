@@ -1,7 +1,7 @@
 <script lang="ts">
   import { v4 as uuidv4 } from 'uuid';
   import { parsePrompts } from '../lib/prompt.js';
-	import { promptList, promptStore } from '../lib/store.js'
+	import { promptList, promptStore } from '../lib/promptStore.js'
   import CirclePrompt from '../components/CirclePrompt.svelte';
   import debounce from 'lodash/debounce';
   import SidebarSelect from '../components/SidebarSelect.svelte';
@@ -71,6 +71,11 @@
     });
   };
 
+  function handleFullPromptChange(text) {
+    clearData();
+    value = text;
+    selectPanelMode('edit');
+  }
 
   function handleCircleDataStateChange(circleData) {
     controllerData = circleData;
@@ -164,9 +169,9 @@
           handleSave={saveToStore}
         />
       {:else if panelMode==='generate'}
-        <SidebarGenerate openaiKey={openaiKey} />
+        <SidebarGenerate handleGeneratedPrompt={handleFullPromptChange} />
       {:else if panelMode==='settings'}
-        <SidebarSettings openaiKey={openaiKey} handleOpenAIKeyChange={(key)=>{openaiKey = key}} />
+        <SidebarSettings />
       {/if}
     </div>
 </div>

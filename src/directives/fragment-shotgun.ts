@@ -1,9 +1,9 @@
-export const Fragments = `Prompt Rules:
+export const FragmentShotgun = `Prompt Rules:
 
 1. Any stylistic or artistic cues must be included.
 2. Several concepts must include the subject.
-3. The prompt should be constructed of 10 concepts.
-    a. Each concept should be 10 to 15 words.
+3. The prompt should be constructed of 20 concepts.
+    a. Each concept should be 5 to 15 words.
     b. Concepts can be lists of comma separated words.
     c. Concepts should not be complete sentences.
     d. Some concepts should describe the subject.
