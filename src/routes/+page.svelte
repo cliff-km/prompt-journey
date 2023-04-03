@@ -23,7 +23,7 @@
 
   let controllerMarker = [0, 0];
   let controllerPoints = {};
-  let controllerScaling = 15;
+  let controllerScaling = 2;
   let controllerScalingExponential = true;
   let controllerMode = 'circle';
 

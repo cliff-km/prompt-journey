@@ -19,7 +19,7 @@
     // data state
     export let points = {};
     export let pointAngles = initializeAngles(points, {});
-    export let scaling = 20;
+    export let scaling = 2;
     export let exponentialScaling = true;
     export let marker = [0, 0];
     export let handleDataStateChange = (dataState) => {};
