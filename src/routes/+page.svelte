@@ -168,7 +168,7 @@
       </div>
       <div class="h-32 w-full p-4">
         <div class="h-32 w-full flex">
-          <PromptBox prompts={currentPromptData} weights={weights}/>
+          <PromptBox prompts={currentPromptData} weights={weights} handleClick={copyToClipboard}/>
           <!-- Copy text value -->
           <div class="h-24 pl-2 flex flex-col justify-evenly">
             <button class="btn btn-sm btn-circle btn-outline" on:click={copyToClipboard}>
