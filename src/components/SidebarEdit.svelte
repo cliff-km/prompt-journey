@@ -1,0 +1,30 @@
+<script lang="ts">
+    export let prompts = {};
+    export let handlePromptChange = (id, text) => {};
+    export let handleNewPromptChange = (text) => {};
+
+    let newPromptText = "";
+    let promptCount = Object.keys(prompts).length;
+
+    $: {
+        const newPromptCount = Object.keys(prompts).length;
+        if (newPromptCount > promptCount) {
+            promptCount = newPromptCount;
+            newPromptText = "";
+        }
+    }
+
+    $: promptText = Object.entries(prompts).map(([id, prompt]) => {
+        return {
+            id,
+            text: prompt.text
+        }
+    });
+</script>
+  
+<ul class="h-screen p-4 w-full bg-base-100 overflow-y-auto text-base-content inline-block">
+    {#each promptText as {id, text} (id)}
+        <li class="p-1"><input value={text} on:input={(e)=>handlePromptChange(id, e.target.value)} type="text" placeholder="" class="input input-bordered input-xs w-full" /></li>
+    {/each}
+    <li class="p-1"><input bind:value={newPromptText} type="text" on:input={(e)=>handleNewPromptChange(e.target.value)} placeholder="Add prompt" class="input input-bordered input-xs w-full italic"/></li>
+</ul>

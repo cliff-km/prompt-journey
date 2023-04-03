@@ -3,9 +3,11 @@
   import { parsePrompts } from '../lib/prompt.js';
 	import { promptList, promptStore } from '../lib/store.js'
   import CirclePrompt from '../components/CirclePrompt.svelte';
-  import debounce from 'lodash/debounce'
-  import pkg from 'lodash';
-  const { orderBy } = pkg;
+  import debounce from 'lodash/debounce';
+  import SidebarSelect from '../components/SidebarSelect.svelte';
+  import SidebarEdit from '../components/SidebarEdit.svelte';
+  import SidebarGenerate from '../components/SidebarGenerate.svelte';
+  import SidebarSettings from '../components/SidebarSettings.svelte';
 
   let storedPromptConfigs = $promptList;
 
@@ -26,6 +28,7 @@
   let controllerScaling = 2;
   let controllerScalingExponential = true;
   let controllerMode = 'circle';
+  let panelMode = 'select';
 
   let controllerW;
   let controllerH;
@@ -59,10 +62,6 @@
     navigator.clipboard.writeText(value);
   };
 
-  function sortPromptListByDate(promptList) {
-    return promptList;
-  }
-
   function handleCircleDataStateChange(circleData) {
     controllerData = circleData;
     // console.log(controllerData);
@@ -73,8 +72,9 @@
     controllerData = {};
     controllerMarker = [0, 0];
     controllerPoints = {};
-    controllerScaling = 10;
+    controllerScaling = 2;
     controllerMode = 'circle';
+    selectPanelMode('edit');
   }
 
   function loadStoredData(data) {
@@ -91,10 +91,32 @@
     controllerMarker = marker;
     controllerPoints = pointAngles;
     controllerMode = mode;
+    selectPanelMode('edit');
+  }
+
+  function selectPanelMode(mode) {
+    panelMode = mode;
   }
 
   const handlePromptChange = debounce((e) => {
     value = e.target.value;
+  }, 500);
+
+  const handleSinglePromptChange = debounce((id, text) => {
+    currentPromptData[id].text = text;
+    value = Object.entries(currentPromptData).reduce((acc, [id, point]) => {
+      acc.push(`${point.text}::${point.parsedWeight}`);
+      return acc;
+    }, [] as string[]).join(" ");
+  }, 500);
+
+  const handleNewPromptChange = debounce((text) => {
+    const id = Object.keys(currentPromptData).length;
+    currentPromptData[id] = { id, text, parsedWeight: 1 };
+    value = Object.entries(currentPromptData).reduce((acc, [id, point]) => {
+      acc.push(`${point.text}::${point.parsedWeight}`);
+      return acc;
+    }, [] as string[]).join(" ");
   }, 500);
 
 
@@ -103,13 +125,22 @@
 </script>
 <div class="max-w-md w-1/2 h-screen overflow-y-auto">
     <div class="h-screen overflow-y-auto">
-      <ul class="menu h-screen p-4 w-full bg-base-100 overflow-y-auto text-base-content inline-block">
-        <!-- Sidebar content here -->
-        <li><a class="text-xs inline-block" on:click={clearData}>New +</a></li>
-        {#each orderBy($promptList, (i) => i[1].date, 'desc') as [promptId, data] (promptId)}
-          <li><a class="text-xs inline-block" on:click={()=>loadStoredData(data)}>{#each Object.entries(data.points) as [id, point]}{point.text}::<b>{point.parsedWeight}</b> {/each}</a></li>
-        {/each}
-      </ul>
+      <div class="btn-group btn-group-vertical sm:btn-group-horizontal bg-base-100 w-full flex justify-center p-2">
+        <button class={panelMode === 'select' ? 'btn btn-active' : 'btn'} on:click={()=>selectPanelMode('select')}>Select</button>
+        <button class={panelMode === 'edit' ? 'btn btn-active' : 'btn'} on:click={()=>selectPanelMode('edit')}>Edit</button>
+        <button class={panelMode === 'generate' ? 'btn btn-active' : 'btn'} on:click={()=>selectPanelMode('generate')}>Generate</button>
+        <button class={panelMode === 'settings' ? 'btn btn-active' : 'btn'} on:click={()=>selectPanelMode('settings')}>Settings</button>
+      </div>
+      <!-- Sidebar content here -->
+      {#if panelMode==='select'}
+        <SidebarSelect selectNew={clearData} selectData={loadStoredData} />
+      {:else if panelMode==='edit'}
+        <SidebarEdit prompts={currentPromptData} handlePromptChange={handleSinglePromptChange} handleNewPromptChange={handleNewPromptChange} />
+      {:else if panelMode==='generate'}
+        <SidebarGenerate />
+      {:else if panelMode==='settings'}
+        <SidebarSettings />
+      {/if}
     </div>
 </div>
 <div class="w-full h-screen">
