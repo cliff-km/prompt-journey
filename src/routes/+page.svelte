@@ -11,6 +11,7 @@
     import PromptBox from '../components/PromptBox.svelte';
 
   let storedPromptConfigs = $promptList;
+  let openaiKey = "";
 
   $: {
     console.log(storedPromptConfigs);
@@ -163,9 +164,9 @@
           handleSave={saveToStore}
         />
       {:else if panelMode==='generate'}
-        <SidebarGenerate />
+        <SidebarGenerate openaiKey={openaiKey} />
       {:else if panelMode==='settings'}
-        <SidebarSettings />
+        <SidebarSettings openaiKey={openaiKey} handleOpenAIKeyChange={(key)=>{openaiKey = key}} />
       {/if}
     </div>
 </div>
