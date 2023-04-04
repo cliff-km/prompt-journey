@@ -1,12 +1,17 @@
 <script lang="ts">
-    type ActivePoint = string|number|null;
+    type ActivePoint = string | number | null;
     import Circle from "./Circle.svelte";
     import Point from "./Point.svelte";
     import Line from "./Line.svelte";
     import PromptText from "./PromptText.svelte";
     import WeightMarker from "./WeightMarker.svelte";
     import { add, multiply, subtract } from "mathjs";
-    import { pointToPolar, polarToPoint, closestPointOnCircle, pointInCircle } from "../lib/circle";
+    import {
+        pointToPolar,
+        polarToPoint,
+        closestPointOnCircle,
+        pointInCircle,
+    } from "../lib/circle";
     import { humanizeWeight, getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions, findBoxCenterOffset } from "../lib/text";
 
@@ -25,43 +30,77 @@
     export let handleDataStateChange = (dataState) => {};
 
     let mouseLocation = [0, 0];
-    let activePoint:ActivePoint = null;
-    let pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
+    let activePoint: ActivePoint = null;
+    let pointData = computePointData(
+        points,
+        center,
+        radius,
+        scaling,
+        exponentialScaling,
+        marker
+    );
 
     function initializeAngles(points, angles) {
-        if(!points) return null;
+        if (!points) return null;
         return Object.entries(points).reduce((acc, [id, point], idx) => {
-            const angle = acc[id] || idx * (360 / Object.keys(points).length) - 90;
+            const angle =
+                acc[id] || idx * (360 / Object.keys(points).length) - 90;
             acc[id] = angle;
             return acc;
         }, angles);
     }
 
     $: {
-        recomputeState(points, center, radius, scaling, exponentialScaling, marker);
+        recomputeState(
+            points,
+            center,
+            radius,
+            scaling,
+            exponentialScaling,
+            marker
+        );
     }
 
-    function recomputeState(points, center, radius, scaling, exponentialScaling, marker) {
+    function recomputeState(
+        points,
+        center,
+        radius,
+        scaling,
+        exponentialScaling,
+        marker
+    ) {
         pointAngles = initializeAngles(points, pointAngles);
-        pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
-        handleDataStateChange({points, pointAngles, scaling, exponentialScaling, marker});
+        pointData = computePointData(
+            points,
+            center,
+            radius,
+            scaling,
+            exponentialScaling,
+            marker
+        );
+        handleDataStateChange({
+            points,
+            pointAngles,
+            scaling,
+            exponentialScaling,
+            marker,
+        });
     }
 
     function pointOnBoundary(wh, angle) {
         // Convert angle to radians
-        const rad = (angle % 360) * Math.PI / 180;
+        const rad = ((angle % 360) * Math.PI) / 180;
 
         // Calculate the center of the box
         const cxy = findBoxCenterOffset(wh);
-        
+
         let x, y;
 
         const c = Math.cos(rad);
         const s = Math.sin(rad);
 
-        x = (cxy[0]+5) * -1.2 * c;
-        y = (cxy[1]+5) * -1.2 * s;
-
+        x = (cxy[0] + 5) * -1.2 * c;
+        y = (cxy[1] + 5) * -1.2 * s;
 
         // The point's position will be relative to the center, so we need to add the center's coordinates
         x -= cxy[0];
@@ -89,29 +128,47 @@
         pt.y = e.clientY;
         const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
         mouseLocation = [loc.x, loc.y];
-        if (activePoint === 'main') {
-            if(pointInCircle(mouseLocation, center, radius)) {
+        if (activePoint === "main") {
+            if (pointInCircle(mouseLocation, center, radius)) {
                 marker = pointToPolar(mouseLocation, center, radius);
             } else {
-                marker = pointToPolar(closestPointOnCircle(mouseLocation, center, radius), center, radius);
+                marker = pointToPolar(
+                    closestPointOnCircle(mouseLocation, center, radius),
+                    center,
+                    radius
+                );
             }
-            pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
+            pointData = computePointData(
+                points,
+                center,
+                radius,
+                scaling,
+                exponentialScaling,
+                marker
+            );
         } else if (activePoint) {
-            const point = {...points[activePoint]};
-            const c = closestPointOnCircle(mouseLocation, center, radius); 
+            const point = { ...points[activePoint] };
+            const c = closestPointOnCircle(mouseLocation, center, radius);
             const angle = pointToPolar(c, center, radius)[0];
-            console.log('moving point', activePoint, mouseLocation, c, angle);
+            console.log("moving point", activePoint, mouseLocation, c, angle);
             pointAngles[point.id] = angle;
             points[activePoint] = point;
-            pointData = computePointData(points, center, radius, scaling, exponentialScaling, marker);
+            pointData = computePointData(
+                points,
+                center,
+                radius,
+                scaling,
+                exponentialScaling,
+                marker
+            );
         }
     }
-    
-    function handleMouseUp(e:Event) {
+
+    function handleMouseUp(e: Event) {
         activePoint = null;
     }
 
-    function activatePoint(pointId:ActivePoint) {
+    function activatePoint(pointId: ActivePoint) {
         activePoint = pointId;
     }
 
@@ -121,44 +178,84 @@
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    function computePointData(points, center, radius, scaling, exponentialScaling, marker) {
-        if(!points || !center || !radius || !scaling || !marker) {
+    function computePointData(
+        points,
+        center,
+        radius,
+        scaling,
+        exponentialScaling,
+        marker
+    ) {
+        if (!points || !center || !radius || !scaling || !marker) {
             return null;
         }
 
         // set points
         let pd = Object.entries(points).reduce((acc, [id, point]) => {
-            acc[id] = {xy: polarToPoint(center, [pointAngles[id], 1], radius) };
+            acc[id] = {
+                xy: polarToPoint(center, [pointAngles[id], 1], radius),
+            };
             return acc;
         }, {});
 
         // add distances
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            acc[id] = {...acc[id], distance: getDistance(point.xy, polarToPoint(center, marker, radius))};
+            acc[id] = {
+                ...acc[id],
+                distance: getDistance(
+                    point.xy,
+                    polarToPoint(center, marker, radius)
+                ),
+            };
             return acc;
         }, pd);
 
         // find total distance
-        const totalDistance = Object.values(pd).reduce((acc, point) => acc + point.distance, 0);
+        const totalDistance = Object.values(pd).reduce(
+            (acc, point) => acc + point.distance,
+            0
+        );
 
         // add unit distances
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            acc[id] = {...acc[id], unitDistance: Math.round((point.distance / totalDistance) * 100) / 100};
+            acc[id] = {
+                ...acc[id],
+                unitDistance:
+                    Math.round((point.distance / totalDistance) * 100) / 100,
+            };
             return acc;
         }, pd);
 
         // add inverted unit distances
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            acc[id] = {...acc[id], invertedUnitDistance: Math.round((1 - point.unitDistance) * 100) / 100};
+            acc[id] = {
+                ...acc[id],
+                invertedUnitDistance:
+                    Math.round((1 - point.unitDistance) * 100) / 100,
+            };
             return acc;
         }, pd);
 
         // add unit weights
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            if(exponentialScaling) {
-                acc[id] = {...acc[id], unitWeight: Math.round(Math.pow((1 - (point.distance / (2 * radius))), scaling) * 100) / 100};
+            if (exponentialScaling) {
+                acc[id] = {
+                    ...acc[id],
+                    unitWeight:
+                        Math.round(
+                            Math.pow(
+                                1 - point.distance / (2 * radius),
+                                scaling
+                            ) * 100
+                        ) / 100,
+                };
             } else {
-                acc[id] = {...acc[id], unitWeight: Math.round((1 - (point.distance / (2 * radius))) * 100) / 100};
+                acc[id] = {
+                    ...acc[id],
+                    unitWeight:
+                        Math.round((1 - point.distance / (2 * radius)) * 100) /
+                        100,
+                };
             }
             return acc;
         }, pd);
@@ -174,6 +271,62 @@
     }
 </script>
 
+<svg
+    id="svg"
+    class="w-full h-full"
+    on:mousemove={handleMouseMove}
+    on:mouseup={handleMouseUp}
+>
+    {#if pointData && points}
+        <Circle xy={center} {radius} />
+
+        {#each Object.entries(points) as [id, point]}
+            <Line
+                p1={polarToPoint(center, marker, radius)}
+                p2={pointData[id].xy}
+            />
+            <Point
+                xy={pointData[id].xy}
+                radius={pointRadius}
+                color={"rgba(76,97,141, 1)"}
+                handleMouseDown={() => activatePoint(id)}
+            />
+            <PromptText
+                xy={getTextLocation(
+                    pointData[id].xy,
+                    getTextBoxDimensions(point.text, textWidth)
+                )}
+                color={`rgba(255,255,255,${getWeightOpacity(
+                    pointData[id].unitWeight
+                )}`}
+                wh={getTextBoxDimensions(point.text, textWidth)}
+                text={point.text}
+            />
+            <WeightMarker
+                xy={multiply(
+                    add(polarToPoint(center, marker, radius), pointData[id].xy),
+                    0.5
+                )}
+                weight={humanizeWeight(pointData[id].unitWeight)}
+                radius={15}
+                textColor={`rgba(255,255,255,${getWeightOpacity(
+                    pointData[id].unitWeight
+                )}`}
+                bgColor={`rgb(8, 11, 22)`}
+            />
+        {/each}
+
+        {#if Object.entries(points).length > 0}
+            <Point
+                xy={polarToPoint(center, marker, radius)}
+                radius={10}
+                color="rgba(136,157,191, 1)"
+                handleMouseDown={() => activatePoint("main")}
+            />
+        {/if}
+    {/if}
+</svg>
+
 <style>
     :global(svg) {
         display: block;
@@ -181,20 +334,3 @@
         height: 100%;
     }
 </style>
-
-<svg id="svg" class="w-full h-full" on:mousemove={handleMouseMove} on:mouseup={handleMouseUp}>
-    {#if pointData && points}
-        <Circle xy={center} radius={radius} />
-
-        {#each Object.entries(points) as [id, point]}
-            <Line p1={polarToPoint(center, marker, radius)} p2={pointData[id].xy} />
-            <Point xy={pointData[id].xy} radius={pointRadius} color={'rgba(76,97,141, 1)'} handleMouseDown={()=>activatePoint(id)}/>
-            <PromptText xy={getTextLocation(pointData[id].xy, getTextBoxDimensions(point.text, textWidth))} color={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} wh={getTextBoxDimensions(point.text, textWidth)} text={point.text} />
-            <WeightMarker xy={multiply(add(polarToPoint(center, marker, radius), pointData[id].xy), 0.5)} weight={humanizeWeight(pointData[id].unitWeight)} radius={15} textColor={`rgba(255,255,255,${getWeightOpacity(pointData[id].unitWeight)}`} bgColor={`rgb(8, 11, 22)`} />
-        {/each}
-
-        {#if Object.entries(points).length > 0}
-            <Point xy={polarToPoint(center, marker, radius)} radius={10} color='rgba(136,157,191, 1)' handleMouseDown={()=>activatePoint('main')}/>
-        {/if}
-    {/if}
-</svg>
