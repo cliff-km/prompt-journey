@@ -19,7 +19,11 @@
     } from "../lib/circle";
     import { getDisplayWeight, getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
-    import { getDistance, findBoxCenter } from "../lib/vector";
+    import {
+        getDistance,
+        findBoxCenter,
+        getSVGMouseLocation,
+    } from "../lib/vector";
 
     // display state
     export let center = [450, 450];
@@ -90,30 +94,29 @@
         );
     }
 
+    function updateMarkerFromMouseLocation(mouseLocation) {
+        const markerLocation = pointInCircle(mouseLocation, center, radius)
+            ? pointToPolar(mouseLocation, center, radius)
+            : pointToPolar(
+                  closestPointOnCircle(mouseLocation, center, radius),
+                  center,
+                  radius
+              );
+        pointData = computePointData(
+            $activePrompt.weightedPrompts,
+            center,
+            radius,
+            $activePrompt.circleWeightScaling,
+            $activePrompt.circleExponentialScaling,
+            markerLocation,
+            $activePrompt.circleAngles
+        );
+    }
+
     function handleMouseMove(e) {
-        const svg = e.currentTarget;
-        var pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
-        const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
-        mouseLocation = [loc.x, loc.y];
+        mouseLocation = getSVGMouseLocation(e);
         if (activePoint === "main") {
-            const markerLocation = pointInCircle(mouseLocation, center, radius)
-                ? pointToPolar(mouseLocation, center, radius)
-                : pointToPolar(
-                      closestPointOnCircle(mouseLocation, center, radius),
-                      center,
-                      radius
-                  );
-            pointData = computePointData(
-                $activePrompt.weightedPrompts,
-                center,
-                radius,
-                $activePrompt.circleWeightScaling,
-                $activePrompt.circleExponentialScaling,
-                markerLocation,
-                $activePrompt.circleAngles
-            );
+            updateMarkerFromMouseLocation(mouseLocation);
         } else if (activePoint) {
             const point = { ...$activePrompt.weightedPrompts[activePoint] };
             const c = closestPointOnCircle(mouseLocation, center, radius);
@@ -135,6 +138,11 @@
                 ca
             );
         }
+    }
+
+    function handleDoubleClick(e: Event) {
+        mouseLocation = getSVGMouseLocation(e);
+        updateMarkerFromMouseLocation(mouseLocation);
     }
 
     function computePointData(
@@ -249,6 +257,7 @@
     class="w-full h-full"
     on:mousemove={handleMouseMove}
     on:mouseup={handleMouseUp}
+    on:dblclick={handleDoubleClick}
 >
     {#if pointData && $activePrompt.weightedPrompts}
         <Circle xy={center} {radius} />
@@ -272,8 +281,12 @@
                 color={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight
                 )}`}
-                wh={getTextBoxDimensions(textWidth, point.text.length, fontSize)}
-                fontSize={fontSize}
+                wh={getTextBoxDimensions(
+                    textWidth,
+                    point.text.length,
+                    fontSize
+                )}
+                {fontSize}
                 text={point.text}
             />
             <WeightMarker
@@ -288,7 +301,10 @@
                     ),
                     0.5
                 )}
-                weight={getDisplayWeight($activePrompt.weightedPrompts[id], $activePrompt.weightMode)}
+                weight={getDisplayWeight(
+                    $activePrompt.weightedPrompts[id],
+                    $activePrompt.weightMode
+                )}
                 radius={15}
                 textColor={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight

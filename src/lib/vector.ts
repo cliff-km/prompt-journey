@@ -11,3 +11,12 @@ export function getDistance(p1, p2) {
 export function findBoxCenter(wh: Point) {
     return multiply(wh, 0.5)
 }
+
+export function getSVGMouseLocation(e: Event) {
+    const svg = e.currentTarget;
+    var pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return [loc.x, loc.y];
+}
