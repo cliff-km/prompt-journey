@@ -5,6 +5,10 @@
     import SidebarSettings from "../components/SidebarSettings.svelte";
     import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
 
+    $: {
+        if(!$panelMode) panelModeStore.updateMode("select");
+    }
+
     function selectPanelMode(mode) {
         panelModeStore.updateMode(mode);
     }
