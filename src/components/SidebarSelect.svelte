@@ -8,7 +8,7 @@
     import { getDisplayWeight } from "$lib/weights.js";
 
     function selectNew() {
-        activePromptStore.updateActivePrompt(intializeActivePrompt({}));
+        activePromptStore.updateActivePrompt(intializeActivePrompt({}, $activePrompt.weightMode));
         panelModeStore.updateMode("edit");
     }
 

@@ -49,7 +49,7 @@
                     return acc;
                 }, {});
 
-            activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts));
+            activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
         });
     }
 

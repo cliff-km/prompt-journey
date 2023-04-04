@@ -20,10 +20,10 @@ export function defaultPrompt() {
     }
 }
 
-export function intializeActivePrompt(prompts) {
+export function intializeActivePrompt(prompts, weightMode = 'circle') {
     return ({
         weightedPrompts: prompts || {},
-        weightMode: 'circle',
+        weightMode,
         circleAngles: {},
         circleMarker: [0, 0],
         circleWeightScaling: 2,

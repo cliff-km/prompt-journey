@@ -123,7 +123,7 @@
                     return acc;
                 }, {});
 
-                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts));
+                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
                 panelModeStore.updateMode("edit");
             });
         });
@@ -144,7 +144,7 @@
                     return acc;
                 }, {});
 
-                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts));
+                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
                 panelModeStore.updateMode("edit");
             });
         });
