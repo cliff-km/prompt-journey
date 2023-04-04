@@ -24,7 +24,6 @@
         if (!openaiKey || models.length) return;
         const openai = createOpenAI(openaiKey);
         const response = await listModels(openai);
-        console.log(response);
 
         if (response.data)
             models = response.data.data

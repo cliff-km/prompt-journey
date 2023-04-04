@@ -16,7 +16,6 @@ export function storablePromptConfigs() {
     return {
         subscribe,
         updatePrompt: (id, p) => {
-            console.log('addPrompt', id, p)
             const currentStore = get(store);
             const currentDoc = currentStore[id] || {};
             const updatedDoc = { ...currentDoc, ...p };
@@ -24,12 +23,10 @@ export function storablePromptConfigs() {
             isBrowser && (localStorage[`prompt_${id}`] = JSON.stringify(updatedDoc));
 
             const updatedStore = { ...currentStore, [id]: updatedDoc };
-            console.log('updatePrompt', id, updatedStore);
             set(updatedStore);
         },
         getPrompt: (id) => {
             const currentStore = get(store);
-            console.log('getPrompt', id, currentStore);
 
             return currentStore[id];
         },
@@ -39,7 +36,6 @@ export function storablePromptConfigs() {
             const newStore = { ...get(store) };
             delete newStore[id];
 
-            console.log('deletePrompt', id, newStore);
             set(newStore);
         },
     };

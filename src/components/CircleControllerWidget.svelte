@@ -1,112 +1,58 @@
 <script lang="ts">
     type ActivePoint = string | number | null;
+    import { add, multiply, subtract, isUndefined } from "mathjs";
     import Circle from "./Circle.svelte";
     import Point from "./Point.svelte";
     import Line from "./Line.svelte";
     import PromptText from "./PromptText.svelte";
     import WeightMarker from "./WeightMarker.svelte";
-    import { add, multiply, subtract } from "mathjs";
+    import {
+        activePromptStore,
+        activePrompt,
+    } from "../lib/activePromptStore.js";
     import {
         pointToPolar,
         polarToPoint,
         closestPointOnCircle,
         pointInCircle,
+        pointOnBoundary,
     } from "../lib/circle";
     import { humanizeWeight, getWeightOpacity } from "../lib/weights";
-    import { getTextBoxDimensions, findBoxCenterOffset } from "../lib/text";
+    import { getTextBoxDimensions } from "../lib/text";
+    import { getDistance, findBoxCenter } from "../lib/vector";
 
-    export let handleWeightChange = (weightsById) => {};
     // display state
     export let center = [450, 450];
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
-    // data state
-    export let points = {};
-    export let pointAngles = initializeAngles(points, {});
-    export let scaling = 2;
-    export let exponentialScaling = true;
-    export let marker = [0, 0];
-    export let handleDataStateChange = (dataState) => {};
 
+    // inner state
     let mouseLocation = [0, 0];
     let activePoint: ActivePoint = null;
-    let pointData = computePointData(
-        points,
-        center,
-        radius,
-        scaling,
-        exponentialScaling,
-        marker
-    );
-
-    function initializeAngles(points, angles) {
-        if (!points) return null;
-        return Object.entries(points).reduce((acc, [id, point], idx) => {
-            const angle =
-                acc[id] || idx * (360 / Object.keys(points).length) - 90;
-            acc[id] = angle;
-            return acc;
-        }, angles);
-    }
 
     $: {
-        recomputeState(
-            points,
-            center,
-            radius,
-            scaling,
-            exponentialScaling,
-            marker
-        );
+        if(Object.keys($activePrompt.circleAngles).length !== Object.keys($activePrompt.weightedPrompts).length) {
+            activePromptStore.updateActivePrompt({...$activePrompt, circleAngles: initializeAngles($activePrompt.weightedPrompts, {})});
+        }
     }
 
-    function recomputeState(
-        points,
+    $: pointData = computePointData(
+        $activePrompt.weightedPrompts,
         center,
         radius,
-        scaling,
-        exponentialScaling,
-        marker
-    ) {
-        pointAngles = initializeAngles(points, pointAngles);
-        pointData = computePointData(
-            points,
-            center,
-            radius,
-            scaling,
-            exponentialScaling,
-            marker
-        );
-        handleDataStateChange({
-            points,
-            pointAngles,
-            scaling,
-            exponentialScaling,
-            marker,
-        });
+        $activePrompt.circleWeightScaling,
+        $activePrompt.circleExponentialScaling,
+        $activePrompt.circleMarker,
+        $activePrompt.circleAngles || initializeAngles($activePrompt.weightedPrompts, {})
+    );
+
+    function handleMouseUp(e: Event) {
+        activePoint = null;
     }
 
-    function pointOnBoundary(wh, angle) {
-        // Convert angle to radians
-        const rad = ((angle % 360) * Math.PI) / 180;
-
-        // Calculate the center of the box
-        const cxy = findBoxCenterOffset(wh);
-
-        let x, y;
-
-        const c = Math.cos(rad);
-        const s = Math.sin(rad);
-
-        x = (cxy[0] + 5) * -1.2 * c;
-        y = (cxy[1] + 5) * -1.2 * s;
-
-        // The point's position will be relative to the center, so we need to add the center's coordinates
-        x -= cxy[0];
-        y -= cxy[1];
-
-        return [x, y];
+    function activatePoint(pointId: ActivePoint) {
+        activePoint = pointId;
     }
 
     function getTextLocation(pxy, textDimensions) {
@@ -114,11 +60,24 @@
         if (angle < 0) {
             angle += 360;
         }
-        const offset = pointOnBoundary(textDimensions, angle);
-
-        const diff = subtract(pxy, offset);
+        const offset = pointOnBoundary(findBoxCenter(textDimensions), angle);
 
         return add(pxy, offset);
+    }
+
+
+    function initializeAngles(weightedPrompts, angles) {
+        if (!weightedPrompts) return null;
+        return Object.entries(weightedPrompts).reduce(
+            (acc, [id, point], idx) => {
+                const angle =
+                    acc[id] ||
+                    idx * (360 / Object.keys(weightedPrompts).length) - 90;
+                acc[id] = angle;
+                return acc;
+            },
+            angles
+        );
     }
 
     function handleMouseMove(e) {
@@ -129,71 +88,68 @@
         const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
         mouseLocation = [loc.x, loc.y];
         if (activePoint === "main") {
-            if (pointInCircle(mouseLocation, center, radius)) {
-                marker = pointToPolar(mouseLocation, center, radius);
-            } else {
-                marker = pointToPolar(
-                    closestPointOnCircle(mouseLocation, center, radius),
-                    center,
-                    radius
-                );
-            }
+            const markerLocation = pointInCircle(mouseLocation, center, radius)
+                ? pointToPolar(mouseLocation, center, radius)
+                : pointToPolar(
+                      closestPointOnCircle(mouseLocation, center, radius),
+                      center,
+                      radius
+                  );
             pointData = computePointData(
-                points,
+                $activePrompt.weightedPrompts,
                 center,
                 radius,
-                scaling,
-                exponentialScaling,
-                marker
+                $activePrompt.circleWeightScaling,
+                $activePrompt.circleExponentialScaling,
+                markerLocation,
+                $activePrompt.circleAngles
             );
         } else if (activePoint) {
-            const point = { ...points[activePoint] };
+            const point = { ...$activePrompt.weightedPrompts[activePoint] };
             const c = closestPointOnCircle(mouseLocation, center, radius);
             const angle = pointToPolar(c, center, radius)[0];
-            console.log("moving point", activePoint, mouseLocation, c, angle);
-            pointAngles[point.id] = angle;
-            points[activePoint] = point;
+
+            const ca = {...$activePrompt.circleAngles};
+            ca[point.id] = angle;
+
+            const wp = {...$activePrompt.weightedPrompts};
+            wp[activePoint] = point;
+
             pointData = computePointData(
-                points,
+                wp,
                 center,
                 radius,
-                scaling,
-                exponentialScaling,
-                marker
+                $activePrompt.circleWeightScaling,
+                $activePrompt.circleExponentialScaling,
+                $activePrompt.circleMarker,
+                ca
             );
         }
     }
 
-    function handleMouseUp(e: Event) {
-        activePoint = null;
-    }
-
-    function activatePoint(pointId: ActivePoint) {
-        activePoint = pointId;
-    }
-
-    function getDistance(p1, p2) {
-        const dx = p1[0] - p2[0];
-        const dy = p1[1] - p2[1];
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
     function computePointData(
-        points,
+        weightedPrompts,
         center,
         radius,
-        scaling,
-        exponentialScaling,
-        marker
+        circleWeightScaling,
+        circleExponentialScaling,
+        circleMarker,
+        circleAngles
     ) {
-        if (!points || !center || !radius || !scaling || !marker) {
+        if (
+            !weightedPrompts ||
+            !center ||
+            !radius ||
+            !circleWeightScaling ||
+            !circleMarker
+        ) {
             return null;
         }
 
         // set points
-        let pd = Object.entries(points).reduce((acc, [id, point]) => {
+        let pd = Object.entries(weightedPrompts).reduce((acc, [id, point]) => {
             acc[id] = {
-                xy: polarToPoint(center, [pointAngles[id], 1], radius),
+                xy: polarToPoint(center, [circleAngles[id], 1], radius),
             };
             return acc;
         }, {});
@@ -204,7 +160,7 @@
                 ...acc[id],
                 distance: getDistance(
                     point.xy,
-                    polarToPoint(center, marker, radius)
+                    polarToPoint(center, circleMarker, radius)
                 ),
             };
             return acc;
@@ -238,14 +194,14 @@
 
         // add unit weights
         pd = Object.entries(pd).reduce((acc, [id, point]) => {
-            if (exponentialScaling) {
+            if (circleExponentialScaling) {
                 acc[id] = {
                     ...acc[id],
                     unitWeight:
                         Math.round(
                             Math.pow(
                                 1 - point.distance / (2 * radius),
-                                scaling
+                                circleWeightScaling
                             ) * 100
                         ) / 100,
                 };
@@ -261,11 +217,18 @@
         }, pd);
 
         // get weights by id
-        const weights = Object.entries(pd).reduce((acc, [id, data]) => {
-            acc[id] = humanizeWeight(data.unitWeight);
-            return acc;
-        }, {});
-        handleWeightChange(weights);
+
+        const wp = { ...weightedPrompts };
+        Object.entries(pd).forEach(([id, data]) => {
+            wp[id].circleWeight = data.unitWeight;
+        });
+
+        activePromptStore.updateActivePrompt({
+            ...$activePrompt,
+            circleMarker,
+            weightedPrompts: wp,
+            circleAngles
+        });
 
         return pd;
     }
@@ -277,12 +240,12 @@
     on:mousemove={handleMouseMove}
     on:mouseup={handleMouseUp}
 >
-    {#if pointData && points}
+    {#if pointData && $activePrompt.weightedPrompts}
         <Circle xy={center} {radius} />
 
-        {#each Object.entries(points) as [id, point]}
+        {#each Object.entries($activePrompt.weightedPrompts) as [id, point]}
             <Line
-                p1={polarToPoint(center, marker, radius)}
+                p1={polarToPoint(center, $activePrompt.circleMarker, radius)}
                 p2={pointData[id].xy}
             />
             <Point
@@ -304,10 +267,19 @@
             />
             <WeightMarker
                 xy={multiply(
-                    add(polarToPoint(center, marker, radius), pointData[id].xy),
+                    add(
+                        polarToPoint(
+                            center,
+                            $activePrompt.circleMarker,
+                            radius
+                        ),
+                        pointData[id].xy
+                    ),
                     0.5
                 )}
-                weight={humanizeWeight(pointData[id].unitWeight)}
+                weight={humanizeWeight(
+                    $activePrompt.weightedPrompts[id].circleWeight
+                )}
                 radius={15}
                 textColor={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight
@@ -316,9 +288,9 @@
             />
         {/each}
 
-        {#if Object.entries(points).length > 0}
+        {#if Object.entries($activePrompt.weightedPrompts).length > 0}
             <Point
-                xy={polarToPoint(center, marker, radius)}
+                xy={polarToPoint(center, $activePrompt.circleMarker, radius)}
                 radius={10}
                 color="rgba(136,157,191, 1)"
                 handleMouseDown={() => activatePoint("main")}

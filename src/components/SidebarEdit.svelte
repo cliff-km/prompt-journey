@@ -1,38 +1,93 @@
 <script lang="ts">
-    export let prompts = {};
-    export let handlePromptChange = (id, text) => {};
-    export let handleNewPromptChange = (text) => {};
-    export let handlePaste = () => {};
-    export let handleDelete = () => {};
-    export let handleSave = () => {};
+    import { v4 as uuidv4 } from "uuid";
+    import { processString } from "../lib/prompt.js";
+    import { promptStore, promptList } from "../lib/promptStore.js";
+    import {
+        intializeActivePrompt,
+        activePromptStore,
+        activePrompt,
+    } from "../lib/activePromptStore.js";
+    import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
+    import { selectedPromptStore, selectedPrompt } from "../lib/selectedPromptStore.js";
+    import debounce from "lodash/debounce";
 
     let newPromptText = "";
-    let promptCount = Object.keys(prompts).length;
+    let promptCount = Object.keys($activePrompt.weightedPrompts).length;
 
     $: {
-        const newPromptCount = Object.keys(prompts).length;
+        const newPromptCount = Object.keys($activePrompt.weightedPrompts).length;
         if (newPromptCount > promptCount) {
             promptCount = newPromptCount;
             newPromptText = "";
         }
     }
 
-    $: promptText = Object.entries(prompts).map(([id, prompt]) => {
+    $: promptText = Object.entries($activePrompt.weightedPrompts).map(([id, prompt]) => {
         return {
             id,
             text: prompt.text,
         };
     });
+
+    function saveToStore() {
+        promptStore.updatePrompt(uuidv4(), {
+            ...$activePrompt,
+            date: Date.now(),
+        });
+        panelModeStore.updateMode("select");
+    }
+
+    function pasteFromClipboard() {
+        navigator.clipboard.readText().then((text) => {
+            const sentences = processString(text);
+
+            const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
+                    acc[idx] = { id: idx, text, parsedWeight };
+                    return acc;
+                }, {});
+
+            activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts));
+        });
+    }
+
+    function handleDeletePrompt() {
+        if ($selectedPrompt) promptStore.deletePrompt($selectedPrompt);
+        panelModeStore.updateMode("select");
+        activePromptStore.deleteActivePrompt();
+    }
+
+    const handleSinglePromptChange = debounce((id, text) => {
+        const weightedPrompts = ({...$activePrompt.weightedPrompts});
+        const updatedWP = { ...weightedPrompts[id], text};
+        weightedPrompts[id] = updatedWP;
+
+        activePromptStore.updateActivePrompt({
+            ...$activePrompt,
+            weightedPrompts,
+        });
+    }, 500);
+
+    const handleNewPromptChange = debounce((text) => {
+        const nextId = Object.keys($activePrompt.weightedPrompts).length;
+        const weightedPrompts = ({...$activePrompt.weightedPrompts});
+        const updatedWP = { id: nextId,  text, parsedWeight: 1};
+        weightedPrompts[nextId] = updatedWP;
+
+        activePromptStore.updateActivePrompt({
+            ...$activePrompt,
+            weightedPrompts,
+        });
+    }, 500);
 </script>
 
 <div class="flex px-8 py-2 justify-center bg-base-100">
-    <button class="btn btn-sm btn-info mx-2" on:click={handlePaste}
+    <button class="btn btn-sm btn-info mx-2" on:click={pasteFromClipboard}
         >Paste</button
     >
-    <button class="btn btn-sm btn-success mx-2" on:click={handleSave}
+    <button class="btn btn-sm btn-success mx-2" on:click={saveToStore}
         >Save</button
     >
-    <button class="btn btn-sm btn-error mx-2" on:click={handleDelete}
+    <button class="btn btn-sm btn-error mx-2" on:click={handleDeletePrompt}
         >Delete</button
     >
 </div>
@@ -43,7 +98,7 @@
         <li class="p-1">
             <input
                 value={text}
-                on:input={(e) => handlePromptChange(id, e.target.value)}
+                on:input={(e) => handleSinglePromptChange(id, e.target.value)}
                 type="text"
                 placeholder=""
                 class="input input-bordered input-sm w-full"

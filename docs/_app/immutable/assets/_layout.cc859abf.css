@@ -2843,6 +2843,9 @@ html {
   border-radius: 9999px;
   padding: 0px;
 }
+.btn-group-horizontal {
+  flex-direction: row;
+}
 .btn-group-vertical {
   flex-direction: column;
 }
@@ -2988,6 +2991,9 @@ html {
 .h-32 {
   height: 8rem;
 }
+.h-6 {
+  height: 1.5rem;
+}
 .h-full {
   height: 100%;
 }
@@ -2999,6 +3005,9 @@ html {
 }
 .w-52 {
   width: 13rem;
+}
+.w-6 {
+  width: 1.5rem;
 }
 .w-full {
   width: 100%;

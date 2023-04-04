@@ -22,11 +22,13 @@
         createCompletion,
         createChatCompletion,
     } from "../lib/openai.js";
+    import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
+    import { intializeActivePrompt, activePromptStore, activePrompt } from "../lib/activePromptStore";
     import { key } from "../lib/keyStore.js";
+    import { processString } from "../lib/prompt.js";
 
     let openaiKey = $key;
     let selectedModel = $preferredModel;
-    export let handleGeneratedPrompt = (prompt) => {};
 
     const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301"];
 
@@ -106,31 +108,6 @@
         updateDirective(selectedDirective);
     }
 
-    function processString(input) {
-        // Remove newline characters from the beginning and end of the input
-        input = input.replace(/^\n+|\n+$/g, "");
-
-        // Check if the string contains newline characters
-        if (input.includes("\n")) {
-            return input.split("\n").map((s) => s.trim());
-        }
-
-        // Split into sentences and count the number of delimiters
-        const sentences = input.match(/[^.!?]+[.!?]+/g) || [];
-        const numSentenceDelimiters = sentences.length;
-
-        // Split into comma-separated concepts and count the number of commas
-        const concepts = input.split(",").map((s) => s.trim());
-        const numCommas = concepts.length - 1;
-
-        // Determine if the input is a paragraph or a list of concepts
-        if (numSentenceDelimiters > numCommas) {
-            return sentences.map((sentence) => sentence.trim());
-        } else {
-            return concepts;
-        }
-    }
-
     function handleChatPrompt(openai, instructions) {
         const model = selectedModel || "gpt-3.5-turbo";
         const completion = createChatCompletion(openai, model, instructions);
@@ -141,10 +118,13 @@
                 const sentences = processString(choice.message.content);
                 console.log(sentences);
 
-                const prompt = sentences.join("::1 ");
-                console.log(prompt);
+                const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
+                    acc[idx] = { id: idx, text, parsedWeight };
+                    return acc;
+                }, {});
 
-                handleGeneratedPrompt(prompt);
+                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts));
+                panelModeStore.updateMode("edit");
             });
         });
     }
@@ -159,10 +139,13 @@
                 const sentences = processString(choice.text); // insert
                 console.log(sentences);
 
-                const prompt = sentences.join("::1 ");
-                console.log(prompt);
+                const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
+                    acc[idx] = { id: idx, text, parsedWeight };
+                    return acc;
+                }, {});
 
-                handleGeneratedPrompt(prompt);
+                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts));
+                panelModeStore.updateMode("edit");
             });
         });
     }
