@@ -1,4 +1,5 @@
-export const PoeticAccents = `
+export const PoeticAccents = `Prompt Rules:
+
 1. Any stylistic or artistic cues must be included.
 2. The prompt should be constructed of 5 sentences.
     a. Each sentence should be 10 to 20 words.

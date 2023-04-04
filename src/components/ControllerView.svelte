@@ -18,7 +18,7 @@
     }
 </script>
 
-<div class="w-full h-screen">
+<div class="w-full h-full flex flex-col">
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
         <div class="btn-group btn-group-horizontal w-full flex justify-end p-2">
@@ -44,8 +44,8 @@
         {:else if $activePrompt.weightMode === "circle"}
             <CircleController />
         {/if}
-        <div class="h-32 w-full p-4">
-            <div class="h-32 w-full flex">
+        <div class="h-32 w-full p-4 flex flex-col">
+            <div class="h-32 w-full">
                 <PromptBox/>
             </div>
         </div>
