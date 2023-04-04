@@ -51,11 +51,12 @@
     let getHandleColor = (n:number)=>`rgba(76,97,131, ${n})`
     let hoverBarId = null;
     let hoverHandleId = null;
-    let baseBarColor = getColor(0.3);
-    let hoverBarColor = getColor(0.4);
     let baseHandleColor = getHandleColor(0.3);
     let hoverHandleColor = getHandleColor(0.8);
     let activeDragId = null;
+    let mouseHoldInterval = null;
+    let mouseHoldStart = null;
+
 
     function handleMouseOver(id, e: Event) {
         hoverBarId = id;
@@ -79,6 +80,9 @@
 
     function handleMouseUp(e: Event) {
         activeDragId = null;
+        clearInterval(mouseHoldInterval);
+        mouseHoldInterval = null;
+        mouseHoldStart = null;
     }
 
     function handleMouseMove(e: Event) {
@@ -99,6 +103,50 @@
 
             prompts[activeDragId] = wp;
             activePromptStore.updateActivePrompt({ ...$activePrompt, weightedPrompts: prompts});
+            
+            //determine if mouse is beyond end
+            let barEnd = barX + maxBarWidth + handleWidth;
+            let barStart = barX;
+            if (mouseLocation[0] > barEnd && !mouseHoldInterval) {
+                mouseHoldStart = Date.now();
+                mouseHoldInterval = setInterval(()=>{
+                    if(Date.now() - mouseHoldStart < 1000) {
+                        return;
+                    }
+                    let prompts = {...$activePrompt.weightedPrompts }
+                    const updatedPrompts = Object.entries(prompts).reduce((acc, [id, p])=>{
+                        if (id !== activeDragId) {
+                            acc[id] = { ...p, barWeight: Math.max(0, (p.barWeight || 0) - 0.01) }
+                        } else {
+                            acc[id] = { ...p, barWeight: Math.min(1, (p.barWeight || 0) + 0.01) }
+                        }
+                        return acc;
+                    }, {})
+                    activePromptStore.updateActivePrompt({ ...$activePrompt, weightedPrompts: updatedPrompts});
+                }, 100)
+            } 
+            else if(mouseLocation[0] < barStart && !mouseHoldInterval) {
+                mouseHoldStart = Date.now();
+                mouseHoldInterval = setInterval(()=>{
+                    if(Date.now() - mouseHoldStart < 1000) {
+                        return;
+                    }
+                    let prompts = {...$activePrompt.weightedPrompts }
+                    const updatedPrompts = Object.entries(prompts).reduce((acc, [id, p])=>{
+                        if (id !== activeDragId) {
+                            acc[id] = { ...p, barWeight: Math.min(1, (p.barWeight || 0) + 0.01) }
+                        } else {
+                            acc[id] = { ...p, barWeight: Math.max(0, (p.barWeight || 0) - 0.01) }
+                        }
+                        return acc;
+                    }, {})
+                    activePromptStore.updateActivePrompt({ ...$activePrompt, weightedPrompts: updatedPrompts});
+                }, 100)
+            } else if(mouseLocation[0] < barEnd && mouseLocation[0] > barStart && mouseHoldInterval) {
+                clearInterval(mouseHoldInterval);
+                mouseHoldInterval = null;
+                mouseHoldStart = null;
+            }
         }
     }
 </script>
