@@ -1,18 +1,17 @@
-# create-svelte
+# prompt-journey
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+See it live [here](https://cliff-km.github.io/prompt-journey/).
 
-## Creating a project
+## Overview
 
-If you're seeing this, you've probably already done this step. Congrats!
+A tool to help play with Midjourney multi-prompts. Create multi-prompts from scratch, paste them in (and paragraphs or comma lists), or generate them from GPT if you provide an OpenAI key.
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## Known Issues
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+- Not mobile or small window friendly
+- Needs some loading spinners for OpenAI API calls
+- Error handling 🙏
+- Built with tape and thumbtacks
 
 ## Developing
 
@@ -35,4 +34,3 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
