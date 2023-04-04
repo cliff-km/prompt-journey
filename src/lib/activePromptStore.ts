@@ -2,7 +2,6 @@ import { get, writable, derived } from 'svelte/store'
 
 const STORE_KEY = 'activePromptStore';
 
-
 export function createWeightedPrompt(id, text, parsedWeight, barWeight = 1) {
     return {
         id,
@@ -14,9 +13,20 @@ export function createWeightedPrompt(id, text, parsedWeight, barWeight = 1) {
 
 export function defaultPrompt() {
     return {
-        0: createWeightedPrompt(0, "Prompt 1", 1),
-        1: createWeightedPrompt(1, "Prompt 2", 1),
-        2: createWeightedPrompt(2, "Prompt 3", 1)
+        0: createWeightedPrompt(0, "Magic potion in a mystical bottle", 1),
+        1: createWeightedPrompt(1, "A crystalline decanter", 1),
+        2: createWeightedPrompt(2, "An ornate tequila bottle", 1),
+        3: createWeightedPrompt(3, "An antique sake bottle", 1),
+        4: createWeightedPrompt(4, "A colorful perfume bottle", 1),
+        5: createWeightedPrompt(5, "A glass vase full of vibrant flowers", 1),
+        6: createWeightedPrompt(6, "A minimalist glass tea kettle", 1),
+        7: createWeightedPrompt(7, "Chihuly glass art", 1),
+        8: createWeightedPrompt(8, "A fine wine bottle", 1),
+        9: createWeightedPrompt(9, "A gourmet vinegar bottle", 1),
+        10: createWeightedPrompt(10, "A stunning fishbowl", 1),
+        11: createWeightedPrompt(11, "A striking piece of tourmaline", 1),
+        12: createWeightedPrompt(12, "A finely cut piece of sapphire", 1),
+        13: createWeightedPrompt(13, "Iittala glass art", 1),
     }
 }
 
