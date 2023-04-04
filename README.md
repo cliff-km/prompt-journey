@@ -6,12 +6,20 @@ See it live [here](https://cliff-km.github.io/prompt-journey/).
 
 A tool to help play with Midjourney multi-prompts. Create multi-prompts from scratch, paste them in (and paragraphs or comma lists), or generate them from GPT if you provide an OpenAI key.
 
+## Future Plans
+
+I have some more ideas for better prompt management, a few more weight controller ideas, and some alternative generators. I'd also like to integrate the Midjourney API when it gets released. Some of these ideas may require a proper backend and I'm not sure I feel like paying for it.
+
+So, TBD.
+
 ## Known Issues
 
 - Not mobile or small window friendly
 - Needs some loading spinners for OpenAI API calls
 - Error handling 🙏
 - Built with tape and thumbtacks
+
+If you find anything else, let me know with an issue.
 
 ## Developing
 
