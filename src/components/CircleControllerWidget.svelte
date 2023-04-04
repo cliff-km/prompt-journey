@@ -26,7 +26,7 @@
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
-    export let fontSize = 12;
+    export let fontSize = 13;
 
     // inner state
     let mouseLocation = [0, 0];
@@ -273,6 +273,7 @@
                     pointData[id].unitWeight
                 )}`}
                 wh={getTextBoxDimensions(textWidth, point.text.length, fontSize)}
+                fontSize={fontSize}
                 text={point.text}
             />
             <WeightMarker

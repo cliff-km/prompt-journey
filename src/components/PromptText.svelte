@@ -4,7 +4,7 @@
     export let text = "";
     export let color = "rgba(96,117,151, 1)";
     export let textAlign = "center";
-    export let fontSize = 11;
+    export let fontSize = 12;
 </script>
 
 <foreignObject x={xy[0]} y={xy[1]} width={wh[0]} height={wh[1]}>
@@ -15,7 +15,7 @@
             style:margin="0"
             style:pointer-events="none"
             style:text-align={textAlign}
-            style:font-size={fontSize + "px"}
+            style:font-size={`${fontSize}px`}
             style:font-family="sans-serif"
             style:font-style="italic"
         >
@@ -23,12 +23,3 @@
         </p>
     </div>
 </foreignObject>
-
-<style>
-    .small {
-        font: italic 13px sans-serif;
-    }
-    .heavy {
-        font: bold 30px sans-serif;
-    }
-</style>

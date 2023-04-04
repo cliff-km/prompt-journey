@@ -18,7 +18,7 @@
     export let horizontalPad = 20;
     export let verticalPad = 2;
     export let textBarPad = 10;
-    export let fontSize = 12;
+    export let fontSize = 13;
     export let handleWidth = 20;
 
     $: prompts = Object.entries($activePrompt.weightedPrompts).map(
@@ -161,6 +161,7 @@ on:mouseup={handleMouseUp}>
             wh={textDimensions[id]}
             text={p.text}
             textAlign="right"
+            fontSize={fontSize}
         />
         <Bar
             color={hoverBarId === id || hoverHandleId === id ? getColor(getWeightOpacity((p.barWeight || 0) / maxBarWeight + 0.15)) : getColor(getWeightOpacity(p.barWeight || 0))}
