@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { humanizeWeight } from "$lib/weights.js";
+    import { getDisplayWeight } from "$lib/weights.js";
     import { activePrompt } from "../lib/activePromptStore.js";
-    
-    $: weightKey = $activePrompt.weightMode === "circle" ? "circleWeight" : "parsedWeight";
+
+    $: weightKey = $activePrompt.weightMode === "circle" ? "circleWeight" : $activePrompt.weightMode === "bars" ? "barWeight" : "parsedWeight";
 
     $: totalWeight = Object.values($activePrompt.weightedPrompts).reduce(
         (acc, wp) => wp[weightKey] + acc,
@@ -22,7 +22,7 @@
 
     function handleClick() {
         const promptWeightPairs = Object.entries($activePrompt.weightedPrompts).map(([id, wp]) => {
-            return `${wp.text}::${humanizeWeight(wp[weightKey])}`
+            return `${wp.text}::${getDisplayWeight(wp, $activePrompt.weightMode)}`
         }).join(' ');
         navigator.clipboard.writeText(promptWeightPairs);
     }
@@ -35,7 +35,7 @@
     <p class="text-sm select-none">
         {#each Object.entries($activePrompt.weightedPrompts) as [id, wp] (id)}<span
                 style={`color: rgba(255,255,255,${getRelativeWeight(wp[weightKey])});`}
-                >{wp.text}::<b>{humanizeWeight(wp[weightKey])} </b></span
+                >{wp.text}::<b>{getDisplayWeight(wp, $activePrompt.weightMode)} </b></span
             >
         {/each}
     </p>

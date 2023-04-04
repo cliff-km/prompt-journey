@@ -2,23 +2,21 @@ import { get, writable, derived } from 'svelte/store'
 
 const STORE_KEY = 'activePromptStore';
 
+
+export function createWeightedPrompt(id, text, parsedWeight, barWeight = 1) {
+    return {
+        id,
+        text,
+        barWeight,
+        parsedWeight,
+    }
+}
+
 export function defaultPrompt() {
     return {
-        0: {
-            id: 0,
-            text: "Prompt 1",
-            parsedWeight: 1,
-        },
-        1: {
-            id: 1,
-            text: "Prompt 2",
-            parsedWeight: 1,
-        },
-        2: {
-            id: 2,
-            text: "Prompt 3",
-            parsedWeight: 1,
-        },
+        0: createWeightedPrompt(0, "Prompt 1", 1),
+        1: createWeightedPrompt(1, "Prompt 2", 1),
+        2: createWeightedPrompt(2, "Prompt 3", 1)
     }
 }
 

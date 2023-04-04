@@ -23,7 +23,7 @@
         createChatCompletion,
     } from "../lib/openai.js";
     import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
-    import { intializeActivePrompt, activePromptStore, activePrompt } from "../lib/activePromptStore";
+    import { intializeActivePrompt, activePromptStore, activePrompt, createWeightedPrompt } from "../lib/activePromptStore";
     import { key } from "../lib/keyStore.js";
     import { processString } from "../lib/prompt.js";
 
@@ -119,7 +119,7 @@
                 console.log(sentences);
 
                 const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
-                    acc[idx] = { id: idx, text, parsedWeight };
+                    acc[idx] = createWeightedPrompt(idx, text, parsedWeight);
                     return acc;
                 }, {});
 
@@ -140,7 +140,7 @@
                 console.log(sentences);
 
                 const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
-                    acc[idx] = { id: idx, text, parsedWeight };
+                    acc[idx] = createWeightedPrompt(idx, text, parsedWeight);
                     return acc;
                 }, {});
 

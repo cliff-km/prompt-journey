@@ -17,7 +17,7 @@
         pointInCircle,
         pointOnBoundary,
     } from "../lib/circle";
-    import { humanizeWeight, getWeightOpacity } from "../lib/weights";
+    import { getDisplayWeight, getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getDistance, findBoxCenter } from "../lib/vector";
 
@@ -26,14 +26,24 @@
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
+    export let fontSize = 12;
 
     // inner state
     let mouseLocation = [0, 0];
     let activePoint: ActivePoint = null;
 
     $: {
-        if(Object.keys($activePrompt.circleAngles).length !== Object.keys($activePrompt.weightedPrompts).length) {
-            activePromptStore.updateActivePrompt({...$activePrompt, circleAngles: initializeAngles($activePrompt.weightedPrompts, {})});
+        if (
+            Object.keys($activePrompt.circleAngles).length !==
+            Object.keys($activePrompt.weightedPrompts).length
+        ) {
+            activePromptStore.updateActivePrompt({
+                ...$activePrompt,
+                circleAngles: initializeAngles(
+                    $activePrompt.weightedPrompts,
+                    {}
+                ),
+            });
         }
     }
 
@@ -44,7 +54,8 @@
         $activePrompt.circleWeightScaling,
         $activePrompt.circleExponentialScaling,
         $activePrompt.circleMarker,
-        $activePrompt.circleAngles || initializeAngles($activePrompt.weightedPrompts, {})
+        $activePrompt.circleAngles ||
+            initializeAngles($activePrompt.weightedPrompts, {})
     );
 
     function handleMouseUp(e: Event) {
@@ -64,7 +75,6 @@
 
         return add(pxy, offset);
     }
-
 
     function initializeAngles(weightedPrompts, angles) {
         if (!weightedPrompts) return null;
@@ -109,10 +119,10 @@
             const c = closestPointOnCircle(mouseLocation, center, radius);
             const angle = pointToPolar(c, center, radius)[0];
 
-            const ca = {...$activePrompt.circleAngles};
+            const ca = { ...$activePrompt.circleAngles };
             ca[point.id] = angle;
 
-            const wp = {...$activePrompt.weightedPrompts};
+            const wp = { ...$activePrompt.weightedPrompts };
             wp[activePoint] = point;
 
             pointData = computePointData(
@@ -227,7 +237,7 @@
             ...$activePrompt,
             circleMarker,
             weightedPrompts: wp,
-            circleAngles
+            circleAngles,
         });
 
         return pd;
@@ -257,12 +267,12 @@
             <PromptText
                 xy={getTextLocation(
                     pointData[id].xy,
-                    getTextBoxDimensions(point.text, textWidth)
+                    getTextBoxDimensions(textWidth, point.text.length, fontSize)
                 )}
                 color={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight
                 )}`}
-                wh={getTextBoxDimensions(point.text, textWidth)}
+                wh={getTextBoxDimensions(textWidth, point.text.length, fontSize)}
                 text={point.text}
             />
             <WeightMarker
@@ -277,9 +287,7 @@
                     ),
                     0.5
                 )}
-                weight={humanizeWeight(
-                    $activePrompt.weightedPrompts[id].circleWeight
-                )}
+                weight={getDisplayWeight($activePrompt.weightedPrompts[id], $activePrompt.weightMode)}
                 radius={15}
                 textColor={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight

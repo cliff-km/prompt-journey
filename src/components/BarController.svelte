@@ -1,7 +1,11 @@
 <script lang="ts">
+    import { findBoxCenter } from "$lib/vector";
     import BarControllerWidget from "./BarControllerWidget.svelte";
     let controllerW;
     let controllerH;
+
+    $: wh =[controllerW || 0, controllerH || 0];
+    $: center = findBoxCenter(wh);
 </script>
 
 <div
@@ -9,5 +13,5 @@
     bind:clientWidth={controllerW}
     bind:clientHeight={controllerH}
 >
-    <BarControllerWidget />
+    <BarControllerWidget dimensions={wh} center={center} />
 </div>

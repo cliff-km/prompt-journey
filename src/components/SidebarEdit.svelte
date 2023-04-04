@@ -6,6 +6,7 @@
         intializeActivePrompt,
         activePromptStore,
         activePrompt,
+        createWeightedPrompt,
     } from "../lib/activePromptStore.js";
     import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
     import { selectedPromptStore, selectedPrompt } from "../lib/selectedPromptStore.js";
@@ -41,8 +42,10 @@
         navigator.clipboard.readText().then((text) => {
             const sentences = processString(text);
 
+            const maxSentenceWeight = Math.max(...sentences.map(([text, weight]) => weight));
+
             const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
-                    acc[idx] = { id: idx, text, parsedWeight };
+                    acc[idx] = createWeightedPrompt(idx, text, parsedWeight, parsedWeight/maxSentenceWeight);
                     return acc;
                 }, {});
 
@@ -70,7 +73,7 @@
     const handleNewPromptChange = debounce((text) => {
         const nextId = Object.keys($activePrompt.weightedPrompts).length;
         const weightedPrompts = ({...$activePrompt.weightedPrompts});
-        const updatedWP = { id: nextId,  text, parsedWeight: 1};
+        const updatedWP = createWeightedPrompt(nextId, text, 1);
         weightedPrompts[nextId] = updatedWP;
 
         activePromptStore.updateActivePrompt({

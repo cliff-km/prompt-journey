@@ -5,7 +5,7 @@
     import { intializeActivePrompt, activePromptStore, activePrompt } from "../lib/activePromptStore.js";
     import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
     import { selectedPromptStore, selectedPrompt } from "../lib/selectedPromptStore.js";
-    import { humanizeWeight } from "$lib/weights.js";
+    import { getDisplayWeight } from "$lib/weights.js";
 
     function selectNew() {
         activePromptStore.updateActivePrompt(intializeActivePrompt({}));
@@ -30,7 +30,7 @@
                 on:click={() => selectPrompt(promptId, data)}
                 >
                 {#each Object.entries(data.weightedPrompts) as [id, wp]}{wp.text}::<b
-                        >{data.weightMode === 'circle' ? humanizeWeight(wp.circleWeight) : wp.parsedWeight}</b
+                        >{getDisplayWeight(wp, data.weightMode)}</b
                     >
                 {/each}</a
             >
