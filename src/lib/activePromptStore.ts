@@ -35,7 +35,7 @@ export function intializeActivePrompt(prompts, weightMode = 'circle') {
         weightedPrompts: prompts || {},
         weightMode,
         circleAngles: {},
-        circleMarker: [0, 0],
+        circleMarker: [270, 0.33],
         circleWeightScaling: 2,
         circleExponentialScaling: true
     })
