@@ -26,6 +26,7 @@
     import { intializeActivePrompt, activePromptStore, activePrompt, createWeightedPrompt } from "../lib/activePromptStore";
     import { key } from "../lib/keyStore.js";
     import { processString } from "../lib/prompt.js";
+    import { update } from "lodash";
 
     let openaiKey = $key;
     let selectedModel = $preferredModel;
@@ -90,10 +91,14 @@
     function deleteFromStore() {
         directiveStore.deleteDirective(selectedDirective);
         selectedDirective = null;
+        newPromptName = "";
+        directiveText = "";
+        preferredDirectiveStore.deleteDirectiveKey(null);
     }
 
     function updateDirective(newDirective) {
         selectedDirective = newDirective;
+        console.log(selectedDirective)
         preferredDirectiveStore.updateDirectiveKey(newDirective);
         if (newDirective && newDirective !== "new") {
             newPromptName = directives[newDirective].name;
@@ -105,8 +110,7 @@
     }
 
     function handleSelectedDirectiveChange(e) {
-        selectedDirective = e.target.value;
-        updateDirective(selectedDirective);
+        updateDirective(e.target.value);
     }
 
     function handleChatPrompt(openai, instructions) {
