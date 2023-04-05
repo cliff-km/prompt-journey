@@ -17,4 +17,6 @@ export const FragmentShotgun = `Prompt Rules:
 Format rules:
 1. Each concept should be separated by a newline.
 2. Do not number or name the concepts.
+3. Do not use hyphens to mark list items.
+4. Do not title the list.
 `;

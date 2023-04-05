@@ -38,10 +38,8 @@
         {:else if $activePrompt.weightMode === "circle"}
             <CircleController />
         {/if}
-        <div class="h-32 w-full p-4 flex flex-col">
-            <div class="h-32 w-full">
-                <PromptBox/>
-            </div>
+        <div class="h-48 w-full p-4 flex flex-col">
+            <PromptBox/>
         </div>
     </div>
 </div>

@@ -45,7 +45,7 @@
         C: { name: "Five Sentences", text: FiveSentences, builtIn: true },
         D: { name: "Ten Sentences", text: TenSentences, builtIn: true },
         E: { name: "Fragments", text: Fragments, builtIn: true },
-        F: { name: "Fragment Shotgun", text: FragmentShotgun, builtIn: true },
+        F: { name: "Concept Shotgun", text: FragmentShotgun, builtIn: true },
         G: { name: "Poetic Accents", text: PoeticAccents, builtIn: true },
     };
 

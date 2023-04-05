@@ -13,6 +13,16 @@
         ...Object.values(($activePrompt.weightedPrompts)).map((wp) => wp[weightKey] / totalWeight)
     );
 
+    let text;
+    let textContent;
+    let html;
+
+    $: {
+        console.log('text', text);
+        console.log('textContent', textContent);
+        console.log('html', html);
+    }
+
     function getRelativeWeight(weight) {
         return (
             (weight / totalWeight / highestRelativeWeight + 0.75) /
@@ -30,9 +40,13 @@
 
 <div
     on:click={handleClick}
-    class="normal-case font-light text-left cursor-copy bg-slate-900 rounded-md p-4 w-full h-32 overflow-y-auto hover:bg-slate-800 active:bg-slate-950"
+	bind:innerHTML={html}
+	bind:innerText={text}
+	bind:textContent={textContent}
+    contenteditable="true"
+    class="normal-case font-light text-left bg-slate-900 rounded-md p-4 w-full h-32 overflow-y-auto"
 >
-    <p class="text-sm select-none">
+    <p class="text-sm">
         {#each Object.entries($activePrompt.weightedPrompts) as [id, wp] (id)}<span
                 style={`color: rgba(255,255,255,${getRelativeWeight(wp[weightKey])});`}
                 >{wp.text}::<b>{getDisplayWeight(wp, $activePrompt.weightMode)} </b></span
