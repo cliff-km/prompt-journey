@@ -1,8 +1,19 @@
 <script lang="ts">
     import { getDisplayWeight } from "$lib/weights.js";
     import { activePrompt } from "../lib/activePromptStore.js";
+    import {
+        zeroPromptHandling
+    } from '../lib/zeroPromptHandling.js';
 
-    $: weightKey = $activePrompt.weightMode === "circle" ? "circleWeight" : $activePrompt.weightMode === "bars" ? "barWeight" : "parsedWeight";
+    let weightKey = "parsedWeight";
+
+    $: {
+        switch($activePrompt.weightMode) {
+            case "circle": weightKey = "circleWeight"; break;
+            case "bars": weightKey = "barWeight"; break;
+            case "embed": weightKey = "embedWeight"; break;
+        }
+    }
 
     $: totalWeight = Object.values($activePrompt.weightedPrompts).reduce(
         (acc, wp) => wp[weightKey] + acc,
@@ -21,7 +32,7 @@
     }
 
     function handleClick() {
-        const promptWeightPairs = Object.entries($activePrompt.weightedPrompts).map(([id, wp]) => {
+        const promptWeightPairs = Object.entries($activePrompt.weightedPrompts).filter(e => $zeroPromptHandling || getDisplayWeight(e[1], $activePrompt.weightMode)).map(([id, wp]) => {
             return `${wp.text}::${getDisplayWeight(wp, $activePrompt.weightMode)}`
         }).join(' ');
         navigator.clipboard.writeText(promptWeightPairs);
@@ -33,7 +44,7 @@
     class="normal-case font-light text-left cursor-copy bg-slate-900 rounded-md p-4 w-full h-32 overflow-y-auto hover:bg-slate-800 active:bg-slate-950"
 >
     <p class="text-sm select-none">
-        {#each Object.entries($activePrompt.weightedPrompts) as [id, wp] (id)}<span
+        {#each Object.entries($activePrompt.weightedPrompts).filter(e => $zeroPromptHandling || getDisplayWeight(e[1], $activePrompt.weightMode)) as [id, wp] (id)}<span
                 style={`color: rgba(255,255,255,${getRelativeWeight(wp[weightKey])});`}
                 >{wp.text}::<b>{getDisplayWeight(wp, $activePrompt.weightMode)} </b></span
             >

@@ -13,7 +13,11 @@
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^2.0.1",
 		"@sveltejs/kit": "^1.5.0",
+		"@types/cwise": "^1.0.4",
 		"@types/lodash": "^4.14.192",
+		"@types/ndarray": "^1.0.11",
+		"@types/ndarray-ops": "^1.2.4",
+		"@types/node": "^18.15.11",
 		"@types/uuid": "^9.0.1",
 		"autoprefixer": "^10.4.14",
 		"daisyui": "^2.51.5",
@@ -28,9 +32,16 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"cwise": "^1.0.9",
+		"events": "^3.3.0",
 		"lodash": "^4.17.21",
+		"mathjs": "^11.7.0",
+		"ndarray": "^1.0.18",
+		"ndarray-ops": "^1.2.2",
+		"ndarray-pack": "^1.2.0",
+		"ndarray-unpack": "^1.0.0",
 		"openai": "^3.2.1",
-		"uuid": "^9.0.0",
-		"mathjs": "^11.7.0"
+		"tsne-js": "^1.0.3",
+		"uuid": "^9.0.0"
 	}
 }

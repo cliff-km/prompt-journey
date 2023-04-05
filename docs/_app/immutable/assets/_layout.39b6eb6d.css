@@ -1873,6 +1873,16 @@ html {
 .menu > :where(li:focus) > :where(ul) {
   display: flex;
 }
+.progress {
+  position: relative;
+  width: 100%;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  overflow: hidden;
+  height: 0.5rem;
+  border-radius: var(--rounded-box, 1rem);
+}
 .range {
   height: 1.5rem;
   width: 100%;
@@ -2573,6 +2583,44 @@ html {
   border-radius: 40px;
   margin-top: -25px;
 }
+.progress::-moz-progress-bar {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--n) / var(--tw-bg-opacity));
+}
+.progress-primary::-moz-progress-bar {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--p) / var(--tw-bg-opacity));
+}
+.progress:indeterminate::after {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--n) / var(--tw-bg-opacity));
+  content: "";
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: -40%;
+  width: 33.333333%;
+  border-radius: var(--rounded-box, 1rem);
+  animation: progress-loading 5s infinite ease-in-out;
+}
+.progress-primary:indeterminate::after {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--p) / var(--tw-bg-opacity));
+}
+.progress::-webkit-progress-bar {
+  background-color: hsl(var(--n) / var(--tw-bg-opacity));
+  --tw-bg-opacity: 0.2;
+  border-radius: var(--rounded-box, 1rem);
+}
+.progress::-webkit-progress-value {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--nf, var(--n)) / var(--tw-bg-opacity));
+  border-radius: var(--rounded-box, 1rem);
+}
+.progress-primary::-webkit-progress-value {
+  --tw-bg-opacity: 1;
+  background-color: hsl(var(--p) / var(--tw-bg-opacity));
+}
 @keyframes progress-loading {
 
   50% {
@@ -2825,6 +2873,13 @@ html {
       0 0 0 2px rgb(0 0 0 / 5%);
   text-shadow: 0 1px rgb(0 0 0 / var(--glass-text-shadow-opacity, 5%));
 }
+.btn-xs {
+  height: 1.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  min-height: 1.5rem;
+  font-size: 0.75rem;
+}
 .btn-sm {
   height: 2rem;
   padding-left: 0.75rem;
@@ -2832,9 +2887,20 @@ html {
   min-height: 2rem;
   font-size: 0.875rem;
 }
+.btn-square:where(.btn-xs) {
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 0px;
+}
 .btn-square:where(.btn-sm) {
   height: 2rem;
   width: 2rem;
+  padding: 0px;
+}
+.btn-circle:where(.btn-xs) {
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
   padding: 0px;
 }
 .btn-circle:where(.btn-sm) {
@@ -2985,6 +3051,9 @@ html {
 .h-12 {
   height: 3rem;
 }
+.h-20 {
+  height: 5rem;
+}
 .h-32 {
   height: 8rem;
 }
@@ -3003,14 +3072,24 @@ html {
 .w-1\/2 {
   width: 50%;
 }
+.w-32 {
+  width: 8rem;
+}
 .w-52 {
   width: 13rem;
+}
+.w-56 {
+  width: 14rem;
 }
 .w-6 {
   width: 1.5rem;
 }
 .w-full {
   width: 100%;
+}
+.min-w-max {
+  min-width: -moz-max-content;
+  min-width: max-content;
 }
 .max-w-md {
   max-width: 28rem;
@@ -3072,6 +3151,10 @@ html {
   padding-left: 2rem;
   padding-right: 2rem;
 }
+.py-10 {
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
+}
 .py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
@@ -3082,6 +3165,9 @@ html {
 }
 .pb-0 {
   padding-bottom: 0px;
+}
+.pb-1 {
+  padding-bottom: 0.25rem;
 }
 .text-left {
   text-align: left;

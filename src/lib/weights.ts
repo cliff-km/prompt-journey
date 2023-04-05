@@ -7,6 +7,6 @@ export function getWeightOpacity(weight: number) {
 }
 
 export function getDisplayWeight(wp, weightMode) {
-    const w = weightMode === "circle" ? wp["circleWeight"] : weightMode === "bars" ? wp["barWeight"] : wp["parsedWeight"];
+    const w = weightMode === "circle" ? wp["circleWeight"] : weightMode === "bars" ? wp["barWeight"] : weightMode === "embed" ? wp["embedWeight"] : wp["parsedWeight"];
     return humanizeWeight(w || 0);
 }

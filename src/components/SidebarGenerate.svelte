@@ -11,11 +11,11 @@
     import {
         preferredModelStore,
         preferredModel,
-    } from "../lib/prefferedModelStore.js";
+    } from "../lib/preferredModelStore.js";
     import {
         preferredDirectiveStore,
         preferredDirective,
-    } from "../lib/prefferedDirectiveStore.js";
+    } from "../lib/preferredDirectiveStore.js";
     import { metaPromptStore, metaPrompt } from "../lib/metaPromptStore.js";
     import {
         createOpenAI,
@@ -29,6 +29,7 @@
 
     let openaiKey = $key;
     let selectedModel = $preferredModel;
+    let genPromise = null;
 
     const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301"];
 
@@ -110,8 +111,8 @@
 
     function handleChatPrompt(openai, instructions) {
         const model = selectedModel || "gpt-3.5-turbo";
-        const completion = createChatCompletion(openai, model, instructions);
-        completion.then((response) => {
+        genPromise = createChatCompletion(openai, instructions, model);
+        genPromise.then((response) => {
             console.log(response);
 
             response.data.choices.forEach((choice, i) => {
@@ -131,8 +132,8 @@
 
     function handleInsertPrompt(openai, instructions) {
         const model = selectedModel || "text-davinci-003";
-        const completion = createCompletion(openai, model, instructions);
-        completion.then((response) => {
+        genPromise = createCompletion(openai, instructions, model);
+        genPromise.then((response) => {
             console.log(response);
 
             response.data.choices.forEach((choice, i) => {
@@ -254,17 +255,31 @@
                         on:click={deleteFromStore}
                         class="btn btn-sm btn-error ml-4">Delete</button
                     >
-                    <button
-                        on:click={handleGeneratePrompt}
-                        class="btn btn-sm btn-primary ml-4">Generate</button
-                    >
+                    {#await genPromise}
+                        <button
+                            on:click={handleGeneratePrompt}
+                            class="btn btn-sm btn ml-4 disabled" >Generating</button
+                        >
+                    {:then result} 
+                        <button
+                            on:click={handleGeneratePrompt}
+                            class="btn btn-sm btn-primary ml-4" >Generate</button
+                        >
+                    {/await}
                 </div>
             {:else}
                 <div class="w-full p-2 h-12 flex justify-end">
-                    <button
-                        on:click={handleGeneratePrompt}
-                        class="btn btn-sm btn-primary ml-4">Generate</button
-                    >
+                    {#await genPromise}
+                        <button
+                            on:click={handleGeneratePrompt}
+                            class="btn btn-sm btn ml-4 disabled" >Generating</button
+                        >
+                    {:then result} 
+                        <button
+                            on:click={handleGeneratePrompt}
+                            class="btn btn-sm btn-primary ml-4" >Generate</button
+                        >
+                    {/await}
                 </div>
             {/if}
         {/if}

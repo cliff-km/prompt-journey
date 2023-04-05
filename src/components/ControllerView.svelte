@@ -1,10 +1,13 @@
 <script lang="ts">
     import CircleController from "./CircleController.svelte";
     import BarController from "./BarController.svelte";
+    import EmbedController from "./EmbedController.svelte";
     import PromptBox from "../components/PromptBox.svelte";
     import IconBars from "../components/IconBars.svelte";
     import IconCircle from "../components/IconCircle.svelte";
+    import IconScatter from "./IconScatter.svelte";
     import { activePromptStore, activePrompt } from "../lib/activePromptStore.js";
+    import { keyStore, key } from "../lib/keyStore.js";
 
     function selectControllerMode(mode) {
         const ap = {...$activePrompt, weightMode: mode};
@@ -32,11 +35,23 @@
             >
                 <IconCircle />
             </button>
+            {#if $key}
+                <button
+                    class={$activePrompt.weightMode === "embed"
+                        ? "btn btn-sm btn-active"
+                        : "btn btn-sm"}
+                    on:click={() => selectControllerMode("embed")}
+                >
+                    <IconScatter />
+                </button>
+            {/if}
         </div>
         {#if $activePrompt.weightMode === "bars"}
             <BarController />
         {:else if $activePrompt.weightMode === "circle"}
             <CircleController />
+        {:else if $activePrompt.weightMode === "embed"}
+            <EmbedController />
         {/if}
         <div class="h-48 w-full p-4 flex flex-col">
             <PromptBox/>

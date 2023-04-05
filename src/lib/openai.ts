@@ -9,9 +9,9 @@ export function createOpenAI(apiKey) {
     return openai;
 }
 
-export async function createCompletion(openai, model, prompt) {
+export async function createCompletion(openai, prompt, model = "text-davinci-003") {
     const response = await openai.createCompletion({
-        model: "text-davinci-003",
+        model,
         prompt,
         temperature: 0.8,
         max_tokens: 250,
@@ -20,12 +20,21 @@ export async function createCompletion(openai, model, prompt) {
     return response
 }
 
-export async function createChatCompletion(openai, model, prompt) {
+export async function createChatCompletion(openai, prompt, model = "gpt-3.5-turbo") {
     const response = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
+        model,
         messages: [{ role: "user", content: prompt }],
         temperature: 0.8,
         max_tokens: 250,
+    });
+
+    return response
+}
+
+export async function createEmbedding(openai, prompt, model = "text-embedding-ada-002") {
+    const response = await openai.createEmbedding({
+        model,
+        input: prompt
     });
 
     return response
