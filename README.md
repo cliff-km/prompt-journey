@@ -15,7 +15,7 @@ So, TBD.
 ## Known Issues
 
 - Not mobile or small window friendly
-- Needs some loading spinners for OpenAI API calls
+- tSNE mapping feels too random
 - Error handling 🙏
 - Built with tape and thumbtacks
 
