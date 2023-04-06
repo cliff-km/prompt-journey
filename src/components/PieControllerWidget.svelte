@@ -152,7 +152,7 @@
             const xy = polarToPoint(center, [angle, 1], radius);
             const textXY = polarToPoint(center, [angle + 0.5 * angleDiff, 1], radius);
             const unitWeight = angleDiff / maxAngleDiff;
-            acc[id] = { xy, textXY, unitWeight };
+            acc[id] = { xy, textXY, angle, angleDiff, unitWeight };
             return acc;
         }, {});
 
@@ -171,6 +171,16 @@
 
         return pointData;
     }
+
+    function createPieSegment(cxy, radius, startAngle, endAngle) {
+        const startX = cxy[0] + radius * Math.cos(startAngle * Math.PI / 180);
+        const startY = cxy[1] + radius * Math.sin(startAngle * Math.PI / 180);
+        const endX = cxy[0] + radius * Math.cos(endAngle * Math.PI / 180);
+        const endY = cxy[1] + radius * Math.sin(endAngle * Math.PI / 180);
+        const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
+
+        return `M${cxy[0]},${cxy[1]} L${startX},${startY} A${radius},${radius} 0 ${largeArc} 1 ${endX},${endY} Z`;
+    }   
 </script>
 
 <svg
@@ -187,6 +197,16 @@
                 p1={center}
                 p2={pointData[id].xy}
             />
+            <path
+                d={createPieSegment(
+                    center,
+                    radius,
+                    pointData[id].angle,
+                    pointData[id].angle + pointData[id].angleDiff
+                )}
+                fill={`rgba(26,47,91,${getWeightOpacity(
+                    pointData[id].unitWeight
+                )/4}`} />
             <Point
                 xy={pointData[id].xy}
                 radius={pointRadius}
