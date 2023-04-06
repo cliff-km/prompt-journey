@@ -9,12 +9,13 @@
     import { createOpenAI, createEmbedding } from "../lib/openai.js";
     import { preferredEmbeddingModel } from "../lib/preferredEmbeddingModelStore";
     import { key } from "../lib/keyStore.js";
-    import { onMount } from "svelte";
+    import { afterUpdate, beforeUpdate, onMount } from "svelte";
     import TSNE from "tsne-js";
 
     let controllerW = 0;
     let controllerH = 0;
     $: promptCount = Object.keys($activePrompt.weightedPrompts || {}).length;
+    $: promptLimit = $activePrompt.embedPromptLimit || promptCount;
     let embedPromise = null;
     let inProgressEmbeds = {};
 
@@ -139,7 +140,15 @@
         return false;
     }
 
+    beforeUpdate(() => {
+        console.log($activePrompt.embedPromptLimit, promptCount)
+    });
+    afterUpdate(() => {
+        console.log($activePrompt.embedPromptLimit, promptCount)
+    });
+
     onMount(() => {
+        console.log($activePrompt.embedPromptLimit, promptCount)
         if ($key && embeddingsRequireUpdate($activePrompt)) {
             embedPromise = fetchEmbeddings();
         }
@@ -200,7 +209,7 @@
             </label>
             <input
                 on:change={updateEmbedPromptLimit}
-                value={$activePrompt.embedPromptLimit}
+                value={promptLimit}
                 type="range"
                 min="1"
                 max={promptCount}

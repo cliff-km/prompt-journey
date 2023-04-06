@@ -17,19 +17,22 @@
     export let pointRadius = 4;
     export let markerRadius = 10;
     export let textWidth = 150;
-    export let fontSize = 13;
+    export let fontSize = 12;
     export let innerPad = 100;
 
     // inner state
-    let markerLocation = $activePrompt.embedMarker || center;
     let activePoint: boolean = false;
     let dataPoints = null;
     let innerDimensions = dimensions;
     let innerOffsets = [0, 0];
+    $: markerLocation = $activePrompt.embedMarker || center;
 
     $: expScaling = $activePrompt.embedExponentialScaling;
     $: weightScaling = $activePrompt.embedWeightScaling;
-    $: promptLimit = $activePrompt.embedPromptLimit || Object.keys($activePrompt.weightedPrompts).length;
+    $: promptLimit =
+        $activePrompt.embedPromptLimit ||
+        Object.keys($activePrompt.weightedPrompts).length;
+
     $: {
         recomputeFromScaling(expScaling, weightScaling);
     }
@@ -127,8 +130,16 @@
 
         let weightedPrompts = { ...$activePrompt.weightedPrompts };
 
-        // get distances
-        let maxPossibleDistance = getDistance(innerDimensions, [0, 0]);
+        let maxDistance = 0;
+
+        // find furthest distance between datapoints
+        Object.values(dataPoints).forEach((pointA) => {
+            Object.values(dataPoints).forEach((pointB) => {
+                const dist = getDistance(pointA.embedXY, pointB.embedXY);
+                if (dist > maxDistance) maxDistance = dist;
+            });
+        });
+
         const distances = Object.entries(dataPoints).reduce(
             (acc, [id, point]) => {
                 const distance = getDistance(pivot, point.embedXY);
@@ -138,36 +149,37 @@
             {}
         );
 
+        const useExpScaling = (embedActive, dist) => {
+            const value = embedActive
+                ? Math.round(
+                      Math.pow(1 - dist / maxDistance, weightScaling) * 100
+                  ) / 100
+                : 0;
+            if (value < 0) return 0;
+            return value;
+        };
+
+        const useStdScaling = (embedActive, dist) => {
+            const value = embedActive
+                ? Math.round((1 - dist / maxDistance) * 100) / 100
+                : 0;
+            if (value < 0) return 0;
+            return value;
+        };
+
         // normalize distances
         Object.entries(distances)
             .sort((a, b) => a[1] - b[1])
             .forEach(([id, dist], idx) => {
                 if (!weightedPrompts[id]) return;
                 const embedActive = idx < promptLimit;
-                if (expScaling) {
-                    weightedPrompts[id] = {
-                        ...weightedPrompts[id],
-                        embedWeight: embedActive
-                            ? Math.round(
-                                  Math.pow(
-                                      1 - dist / maxPossibleDistance,
-                                      weightScaling
-                                  ) * 100
-                              ) / 100
-                            : 0,
-                        embedActive,
-                    };
-                } else {
-                    weightedPrompts[id] = {
-                        ...weightedPrompts[id],
-                        embedWeight: embedActive
-                            ? Math.round(
-                                  (1 - dist / maxPossibleDistance) * 100
-                              ) / 100
-                            : 0,
-                        embedActive,
-                    };
-                }
+                weightedPrompts[id] = {
+                    ...weightedPrompts[id],
+                    embedWeight: expScaling
+                        ? useExpScaling(embedActive, dist)
+                        : useStdScaling(embedActive, dist),
+                    embedActive,
+                };
             });
 
         activePromptStore.updateActivePrompt({
@@ -255,7 +267,7 @@
                 ]}
                 color={`rgba(255,255,255,${getWeightOpacity(wp.embedWeight)}`}
                 wh={getTextBoxDimensions(textWidth, wp.text.length, fontSize)}
-                {fontSize}
+                fontSize={fontSize}
                 text={wp.text}
             />
         {/each}
