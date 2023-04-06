@@ -35,16 +35,14 @@
             >
                 <IconCircle />
             </button>
-            {#if $key}
-                <button
-                    class={$activePrompt.weightMode === "embed"
-                        ? "btn btn-sm btn-active"
-                        : "btn btn-sm"}
-                    on:click={() => selectControllerMode("embed")}
-                >
-                    <IconScatter />
-                </button>
-            {/if}
+            <button
+                class={$activePrompt.weightMode === "embed"
+                    ? "btn btn-sm btn-active"
+                    : "btn btn-sm"}
+                on:click={() => selectControllerMode("embed")}
+            >
+                <IconScatter />
+            </button>
         </div>
         {#if $activePrompt.weightMode === "bars"}
             <BarController />

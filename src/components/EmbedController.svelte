@@ -154,75 +154,84 @@
         }
     });
 </script>
-
-{#await embedPromise}
+{#if !$key}
     <div class="w-full h-full flex justify-center">
         <div class="flex flex-col justify-center">
             <div class="h-20 w-52">
-                <progress
-                    class="progress progress-primary w-56"
-                    value={Object.keys(inProgressEmbeds).length}
-                    max={Object.keys($activePrompt.weightedPrompts).length}
-                />
+                <p class="text-center text-lg">Set OpenAI key in settings to use embedding map.</p>
             </div>
         </div>
     </div>
-{:then response}
-    <div
-        class="w-full h-full"
-        bind:clientWidth={controllerW}
-        bind:clientHeight={controllerH}
-    >
-        <EmbedControllerWidget dimensions={wh} {center} />
-    </div>
-    <div class="px-2 py-4 pb-0 flex">
-        <div class="min-w-max px-2">
-            <label class="label">
-                <span class="label-text">Exponential Scaling</span>
-            </label>
-            <input
-                on:change={updateExponentialScaling}
-                type="checkbox"
-                class="toggle"
-                checked={$activePrompt.embedExponentialScaling}
-            />
+{:else}
+    {#await embedPromise}
+        <div class="w-full h-full flex justify-center">
+            <div class="flex flex-col justify-center">
+                <div class="h-20 w-52">
+                    <progress
+                        class="progress progress-primary w-56"
+                        value={Object.keys(inProgressEmbeds).length}
+                        max={Object.keys($activePrompt.weightedPrompts).length}
+                    />
+                </div>
+            </div>
         </div>
-        {#if $activePrompt.embedExponentialScaling}
-            <div class="w-full px-2">
+    {:then response}
+        <div
+            class="w-full h-full"
+            bind:clientWidth={controllerW}
+            bind:clientHeight={controllerH}
+        >
+            <EmbedControllerWidget dimensions={wh} {center} />
+        </div>
+        <div class="px-2 py-4 pb-0 flex">
+            <div class="min-w-max px-2">
                 <label class="label">
-                    <span class="label-text">Scaling Power</span>
+                    <span class="label-text">Exponential Scaling</span>
                 </label>
                 <input
-                    on:change={updateWeightScaling}
-                    value={$activePrompt.embedWeightScaling}
+                    on:change={updateExponentialScaling}
+                    type="checkbox"
+                    class="toggle"
+                    checked={$activePrompt.embedExponentialScaling}
+                />
+            </div>
+            {#if $activePrompt.embedExponentialScaling}
+                <div class="w-full px-2">
+                    <label class="label">
+                        <span class="label-text">Scaling Power</span>
+                    </label>
+                    <input
+                        on:change={updateWeightScaling}
+                        value={$activePrompt.embedWeightScaling}
+                        type="range"
+                        min="0.5"
+                        max="3"
+                        step="0.1"
+                        class="range"
+                    />
+                </div>
+            {/if}
+            <div class="w-full px-2">
+                <label class="label">
+                    <span class="label-text"># Prompts</span>
+                </label>
+                <input
+                    on:change={updateEmbedPromptLimit}
+                    value={promptLimit}
                     type="range"
-                    min="0.5"
-                    max="3"
-                    step="0.1"
+                    min="1"
+                    max={promptCount}
+                    step="1"
                     class="range"
                 />
             </div>
-        {/if}
-        <div class="w-full px-2">
-            <label class="label">
-                <span class="label-text"># Prompts</span>
-            </label>
-            <input
-                on:change={updateEmbedPromptLimit}
-                value={promptLimit}
-                type="range"
-                min="1"
-                max={promptCount}
-                step="1"
-                class="range"
-            />
+            <div class="w-32 px-2 pb-1 flex flex-col justify-end">
+                <button on:click={shuffleEmbeddinMap} class="btn btn-sm btn-primary"
+                    >Shuffle</button
+                >
+            </div>
         </div>
-        <div class="w-32 px-2 pb-1 flex flex-col justify-end">
-            <button on:click={shuffleEmbeddinMap} class="btn btn-sm btn-primary"
-                >Shuffle</button
-            >
-        </div>
-    </div>
-{:catch error}
-    <p style="color: red">{error.message}</p>
-{/await}
+    {:catch error}
+        <p style="color: red">{error.message}</p>
+    {/await}
+{/if}

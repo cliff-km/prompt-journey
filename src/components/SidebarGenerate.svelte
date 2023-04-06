@@ -289,7 +289,7 @@
         {/if}
     {:else}
         <div class="w-full p-2 flex justify-center">
-            <p>Open AI Key must be provided in settings.</p>
+            <p class="text-center">Set Open AI Key in settings for GPT generation.</p>
         </div>
     {/if}
 </div>
