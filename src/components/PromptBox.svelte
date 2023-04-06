@@ -12,6 +12,7 @@
             case "circle": weightKey = "circleWeight"; break;
             case "bars": weightKey = "barWeight"; break;
             case "embed": weightKey = "embedWeight"; break;
+            case "pie": weightKey = "pieWeight"; break;
         }
     }
 

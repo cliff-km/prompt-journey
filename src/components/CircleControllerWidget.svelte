@@ -3,7 +3,7 @@
     import { add, multiply, subtract, isUndefined } from "mathjs";
     import Circle from "./Circle.svelte";
     import Point from "./Point.svelte";
-    import Line from "./Line.svelte";
+    import Line from "./DashedLine.svelte";
     import PromptText from "./PromptText.svelte";
     import WeightMarker from "./WeightMarker.svelte";
     import {

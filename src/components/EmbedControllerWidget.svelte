@@ -1,6 +1,6 @@
 <script lang="ts">
     import Point from "./Point.svelte";
-    import Line from "./Line.svelte";
+    import Line from "./DashedLine.svelte";
     import PromptText from "./PromptText.svelte";
     import {
         activePromptStore,
