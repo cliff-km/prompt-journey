@@ -1,15 +1,15 @@
 <script lang="ts">
     type ActivePoint = string | number | null;
     import { add, multiply, subtract, isUndefined } from "mathjs";
-    import Circle from "./Circle.svelte";
-    import Point from "./Point.svelte";
-    import Line from "./DashedLine.svelte";
-    import PromptText from "./PromptText.svelte";
-    import WeightMarker from "./WeightMarker.svelte";
+    import Circle from "../svg/Circle.svelte";
+    import Point from "../svg/Point.svelte";
+    import Line from "../svg/DashedLine.svelte";
+    import PromptText from "../svg/PromptText.svelte";
+    import WeightMarker from "../svg/WeightMarker.svelte";
     import {
         activePromptStore,
         activePrompt,
-    } from "../lib/activePromptStore.js";
+    } from "../stores/activePromptStore.js";
     import {
         pointToPolar,
         polarToPoint,

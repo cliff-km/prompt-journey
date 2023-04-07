@@ -1,11 +1,11 @@
 <script lang="ts">
-    import Point from "./Point.svelte";
-    import Line from "./DashedLine.svelte";
-    import PromptText from "./PromptText.svelte";
+    import Point from "../svg/Point.svelte";
+    import Line from "../svg/DashedLine.svelte";
+    import PromptText from "../svg/PromptText.svelte";
     import {
         activePromptStore,
         activePrompt,
-    } from "../lib/activePromptStore.js";
+    } from "../stores/activePromptStore.js";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getDistance, getSVGMouseLocation } from "../lib/vector";

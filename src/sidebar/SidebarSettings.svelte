@@ -1,21 +1,21 @@
 <script lang="ts">
-    import { keyStore, key } from "../lib/keyStore.js";
+    import { keyStore, key } from "../stores/keyStore.js";
     import {
         preferredModelStore,
         preferredModel,
-    } from "../lib/preferredModelStore.js";
+    } from "../stores/preferredModelStore.js";
     import {
         preferredEmbeddingModelStore,
         preferredEmbeddingModel,
-    } from "../lib/preferredEmbeddingModelStore.js";
+    } from "../stores/preferredEmbeddingModelStore.js";
     import { createOpenAI, listModels } from "../lib/openai.js";
     import {
         activePromptStore,
         activePrompt,
-    } from "../lib/activePromptStore.js";
+    } from "../stores/activePromptStore.js";
     import {
         zeroPromptHandlingStore, zeroPromptHandling
-    } from '../lib/zeroPromptHandling.js';
+    } from '../stores/zeroPromptHandling.js';
 
     const supportedCompletionModels = [
         "text-davinci-003",

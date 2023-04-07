@@ -3,13 +3,12 @@
     import BarController from "./BarController.svelte";
     import PieController from "./PieController.svelte";
     import EmbedController from "./EmbedController.svelte";
-    import PromptBox from "../components/PromptBox.svelte";
-    import IconBars from "../components/IconBars.svelte";
-    import IconCircle from "../components/IconCircle.svelte";
-    import IconScatter from "./IconScatter.svelte";
-    import { activePromptStore, activePrompt } from "../lib/activePromptStore.js";
-    import { keyStore, key } from "../lib/keyStore.js";
-    import IconPie from "./IconPie.svelte";
+    import PromptBox from "../prompts/PromptBox.svelte";
+    import IconBars from "../svg/IconBars.svelte";
+    import IconCircle from "../svg/IconCircle.svelte";
+    import IconScatter from "../svg/IconScatter.svelte";
+    import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
+    import IconPie from "../svg/IconPie.svelte";
 
     function selectControllerMode(mode) {
         const ap = {...$activePrompt, weightMode: mode};

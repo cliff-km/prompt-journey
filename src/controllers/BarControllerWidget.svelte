@@ -1,10 +1,10 @@
 <script lang="ts">
-    import Bar from "./Bar.svelte";
-    import PromptText from "./PromptText.svelte";
+    import Bar from "../svg/Bar.svelte";
+    import PromptText from "../svg/PromptText.svelte";
     import {
         activePromptStore,
         activePrompt,
-    } from "../lib/activePromptStore.js";
+    } from "../stores/activePromptStore.js";
     import { humanizeWeight, getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getSVGMouseLocation } from "../lib/vector";

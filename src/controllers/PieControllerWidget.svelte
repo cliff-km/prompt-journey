@@ -1,13 +1,13 @@
 <script lang="ts">
     type ActivePoint = string | number | null;
     import { add } from "mathjs";
-    import Circle from "./Circle.svelte";
-    import Point from "./Point.svelte";
-    import PromptText from "./PromptText.svelte";
+    import Circle from "../svg/Circle.svelte";
+    import Point from "../svg/Point.svelte";
+    import PromptText from "../svg/PromptText.svelte";
     import {
         activePromptStore,
         activePrompt,
-    } from "../lib/activePromptStore.js";
+    } from "../stores/activePromptStore.js";
     import {
         pointToPolar,
         polarToPoint,
@@ -21,7 +21,7 @@
         findBoxCenter,
         getSVGMouseLocation,
     } from "../lib/vector";
-    import SolidLine from "./SolidLine.svelte";
+    import SolidLine from "../svg/SolidLine.svelte";
 
     // display state
     export let center = [450, 450];

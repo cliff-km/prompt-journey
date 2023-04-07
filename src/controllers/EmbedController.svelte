@@ -3,12 +3,12 @@
     import {
         activePromptStore,
         activePrompt,
-    } from "../lib/activePromptStore.js";
+    } from "../stores/activePromptStore.js";
     import { findBoxCenter } from "../lib/vector";
     import EmbedControllerWidget from "./EmbedControllerWidget.svelte";
     import { createOpenAI, createEmbedding } from "../lib/openai.js";
-    import { preferredEmbeddingModel } from "../lib/preferredEmbeddingModelStore";
-    import { key } from "../lib/keyStore.js";
+    import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModelStore";
+    import { key } from "../stores/keyStore.js";
     import { afterUpdate, beforeUpdate, onMount } from "svelte";
     import TSNE from "tsne-js";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { isUndefined } from "mathjs";
-    import { activePromptStore, activePrompt } from "../lib/activePromptStore.js";
+    import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
     import CircleControllerWidget from "./CircleControllerWidget.svelte";
 
     let controllerW;

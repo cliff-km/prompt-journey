@@ -1,9 +1,9 @@
 <script lang="ts">
-    import SidebarSelect from "../components/SidebarSelect.svelte";
-    import SidebarEdit from "../components/SidebarEdit.svelte";
-    import SidebarGenerate from "../components/SidebarGenerate.svelte";
-    import SidebarSettings from "../components/SidebarSettings.svelte";
-    import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
+    import SidebarSelect from "./SidebarSelect.svelte";
+    import SidebarEdit from "./SidebarEdit.svelte";
+    import SidebarGenerate from "./SidebarGenerate.svelte";
+    import SidebarSettings from "./SidebarSettings.svelte";
+    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
 
     $: {
         if(!$panelMode) panelModeStore.updateMode("select");

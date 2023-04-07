@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { promptList } from "../lib/promptStore.js";
+    import { promptList } from "../stores/promptStore.js";
     import pkg from "lodash";
     const { orderBy } = pkg;
-    import { intializeActivePrompt, activePromptStore, activePrompt } from "../lib/activePromptStore.js";
-    import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
-    import { selectedPromptStore, selectedPrompt } from "../lib/selectedPromptStore.js";
+    import { intializeActivePrompt, activePromptStore, activePrompt } from "../stores/activePromptStore.js";
+    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
+    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
     import { getDisplayWeight } from "$lib/weights.js";
 
     function selectNew() {

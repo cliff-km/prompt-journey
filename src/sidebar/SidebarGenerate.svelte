@@ -7,24 +7,24 @@
     import { Fragments } from "../directives/fragments";
     import { FragmentShotgun } from "../directives/fragment-shotgun";
     import { PoeticAccents } from "../directives/poetic-accent";
-    import { directiveStore, directiveList } from "../lib/directiveStore.js";
+    import { directiveStore, directiveList } from "../stores/directiveStore.js";
     import {
         preferredModelStore,
         preferredModel,
-    } from "../lib/preferredModelStore.js";
+    } from "../stores/preferredModelStore.js";
     import {
         preferredDirectiveStore,
         preferredDirective,
-    } from "../lib/preferredDirectiveStore.js";
-    import { metaPromptStore, metaPrompt } from "../lib/metaPromptStore.js";
+    } from "../stores/preferredDirectiveStore.js";
+    import { metaPromptStore, metaPrompt } from "../stores/metaPromptStore.js";
     import {
         createOpenAI,
         createCompletion,
         createChatCompletion,
     } from "../lib/openai.js";
-    import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
-    import { intializeActivePrompt, activePromptStore, activePrompt, createWeightedPrompt } from "../lib/activePromptStore";
-    import { key } from "../lib/keyStore.js";
+    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
+    import { intializeActivePrompt, activePromptStore, activePrompt, createWeightedPrompt } from "../stores/activePromptStore";
+    import { key } from "../stores/keyStore.js";
     import { processString } from "../lib/prompt.js";
     import { update } from "lodash";
 

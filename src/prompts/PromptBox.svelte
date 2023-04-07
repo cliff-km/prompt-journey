@@ -1,9 +1,9 @@
 <script lang="ts">
     import { getDisplayWeight } from "$lib/weights.js";
-    import { activePrompt } from "../lib/activePromptStore.js";
+    import { activePrompt } from "../stores/activePromptStore.js";
     import {
         zeroPromptHandling
-    } from '../lib/zeroPromptHandling.js';
+    } from '../stores/zeroPromptHandling.js';
 
     let weightKey = "parsedWeight";
 

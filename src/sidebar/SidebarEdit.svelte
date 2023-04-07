@@ -1,15 +1,15 @@
 <script lang="ts">
     import { v4 as uuidv4 } from "uuid";
     import { processString } from "../lib/prompt.js";
-    import { promptStore, promptList } from "../lib/promptStore.js";
+    import { promptStore, promptList } from "../stores/promptStore.js";
     import {
         intializeActivePrompt,
         activePromptStore,
         activePrompt,
         createWeightedPrompt,
-    } from "../lib/activePromptStore.js";
-    import { panelModeStore, panelMode } from "../lib/panelModeStore.js";
-    import { selectedPromptStore, selectedPrompt } from "../lib/selectedPromptStore.js";
+    } from "../stores/activePromptStore.js";
+    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
+    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
     import debounce from "lodash/debounce";
 
     let newPromptText = "";
