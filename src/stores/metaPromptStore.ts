@@ -11,16 +11,16 @@ export function storableMetaPrompt() {
 
     return {
         subscribe,
-        updateMetaPrompt: (p) => {
+        update: (p) => {
             if (!p || !isBrowser) return;
             localStorage[STORE_KEY] = p;
             set(p);
         },
-        getMetaPrompt: () => {
+        get: () => {
             const p = get(store);
             return p;
         },
-        deleteMetaPrompt: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set("");

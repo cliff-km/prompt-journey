@@ -11,16 +11,16 @@ export function storableKey() {
 
     return {
         subscribe,
-        updateKey: (k) => {
+        update: (k) => {
             if (!k || !isBrowser) return;
             localStorage[STORE_KEY] = k;
             set(k);
         },
-        getKey: () => {
+        get: () => {
             const k = get(store);
             return k;
         },
-        deleteKey: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set("");

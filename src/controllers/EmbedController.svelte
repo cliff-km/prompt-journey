@@ -30,20 +30,20 @@
 
     function updateEmbedPromptLimit(e) {
         if(e.target.value > 0 && e.target.value <= promptCount)
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             embedPromptLimit: e.target.value
         });
     }
     function updateExponentialScaling(e) {
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             embedExponentialScaling: !$activePrompt.embedExponentialScaling
         });
     }
 
     function updateWeightScaling(e) {
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             embedWeightScaling: e.target.value
         });
@@ -92,7 +92,7 @@
     }
 
     async function shuffleEmbeddinMap() {
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             scaledEmbedMappings: get2DEmbeddings($activePrompt.embeddings),
         });
@@ -117,7 +117,7 @@
             inProgressEmbeds[p[0]] = response.data.data[0].embedding;
         }
 
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             embeddings: inProgressEmbeds,
             lastEmbeddingChange: Date.now(),
@@ -140,15 +140,7 @@
         return false;
     }
 
-    beforeUpdate(() => {
-        console.log($activePrompt.embedPromptLimit, promptCount)
-    });
-    afterUpdate(() => {
-        console.log($activePrompt.embedPromptLimit, promptCount)
-    });
-
     onMount(() => {
-        console.log($activePrompt.embedPromptLimit, promptCount)
         if ($key && embeddingsRequireUpdate($activePrompt)) {
             embedPromise = fetchEmbeddings();
         }

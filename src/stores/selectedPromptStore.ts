@@ -11,16 +11,16 @@ export function storableSelectedPrompt() {
 
     return {
         subscribe,
-        updateId: (id: string) => {
+        update: (id: string) => {
             if (!id || !isBrowser) return;
             localStorage[STORE_KEY] = id;
             set(id);
         },
-        getId: () => {
+        get: () => {
             const id = get(store);
             return id;
         },
-        clearId: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set("");

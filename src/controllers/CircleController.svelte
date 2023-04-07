@@ -10,8 +10,8 @@
         
     $: {
         {
-            activePromptStore.updateActivePrompt({
-                ...activePromptStore.getActivePrompt(),
+            activePromptStore.update({
+                ...activePromptStore.get(),
                 circleExponentialScaling,
                 circleWeightScaling,
             });

@@ -11,16 +11,16 @@ export function storablePreferredDirective() {
 
     return {
         subscribe,
-        updateDirectiveKey: (k) => {
+        update: (k) => {
             if (!k || !isBrowser) return;
             localStorage[STORE_KEY] = k;
             set(k);
         },
-        getDirectiveKey: () => {
+        get: () => {
             const k = get(store);
             return k;
         },
-        deleteDirectiveKey: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set("");

@@ -39,7 +39,7 @@
             Object.keys($activePrompt.pieAngles || {}).length !==
             Object.keys($activePrompt.weightedPrompts).length
         ) {
-            activePromptStore.updateActivePrompt({
+            activePromptStore.update({
                 ...$activePrompt,
                 pieAngles: initializeAngles(
                     $activePrompt.weightedPrompts,
@@ -163,7 +163,7 @@
             wp[id].pieWeight = point.unitWeight;
         });
 
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             weightedPrompts: wp,
             pieAngles,

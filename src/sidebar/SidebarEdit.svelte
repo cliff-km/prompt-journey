@@ -1,15 +1,15 @@
 <script lang="ts">
     import { v4 as uuidv4 } from "uuid";
     import { processString } from "../lib/prompt.js";
-    import { promptStore, promptList } from "../stores/promptStore.js";
+    import { promptStore } from "../stores/promptStore.js";
     import {
         intializeActivePrompt,
         activePromptStore,
         activePrompt,
         createWeightedPrompt,
     } from "../stores/activePromptStore.js";
-    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
-    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
+    import { panelModeStore } from "../stores/panelModeStore.js";
+    import { selectedPrompt } from "../stores/selectedPromptStore.js";
     import debounce from "lodash/debounce";
 
     let newPromptText = "";
@@ -31,11 +31,11 @@
     });
 
     function saveToStore() {
-        promptStore.updatePrompt(uuidv4(), {
+        promptStore.update(uuidv4(), {
             ...$activePrompt,
             date: Date.now(),
         });
-        panelModeStore.updateMode("select");
+        panelModeStore.update("select");
     }
 
     function pasteFromClipboard() {
@@ -49,14 +49,14 @@
                     return acc;
                 }, {});
 
-            activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
+            activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
         });
     }
 
     function handleDeletePrompt() {
-        if ($selectedPrompt) promptStore.deletePrompt($selectedPrompt);
-        panelModeStore.updateMode("select");
-        activePromptStore.deleteActivePrompt();
+        if ($selectedPrompt) promptStore.delete($selectedPrompt);
+        panelModeStore.update("select");
+        activePromptStore.delete();
     }
 
     const handleSinglePromptChange = debounce((id, text) => {
@@ -64,7 +64,7 @@
         const updatedWP = { ...weightedPrompts[id], text};
         weightedPrompts[id] = updatedWP;
 
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             weightedPrompts,
         });
@@ -76,7 +76,7 @@
         const updatedWP = createWeightedPrompt(nextId, text, 1);
         weightedPrompts[nextId] = updatedWP;
 
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             weightedPrompts,
         });

@@ -182,7 +182,7 @@
                 };
             });
 
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             embedMarker: markerLocation,
             weightedPrompts,

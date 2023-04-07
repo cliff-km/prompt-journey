@@ -3,19 +3,20 @@
     import pkg from "lodash";
     const { orderBy } = pkg;
     import { intializeActivePrompt, activePromptStore, activePrompt } from "../stores/activePromptStore.js";
-    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
-    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
+    import { panelModeStore } from "../stores/panelModeStore.js";
+    import { selectedPromptStore } from "../stores/selectedPromptStore.js";
     import { getDisplayWeight } from "$lib/weights.js";
 
     function selectNew() {
-        activePromptStore.updateActivePrompt(intializeActivePrompt({}, $activePrompt.weightMode));
-        panelModeStore.updateMode("edit");
+        selectedPromptStore.delete();
+        activePromptStore.update(intializeActivePrompt({}, $activePrompt.weightMode));
+        panelModeStore.update("edit");
     }
 
     function selectPrompt(id, data) {
-        selectedPromptStore.updateId(id);
-        activePromptStore.updateActivePrompt({...data});
-        panelModeStore.updateMode("edit");
+        selectedPromptStore.update(id);
+        activePromptStore.update({...data});
+        panelModeStore.update("edit");
     }
 </script>
 

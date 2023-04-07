@@ -9,7 +9,6 @@
     import { PoeticAccents } from "../directives/poetic-accent";
     import { directiveStore, directiveList } from "../stores/directiveStore.js";
     import {
-        preferredModelStore,
         preferredModel,
     } from "../stores/preferredModelStore.js";
     import {
@@ -22,11 +21,10 @@
         createCompletion,
         createChatCompletion,
     } from "../lib/openai.js";
-    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
+    import { panelModeStore } from "../stores/panelModeStore.js";
     import { intializeActivePrompt, activePromptStore, activePrompt, createWeightedPrompt } from "../stores/activePromptStore";
     import { key } from "../stores/keyStore.js";
     import { processString } from "../lib/prompt.js";
-    import { update } from "lodash";
 
     let openaiKey = $key;
     let selectedModel = $preferredModel;
@@ -70,7 +68,7 @@
 
     function saveToStore() {
         const id = selectedDirective === "new" ? uuidv4() : selectedDirective;
-        directiveStore.updateDirective(id, {
+        directiveStore.update(id, {
             name: newPromptName,
             text: directiveText,
             builtIn: false,
@@ -89,17 +87,16 @@
     }
 
     function deleteFromStore() {
-        directiveStore.deleteDirective(selectedDirective);
+        directiveStore.delete(selectedDirective);
         selectedDirective = null;
         newPromptName = "";
         directiveText = "";
-        preferredDirectiveStore.deleteDirectiveKey(null);
+        preferredDirectiveStore.delete();
     }
 
     function updateDirective(newDirective) {
         selectedDirective = newDirective;
-        console.log(selectedDirective)
-        preferredDirectiveStore.updateDirectiveKey(newDirective);
+        preferredDirectiveStore.update(newDirective);
         if (newDirective && newDirective !== "new") {
             newPromptName = directives[newDirective].name;
             directiveText = directives[newDirective].text;
@@ -128,8 +125,8 @@
                     return acc;
                 }, {});
 
-                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
-                panelModeStore.updateMode("edit");
+                activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
+                panelModeStore.update("edit");
             });
         });
     }
@@ -149,8 +146,8 @@
                     return acc;
                 }, {});
 
-                activePromptStore.updateActivePrompt(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
-                panelModeStore.updateMode("edit");
+                activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
+                panelModeStore.update("edit");
             });
         });
     }
@@ -248,7 +245,7 @@
                 <textarea
                     value={$metaPrompt}
                     on:input={(e) =>
-                        metaPromptStore.updateMetaPrompt(e.target.value)}
+                        metaPromptStore.update(e.target.value)}
                     class="textarea textarea-bordered w-full h-full"
                     placeholder="Describe the prompt to generate."
                 />

@@ -55,17 +55,17 @@
 
     function handleModelSelect(e) {
         selectedCompletionModel = e.target.value;
-        preferredModelStore.updateModel(selectedCompletionModel);
+        preferredModelStore.update(selectedCompletionModel);
     }
 
     function handleEmbeddingSelect(e) {
         selectedEmbeddingModel = e.target.value;
-        preferredEmbeddingModelStore.updateEmbeddingModel(selectedEmbeddingModel);
+        preferredEmbeddingModelStore.update(selectedEmbeddingModel);
     }
 
     function handleKeyInput(e) {
         const newKey = e.target.value;
-        keyStore.updateKey(newKey);
+        keyStore.update(newKey);
         if(newKey.length === 51) {
             fetchModels(newKey);
         }
@@ -75,12 +75,12 @@
     }
 
     function handleKeyClear() {
-        keyStore.deleteKey();
+        keyStore.delete();
         openaiKey = "";
         completionModels = [];
         embeddingModels = [];
         if($activePrompt.weightMode === 'embed') {
-            activePromptStore.updateActivePrompt({
+            activePromptStore.update({
                 ...$activePrompt,
                 weightMode: 'circle'
             })

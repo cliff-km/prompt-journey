@@ -15,7 +15,7 @@ export function storablePromptConfigs() {
 
     return {
         subscribe,
-        updatePrompt: (id, p) => {
+        update: (id, p) => {
             const currentStore = get(store);
             const currentDoc = currentStore[id] || {};
             const updatedDoc = { ...currentDoc, ...p };
@@ -25,12 +25,12 @@ export function storablePromptConfigs() {
             const updatedStore = { ...currentStore, [id]: updatedDoc };
             set(updatedStore);
         },
-        getPrompt: (id) => {
+        get: (id) => {
             const currentStore = get(store);
 
             return currentStore[id];
         },
-        deletePrompt: (id) => {
+        delete: (id) => {
             isBrowser && delete localStorage[`prompt_${id}`];
 
             const newStore = { ...get(store) };

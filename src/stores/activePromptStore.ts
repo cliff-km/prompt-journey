@@ -54,16 +54,16 @@ export function storableActivePrompt() {
 
     return {
         subscribe,
-        updateActivePrompt: (p: object) => {
+        update: (p: object) => {
             if (!p || !isBrowser) return;
             localStorage[STORE_KEY] = JSON.stringify(p);
             set(p);
         },
-        getActivePrompt: () => {
+        get: () => {
             const p = get(store);
             return p;
         },
-        deleteActivePrompt: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set(intializeActivePrompt(defaultPrompt()));

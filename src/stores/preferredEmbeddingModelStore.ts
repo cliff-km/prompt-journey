@@ -11,16 +11,16 @@ export function storablePreferredEmbeddingModel() {
 
     return {
         subscribe,
-        updateEmbeddingModel: (m) => {
+        update: (m) => {
             if (!m || !isBrowser) return;
             localStorage[STORE_KEY] = m;
             set(m);
         },
-        getEmbeddingModel: () => {
+        get: () => {
             const m = get(store);
             return m;
         },
-        deleteEmbeddingModel: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set("");

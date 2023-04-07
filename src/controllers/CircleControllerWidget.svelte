@@ -41,7 +41,7 @@
             Object.keys($activePrompt.circleAngles).length !==
             Object.keys($activePrompt.weightedPrompts).length
         ) {
-            activePromptStore.updateActivePrompt({
+            activePromptStore.update({
                 ...$activePrompt,
                 circleAngles: initializeAngles(
                     $activePrompt.weightedPrompts,
@@ -241,7 +241,7 @@
             wp[id].circleWeight = data.unitWeight;
         });
 
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             circleMarker,
             weightedPrompts: wp,

@@ -112,7 +112,7 @@
         wp.barWeight = barRatio;
 
         prompts[targetId] = wp;
-        activePromptStore.updateActivePrompt({
+        activePromptStore.update({
             ...$activePrompt,
             weightedPrompts: prompts,
         });
@@ -158,7 +158,7 @@
                         },
                         {}
                     );
-                    activePromptStore.updateActivePrompt({
+                    activePromptStore.update({
                         ...$activePrompt,
                         weightedPrompts: updatedPrompts,
                     });
@@ -193,7 +193,7 @@
                         },
                         {}
                     );
-                    activePromptStore.updateActivePrompt({
+                    activePromptStore.update({
                         ...$activePrompt,
                         weightedPrompts: updatedPrompts,
                     });

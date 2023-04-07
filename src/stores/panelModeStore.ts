@@ -11,16 +11,16 @@ export function storablePanelMode() {
 
     return {
         subscribe,
-        updateMode: (m) => {
+        update: (m) => {
             if (!m || !isBrowser) return;
             localStorage[STORE_KEY] = m;
             set(m);
         },
-        getMode: () => {
+        get: () => {
             const m = get(store);
             return m;
         },
-        resetMode: () => {
+        delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
             set("select");

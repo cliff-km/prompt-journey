@@ -12,7 +12,7 @@
 
     function selectControllerMode(mode) {
         const ap = {...$activePrompt, weightMode: mode};
-        activePromptStore.updateActivePrompt(ap);
+        activePromptStore.update(ap);
     }
 </script>
 

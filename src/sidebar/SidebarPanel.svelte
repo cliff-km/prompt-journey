@@ -6,11 +6,11 @@
     import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
 
     $: {
-        if(!$panelMode) panelModeStore.updateMode("select");
+        if(!$panelMode) panelModeStore.update("select");
     }
 
     function selectPanelMode(mode) {
-        panelModeStore.updateMode(mode);
+        panelModeStore.update(mode);
     }
 </script>
 

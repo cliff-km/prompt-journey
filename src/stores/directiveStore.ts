@@ -15,7 +15,7 @@ export function storableDirectiveConfigs() {
 
     return {
         subscribe,
-        updateDirective: (id, p) => {
+        update: (id, p) => {
             const currentStore = get(store);
             const currentDoc = currentStore[id] || {};
             const updatedDoc = { ...currentDoc, ...p };
@@ -25,12 +25,12 @@ export function storableDirectiveConfigs() {
             const updatedStore = { ...currentStore, [id]: updatedDoc };
             set(updatedStore);
         },
-        getDirective: (id) => {
+        get: (id) => {
             const currentStore = get(store);
 
             return currentStore[id];
         },
-        deleteDirective: (id) => {
+        delete: (id) => {
             isBrowser && delete localStorage[`directive_${id}`];
 
             const newStore = { ...get(store) };
