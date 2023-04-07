@@ -2,7 +2,7 @@ import { get, writable, derived } from 'svelte/store'
 
 const STORE_KEY = 'activePromptStore';
 
-export function createWeightedPrompt(id, text, parsedWeight, barWeight = 1) {
+export function createWeightedPrompt(id: number, text: string, parsedWeight: number, barWeight = 1) {
     return {
         id,
         text,
@@ -50,14 +50,16 @@ export function storableActivePrompt() {
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
-    set((isBrowser && localStorage[STORE_KEY]) ? JSON.parse(localStorage[STORE_KEY]) : intializeActivePrompt(defaultPrompt()));
+    const savedActivePrompt = (isBrowser && localStorage[STORE_KEY]) ? JSON.parse(localStorage[STORE_KEY]) : intializeActivePrompt(defaultPrompt());
+
+    set({...intializeActivePrompt({}), ...savedActivePrompt});
 
     return {
         subscribe,
         update: (p: object) => {
             if (!p || !isBrowser) return;
             localStorage[STORE_KEY] = JSON.stringify(p);
-            set(p);
+            set({...intializeActivePrompt({}), ...p});
         },
         get: () => {
             const p = get(store);

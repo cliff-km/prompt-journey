@@ -1,4 +1,4 @@
-import { get, writable, derived } from 'svelte/store'
+import { get, writable, derived } from 'svelte/store';
 
 export function storablePromptConfigs() {
     const store = writable({});

@@ -11,7 +11,7 @@ export function storableMetaPrompt() {
 
     return {
         subscribe,
-        update: (p) => {
+        update: (p: string) => {
             if (!p || !isBrowser) return;
             localStorage[STORE_KEY] = p;
             set(p);
