@@ -17,7 +17,6 @@
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import {
-        getDistance,
         findBoxCenter,
         getSVGMouseLocation,
     } from "../lib/vector";
@@ -32,7 +31,11 @@
 
     // inner state
     let mouseLocation = [0, 0];
+    let mouseStartAngle = null;
+    let segmentAngleOffsets = {};
+    let mouseAngleChange = 0;
     let activePoint: ActivePoint = null;
+    let activeSegment: null;
 
     $: {
         if (
@@ -41,10 +44,7 @@
         ) {
             activePromptStore.update({
                 ...$activePrompt,
-                pieAngles: initializeAngles(
-                    $activePrompt.weightedPrompts,
-                    {}
-                ),
+                pieAngles: initializeAngles($activePrompt.weightedPrompts, {}),
             });
         }
     }
@@ -59,6 +59,10 @@
 
     function handleMouseUp(e: Event) {
         activePoint = null;
+        activeSegment = null;
+        mouseAngleChange = 0;
+        mouseStartAngle = null;
+        segmentAngleOffsets = {};
     }
 
     function activatePoint(pointId: ActivePoint) {
@@ -89,45 +93,154 @@
         );
     }
 
+    function handleSegmentDragStart(e, id){
+        activeSegment = id;
+    }
+
+    function areCircularlyOrdered(arr1, arr2) {
+        if (arr1.length !== arr2.length) {
+            return false;
+        }
+
+        const len = arr1.length;
+        let offset = -1;
+
+        for (let i = 0; i < len; i++) {
+            if (arr2[i] === arr1[0]) {
+            offset = i;
+            break;
+            }
+        }
+
+        if (offset === -1) {
+            return false;
+        }
+
+        for (let i = 0; i < len; i++) {
+            if (arr1[i] !== arr2[(i + offset) % len]) {
+            return false;
+            }
+        }
+
+        return true;
+    }
+
+    function handleSegmentDrag(mouseLocation) {
+        const id = activeSegment;
+        const ca = { ...$activePrompt.pieAngles };
+
+        // getIds in angle order
+        const ids = Object.entries(ca)
+            .sort((a, b) => positiveAngle(a[1]) - positiveAngle(b[1]))
+            .map((p) => p[0]);
+
+        // get next id
+        const idx = ids.indexOf(id);
+        const nextIdx = idx + 1 === ids.length ? 0 : idx + 1;
+        const nextId = ids[nextIdx];
+
+        // set segment angle offset if not set
+        if (!segmentAngleOffsets[id]) {
+            segmentAngleOffsets[id] = ca[id];
+        }
+        if (!segmentAngleOffsets[nextId]) {
+            segmentAngleOffsets[nextId] = ca[nextId];
+        }
+        
+        // get mouse angle change
+        const mouseAngle = pointToPolar(mouseLocation, center, radius)[0];
+        const angleChange = mouseAngle - mouseStartAngle;
+
+        const nextCa = { ...ca };
+        nextCa[id] = positiveAngle(angleChange + segmentAngleOffsets[id]);
+        nextCa[nextId] = positiveAngle(angleChange + segmentAngleOffsets[nextId]);
+
+
+        // determine if order will change
+        const nextIds = Object.entries(nextCa)
+            .sort((a, b) => positiveAngle(a[1]) - positiveAngle(b[1]))
+            .map((p) => p[0]);
+
+        // if order will change, don't update
+        const areSameOrder = areCircularlyOrdered(ids, nextIds);
+        if(!areSameOrder) return;
+
+        pointData = computePointData(
+            $activePrompt.weightedPrompts,
+            center,
+            radius,
+            nextCa
+        );
+    }
+
+    function handlePointDrag(mouseLocation) {
+        const point = { ...$activePrompt.weightedPrompts[activePoint] };
+        const c = closestPointOnCircle(mouseLocation, center, radius);
+        const angle = positiveAngle(pointToPolar(c, center, radius)[0]);
+
+        const ca = { ...$activePrompt.pieAngles };
+        ca[point.id] = angle;
+
+        const wp = { ...$activePrompt.weightedPrompts };
+        wp[activePoint] = point;
+
+        pointData = computePointData(wp, center, radius, ca);
+    }
+
     function handleMouseMove(e) {
+        e.preventDefault();
         mouseLocation = getSVGMouseLocation(e);
         if (activePoint) {
-            const point = { ...$activePrompt.weightedPrompts[activePoint] };
-            const c = closestPointOnCircle(mouseLocation, center, radius);
-            const angle = pointToPolar(c, center, radius)[0];
-
-            const ca = { ...$activePrompt.pieAngles };
-            ca[point.id] = angle;
-
-            const wp = { ...$activePrompt.weightedPrompts };
-            wp[activePoint] = point;
-
-            pointData = computePointData(
-                wp,
-                center,
-                radius,
-                ca
-            );
+            handlePointDrag(mouseLocation)
+        } else if(activeSegment) {
+            handleSegmentDrag(mouseLocation)
+        } else {
+            mouseStartAngle = pointToPolar(mouseLocation, center, radius)[0];
         }
     }
 
-    function computePointData(
-        weightedPrompts,
-        center,
-        radius,
-        pieAngles
-    ) {
-        if (
-            !weightedPrompts ||
-            !center ||
-            !radius
-        ) {
+    function positiveAngle(angle) {
+        if (angle < 0) {
+            return 360 + -1 * (Math.abs(angle) % 360);
+        }
+        if (angle > 360) {
+            return (angle % 360);
+        }
+        return angle;
+    }
+
+    function handleMouseWheel(e, id) {
+        e.preventDefault();
+        const ca = { ...$activePrompt.pieAngles };
+
+        // getIds in angle order
+        const ids = Object.entries(ca)
+            .sort((a, b) => positiveAngle(a[1]) - positiveAngle(b[1]))
+            .map((p) => p[0]);
+
+        // get next id
+        const idx = ids.indexOf(id);
+        const nextIdx = idx + 1 === ids.length ? 0 : idx + 1;
+        const nextId = ids[nextIdx];
+        
+        ca[id] = positiveAngle(ca[id] - e.deltaY / 100);
+        ca[nextId] = positiveAngle(ca[nextId] + e.deltaY / 100);
+        pointData = computePointData(
+            $activePrompt.weightedPrompts,
+            center,
+            radius,
+            ca
+        );
+    }
+
+    function computePointData(weightedPrompts, center, radius, pieAngles) {
+        if (!weightedPrompts || !center || !radius) {
             return null;
         }
 
         // sort prompts by angle
         const sortedPrompts = Object.entries(weightedPrompts).sort(
-            (a, b) => pieAngles[a[0]] - pieAngles[b[0]]
+            (a, b) => positiveAngle(pieAngles[a[0]]) - positiveAngle(pieAngles[b[0]])
         );
 
         // compute angle differences
@@ -150,7 +263,11 @@
             const p = { ...weightedPrompts[id] };
             const angle = pieAngles[id];
             const xy = polarToPoint(center, [angle, 1], radius);
-            const textXY = polarToPoint(center, [angle + 0.5 * angleDiff, 1], radius);
+            const textXY = polarToPoint(
+                center,
+                [angle + 0.5 * angleDiff, 1],
+                radius
+            );
             const unitWeight = angleDiff / maxAngleDiff;
             acc[id] = { xy, textXY, angle, angleDiff, unitWeight };
             return acc;
@@ -163,6 +280,8 @@
             wp[id].pieWeight = point.unitWeight;
         });
 
+        // console.log(Object.values(pieAngles));
+
         activePromptStore.update({
             ...$activePrompt,
             weightedPrompts: wp,
@@ -173,14 +292,14 @@
     }
 
     function createPieSegment(cxy, radius, startAngle, endAngle) {
-        const startX = cxy[0] + radius * Math.cos(startAngle * Math.PI / 180);
-        const startY = cxy[1] + radius * Math.sin(startAngle * Math.PI / 180);
-        const endX = cxy[0] + radius * Math.cos(endAngle * Math.PI / 180);
-        const endY = cxy[1] + radius * Math.sin(endAngle * Math.PI / 180);
+        const startX = cxy[0] + radius * Math.cos((startAngle * Math.PI) / 180);
+        const startY = cxy[1] + radius * Math.sin((startAngle * Math.PI) / 180);
+        const endX = cxy[0] + radius * Math.cos((endAngle * Math.PI) / 180);
+        const endY = cxy[1] + radius * Math.sin((endAngle * Math.PI) / 180);
         const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
 
         return `M${cxy[0]},${cxy[1]} L${startX},${startY} A${radius},${radius} 0 ${largeArc} 1 ${endX},${endY} Z`;
-    }   
+    }
 </script>
 
 <svg
@@ -193,20 +312,20 @@
         <Circle xy={center} {radius} />
 
         {#each Object.entries($activePrompt.weightedPrompts) as [id, point]}
-            <SolidLine
-                p1={center}
-                p2={pointData[id].xy}
-            />
+            <SolidLine p1={center} p2={pointData[id].xy} />
             <path
+                on:mousewheel={(e)=>handleMouseWheel(e, id)}
+                on:mousedown={(e)=>handleSegmentDragStart(e, id)}
                 d={createPieSegment(
                     center,
                     radius,
                     pointData[id].angle,
                     pointData[id].angle + pointData[id].angleDiff
                 )}
-                fill={`rgba(26,47,91,${getWeightOpacity(
-                    pointData[id].unitWeight
-                )/4}`} />
+                fill={`rgba(26,47,91,${
+                    getWeightOpacity(pointData[id].unitWeight) / 4
+                }`}
+            />
             <Point
                 xy={pointData[id].xy}
                 radius={pointRadius}
