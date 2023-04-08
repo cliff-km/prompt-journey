@@ -94,6 +94,12 @@
         const distanceMatrix = createDistanceMatrix(setA, setB);
         const indexes = Munkres(distanceMatrix);
 
+        console.log(indexes);
+
+        if (!indexes) {
+            return null;
+        }
+
         return indexes.map(([indexA, indexB]) => ({
             ids: [indexA, indexB],
             points: [setA[indexA], setB[indexB]],
@@ -294,7 +300,6 @@
         activePoint = false;
     }
 
-
     function updateDataPoints() {
         const ids = Object.keys($activePrompt.scaledEmbedMappings);
         const newDataPoints = ids.reduce((acc, id, idx) => {
@@ -312,12 +317,12 @@
         }, {});
 
         const findAverageClusterPoint = (cluster) => {
-            if(!cluster.length) return center;
+            if (!cluster.length) return center;
             const points = cluster.map((i) => newDataPoints[i].embedXY);
             return avgPoint(points);
         };
 
-        if($activePrompt.embedClusters) {
+        if ($activePrompt.embedClusters) {
             const k = $activePrompt.embedClusters;
             const clusters = $activePrompt.embedClusterSets[k];
             let setA = clusters.map((c) => findAverageClusterPoint(c));
@@ -325,14 +330,19 @@
 
             const pairs = pairPoints(setA, setB);
 
-            pairs.forEach(p => {
-                const clusterId = p.ids[0];
-                const anchor = p.points[1];
-                
-                clusters[clusterId].forEach(id => {
-                    newDataPoints[id].embedXY = avgPoint([newDataPoints[id].embedXY, anchor]);
+            if (pairs) {
+                pairs.forEach((p) => {
+                    const clusterId = p.ids[0];
+                    const anchor = p.points[1];
+
+                    clusters[clusterId].forEach((id) => {
+                        newDataPoints[id].embedXY = avgPoint([
+                            newDataPoints[id].embedXY,
+                            anchor,
+                        ]);
+                    });
                 });
-            });
+            }
         }
 
         dataPoints = newDataPoints;
