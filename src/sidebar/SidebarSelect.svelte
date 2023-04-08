@@ -4,7 +4,7 @@
     const { orderBy } = pkg;
     import { intializeActivePrompt, activePromptStore, activePrompt } from "../stores/activePromptStore.js";
     import { panelModeStore } from "../stores/panelModeStore.js";
-    import { selectedPromptStore } from "../stores/selectedPromptStore.js";
+    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
     import { getDisplayWeight } from "$lib/weights.js";
 
     function selectNew() {
@@ -28,6 +28,7 @@
         <li>
             <a
                 class="text-xs inline-block"
+                class:active={$selectedPrompt === promptId}
                 on:click={() => selectPrompt(promptId, data)}
                 >
                 {#each Object.entries(data.weightedPrompts) as [id, wp]}{wp.text}::<b

@@ -92,7 +92,6 @@
         }
 
         const distanceMatrix = createDistanceMatrix(setA, setB);
-        console.log(distanceMatrix);
         const indexes = Munkres(distanceMatrix);
 
         return indexes.map(([indexA, indexB]) => ({
@@ -334,8 +333,6 @@
                     newDataPoints[id].embedXY = avgPoint([newDataPoints[id].embedXY, anchor]);
                 });
             });
-
-            console.log("paired", pairs);
         }
 
         dataPoints = newDataPoints;

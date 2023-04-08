@@ -1,4 +1,6 @@
 import { get, writable, derived } from 'svelte/store'
+import { selectedPromptStore } from './selectedPromptStore';
+import { promptStore } from './promptStore';
 
 const STORE_KEY = 'activePromptStore';
 
@@ -58,6 +60,11 @@ export function storableActivePrompt() {
     return {
         subscribe,
         update: (p: object) => {
+            const activePromptId = selectedPromptStore.get();
+            if(activePromptId) {
+                promptStore.update(activePromptId, p);
+            }
+
             if (!p || !isBrowser) return;
             localStorage[STORE_KEY] = JSON.stringify(p);
             set({...intializeActivePrompt({}), ...p});
