@@ -313,6 +313,7 @@
         }, {});
 
         const findAverageClusterPoint = (cluster) => {
+            if(!cluster.length) return center;
             const points = cluster.map((i) => newDataPoints[i].embedXY);
             return avgPoint(points);
         };
@@ -320,7 +321,7 @@
         if($activePrompt.embedClusters) {
             const k = $activePrompt.embedClusters;
             const clusters = $activePrompt.embedClusterSets[k];
-            const setA = clusters.map((c) => findAverageClusterPoint(c));
+            let setA = clusters.map((c) => findAverageClusterPoint(c));
             const setB = getClusterAnchors(k);
 
             const pairs = pairPoints(setA, setB);

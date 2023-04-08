@@ -21,33 +21,29 @@
     <div class="flex flex-col h-full place-content-between">
         <div class="btn-group btn-group-horizontal w-full flex justify-end p-2">
             <button
-                class={$activePrompt.weightMode === "bars"
-                    ? "btn btn-sm btn-active"
-                    : "btn btn-sm"}
+                class="btn btn-sm"
+                class:btn-active={$activePrompt.weightMode === "bars"}
                 on:click={() => selectControllerMode("bars")}
             >
                 <IconBars />
             </button>
             <button
-                class={$activePrompt.weightMode === "pie"
-                    ? "btn btn-sm btn-active"
-                    : "btn btn-sm"}
+                class="btn btn-sm"
+                class:btn-active={$activePrompt.weightMode === "pie"}
                 on:click={() => selectControllerMode("pie")}
             >
                 <IconPie />
             </button>
             <button
-                class={$activePrompt.weightMode === "circle"
-                    ? "btn btn-sm btn-active"
-                    : "btn btn-sm"}
+                class="btn btn-sm"
+                class:btn-active={$activePrompt.weightMode === "circle"}
                 on:click={() => selectControllerMode("circle")}
             >
                 <IconCircle />
             </button>
             <button
-                class={$activePrompt.weightMode === "embed"
-                    ? "btn btn-sm btn-active"
-                    : "btn btn-sm"}
+                class="btn btn-sm"
+                class:btn-active={$activePrompt.weightMode === "embed"}
                 on:click={() => selectControllerMode("embed")}
             >
                 <IconScatter />

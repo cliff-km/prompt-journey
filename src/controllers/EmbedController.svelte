@@ -1,7 +1,6 @@
 <script lang="ts">
     import TSNE from "tsne-js";
     import * as clustering from "density-clustering";
-    import { isUndefined } from "mathjs";
     import {
         activePromptStore,
         activePrompt,
@@ -11,7 +10,7 @@
     import { createOpenAI, createEmbedding } from "../lib/openai.js";
     import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModelStore";
     import { key } from "../stores/keyStore.js";
-    import { afterUpdate, beforeUpdate, onMount } from "svelte";
+    import { onMount } from "svelte";
 
     let controllerW = 0;
     let controllerH = 0;
@@ -22,6 +21,19 @@
 
     $: wh = [controllerW || 250, controllerH || 250];
     $: center = findBoxCenter(wh);
+
+    function getHighestClusterAvailable(embedCount) {
+        if (embedCount < 2) return 0;
+        if (embedCount < 4) return 2;
+        if (embedCount < 6) return 4;
+        if (embedCount < 8) return 6;
+        return 8;
+    }
+
+    $: {
+        $activePrompt.embeddings && Object.keys($activePrompt.embeddings).length < $activePrompt.embedClusters &&
+            updateClusterCount(getHighestClusterAvailable(Object.keys($activePrompt.embeddings).length));
+    }
 
     $: {
         if ($key && embeddingsRequireUpdate($activePrompt)) {
@@ -113,6 +125,7 @@
     }
 
     async function fetchEmbeddings() {
+        console.log("fetching embeddings");
         if (!$key) return;
         if (!$activePrompt.weightedPrompts) return;
 
@@ -135,30 +148,56 @@
             (a, b) => a[0] - b[0]
         );
 
+        const padArray = (n: number) => new Array(n).fill(null).map(() => []);
+
+        console.log("clustering embeddings");
+        const set2 =
+            orderedEmbeds.length >= 2
+                ? getKMeansClusters(
+                      orderedEmbeds.map((e) => e[1]),
+                      2
+                  )
+                : [orderedEmbeds.map((e) => e[0])];
+        console.log("set of 2 complete");
+        const set4 =
+            orderedEmbeds.length >= 4
+                ? getKMeansClusters(
+                      orderedEmbeds.map((e) => e[1]),
+                      4
+                  )
+                : set2;
+        console.log("set of 4 complete");
+        const set6 =
+            orderedEmbeds.length >= 6
+                ? getKMeansClusters(
+                      orderedEmbeds.map((e) => e[1]),
+                      6
+                  )
+                : set4;
+        console.log("set of 6 complete");
+        const set8 =
+            orderedEmbeds.length >= 8
+                ? getKMeansClusters(
+                      orderedEmbeds.map((e) => e[1]),
+                      8
+                  )
+                : set6;
+        console.log("set of 8 complete");
+
         activePromptStore.update({
             ...$activePrompt,
             embeddings: inProgressEmbeds,
             embedClusterSets: {
-                2: getKMeansClusters(
-                    orderedEmbeds.map((e) => e[1]),
-                    2
-                ),
-                4: getKMeansClusters(
-                    orderedEmbeds.map((e) => e[1]),
-                    4
-                ),
-                6: getKMeansClusters(
-                    orderedEmbeds.map((e) => e[1]),
-                    6
-                ),
-                8: getKMeansClusters(
-                    orderedEmbeds.map((e) => e[1]),
-                    8
-                ),
+                2: [...set2, ...padArray(2 - set2.length)],
+                4: [...set4, ...padArray(4 - set4.length)],
+                6: [...set6, ...padArray(6 - set6.length)],
+                8: [...set8, ...padArray(8 - set8.length)],
             },
             lastEmbeddingChange: Date.now(),
             scaledEmbedMappings: get2DEmbeddings(inProgressEmbeds),
         });
+
+        console.log("embeddings complete");
     }
 
     function embeddingsRequireUpdate(activePrompt) {
@@ -176,12 +215,6 @@
             return true;
         return false;
     }
-
-    onMount(() => {
-        if ($key && embeddingsRequireUpdate($activePrompt)) {
-            embedPromise = fetchEmbeddings();
-        }
-    });
 </script>
 
 {#if !$key}
@@ -272,33 +305,33 @@
                             0
                         </button>
                         <button
-                            class={$activePrompt.embedClusters === 2
-                                ? "btn btn-xs btn-active"
-                                : "btn btn-xs"}
+                            class="btn btn-xs"
+                            class:btn-active={$activePrompt.embedClusters === 2}
+                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 2}
                             on:click={() => updateClusterCount(2)}
                         >
                             2
                         </button>
                         <button
-                            class={$activePrompt.embedClusters === 4
-                                ? "btn btn-xs btn-active"
-                                : "btn btn-xs"}
+                            class="btn btn-xs"
+                            class:btn-active={$activePrompt.embedClusters === 4}
+                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 4}
                             on:click={() => updateClusterCount(4)}
                         >
                             4
                         </button>
                         <button
-                            class={$activePrompt.embedClusters === 6
-                                ? "btn btn-xs btn-active"
-                                : "btn btn-xs"}
+                            class="btn btn-xs"
+                            class:btn-active={$activePrompt.embedClusters === 6}
+                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 6}
                             on:click={() => updateClusterCount(6)}
                         >
                             6
                         </button>
                         <button
-                            class={$activePrompt.embedClusters === 8
-                                ? "btn btn-xs btn-active"
-                                : "btn btn-xs"}
+                            class="btn btn-xs"
+                            class:btn-active={$activePrompt.embedClusters === 8}
+                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 8}
                             on:click={() => updateClusterCount(8)}
                         >
                             8
