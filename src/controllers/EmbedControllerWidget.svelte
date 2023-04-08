@@ -10,7 +10,7 @@
     import { getTextBoxDimensions } from "../lib/text";
     import { getDistance, getSVGMouseLocation } from "../lib/vector";
     import { add, multiply } from "mathjs";
-    import * as Munkres from "munkres-js";
+    import Munkres from "munkres-js";
 
     // display state
     export let center = [100, 100];
@@ -92,6 +92,9 @@
         }
 
         const distanceMatrix = createDistanceMatrix(setA, setB);
+        console.log(distanceMatrix);
+        console.log(Munkres);
+
         const indexes = Munkres(distanceMatrix);
 
         console.log(indexes);
