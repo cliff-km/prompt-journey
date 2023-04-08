@@ -2,20 +2,29 @@
     import { promptList } from "../stores/promptStore.js";
     import pkg from "lodash";
     const { orderBy } = pkg;
-    import { intializeActivePrompt, activePromptStore, activePrompt } from "../stores/activePromptStore.js";
+    import {
+        intializeActivePrompt,
+        activePromptStore,
+        activePrompt,
+    } from "../stores/activePromptStore.js";
     import { panelModeStore } from "../stores/panelModeStore.js";
-    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
+    import {
+        selectedPromptStore,
+        selectedPrompt,
+    } from "../stores/selectedPromptStore.js";
     import { getDisplayWeight } from "$lib/weights.js";
 
     function selectNew() {
         selectedPromptStore.delete();
-        activePromptStore.update(intializeActivePrompt({}, $activePrompt.weightMode));
+        activePromptStore.update(
+            intializeActivePrompt({}, $activePrompt.weightMode)
+        );
         panelModeStore.update("edit");
     }
 
     function selectPrompt(id, data) {
         selectedPromptStore.update(id);
-        activePromptStore.update({...data});
+        activePromptStore.update({ ...data });
         panelModeStore.update("edit");
     }
 </script>
@@ -30,7 +39,7 @@
                 class="text-xs inline-block"
                 class:active={$selectedPrompt === promptId}
                 on:click={() => selectPrompt(promptId, data)}
-                >
+            >
                 {#each Object.entries(data.weightedPrompts) as [id, wp]}{wp.text}::<b
                         >{getDisplayWeight(data, id)}</b
                     >

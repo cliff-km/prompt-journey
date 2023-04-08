@@ -6,8 +6,8 @@
     } from '../stores/zeroPromptHandling.js';
 
     function handleClick() {
-        const promptWeightPairs = Object.entries($activePrompt.weightedPrompts).filter(e => $zeroPromptHandling || getDisplayWeight($activePrompt, e[0])).map(([id, wp]) => {
-            return `${wp.text}::${getDisplayWeight($activePrompt, id)}`
+        const promptWeightPairs = Object.entries($activePrompt.weightedPrompts).filter(e => $zeroPromptHandling || getDisplayWeight($activePrompt, parseInt(e[0]))).map(([id, wp]) => {
+            return `${wp.text}::${getDisplayWeight($activePrompt, parseInt(id))}`
         }).join(' ');
         navigator.clipboard.writeText(promptWeightPairs);
     }

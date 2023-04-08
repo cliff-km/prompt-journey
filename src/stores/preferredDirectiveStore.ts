@@ -11,7 +11,7 @@ export function storablePreferredDirective() {
 
     return {
         subscribe,
-        update: (k) => {
+        update: (k: string) => {
             if (!k || !isBrowser) return;
             localStorage[STORE_KEY] = k;
             set(k);

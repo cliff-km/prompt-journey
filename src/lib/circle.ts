@@ -1,8 +1,8 @@
-import type { Point } from "./types";
+import type { Vec2 } from "../types";
 
 import { add } from "mathjs";
 
-export function pointToPolar(pxy: Point, cxy: Point, radius: number) {
+export function pointToPolar(pxy: Vec2, cxy: Vec2, radius: number) {
     const dx = pxy[0] - cxy[0];
     const dy = pxy[1] - cxy[1];
     const angle = 360 + Math.atan2(dy, dx) * 180 / Math.PI;
@@ -10,7 +10,7 @@ export function pointToPolar(pxy: Point, cxy: Point, radius: number) {
     return [angle % 360, r / radius];
 }
 
-export function polarToPoint(cxy: Point, polar: Point, radius: number) {
+export function polarToPoint(cxy: Vec2, polar: Vec2, radius: number) {
     // Convert angle to radians
     const rad = (polar[0] % 360) * Math.PI / 180;
 
@@ -18,7 +18,7 @@ export function polarToPoint(cxy: Point, polar: Point, radius: number) {
     return add(cxy, offset);
 }
 
-export function closestPointOnCircle(pxy: Point, cxy: Point, radius: number) {
+export function closestPointOnCircle(pxy: Vec2, cxy: Vec2, radius: number) {
     const dx = pxy[0] - cxy[0];
     const dy = pxy[1] - cxy[1];
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -28,14 +28,14 @@ export function closestPointOnCircle(pxy: Point, cxy: Point, radius: number) {
     return [x, y];
 }
 
-export function pointInCircle(pxy: Point, cxy: Point, radius: number) {
+export function pointInCircle(pxy: Vec2, cxy: Vec2, radius: number) {
     const dx = pxy[0] - cxy[0];
     const dy = pxy[1] - cxy[1];
     const distance = Math.sqrt(dx * dx + dy * dy);
     return distance < radius;
 }
 
-export function pointOnBoundary(cxy, angle) {
+export function pointOnBoundary(cxy: Vec2, angle: number) {
     // Convert angle to radians
     const rad = ((angle % 360) * Math.PI) / 180;
 

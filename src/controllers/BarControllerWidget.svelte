@@ -5,7 +5,7 @@
         activePromptStore,
         activePrompt,
     } from "../stores/activePromptStore.js";
-    import { humanizeWeight, getWeightOpacity } from "../lib/weights";
+    import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getSVGMouseLocation } from "../lib/vector";
 

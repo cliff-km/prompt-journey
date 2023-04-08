@@ -11,7 +11,7 @@ export function storableZeroPromptHandling() {
 
     return {
         subscribe,
-        update: (b) => {
+        update: (b: boolean) => {
             if (!isBrowser) return;
             localStorage[STORE_KEY] = JSON.stringify(Boolean(b));
             set(Boolean(b));

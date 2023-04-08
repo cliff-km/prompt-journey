@@ -1,10 +1,11 @@
+import { type WeightedPrompt, type WeightedPromptDict, type MultiPrompt, WeightMode } from '../types';
 import { get, writable, derived } from 'svelte/store'
 import { selectedPromptStore } from './selectedPromptStore';
 import { promptStore } from './promptStore';
 
 const STORE_KEY = 'activePromptStore';
 
-export function createWeightedPrompt(id: number, text: string, parsedWeight: number, barWeight = 1) {
+export function createWeightedPrompt(id: number, text: string, parsedWeight: number, barWeight = 1) : WeightedPrompt {
     return {
         id,
         text,
@@ -13,7 +14,7 @@ export function createWeightedPrompt(id: number, text: string, parsedWeight: num
     }
 }
 
-export function defaultPrompt() {
+export function defaultPrompt() : WeightedPromptDict {
     return {
         0: createWeightedPrompt(0, "Magic potion in a mystical bottle", 1),
         1: createWeightedPrompt(1, "A crystalline decanter", 1),
@@ -32,7 +33,7 @@ export function defaultPrompt() {
     }
 }
 
-export function intializeActivePrompt(prompts, weightMode = 'circle') {
+export function intializeActivePrompt(prompts: WeightedPromptDict, weightMode = WeightMode.Pie) : MultiPrompt {
     return ({
         weightedPrompts: prompts || {},
         weightMode,
@@ -41,15 +42,15 @@ export function intializeActivePrompt(prompts, weightMode = 'circle') {
         circleMarker: [270, 0.33],
         circleWeightScaling: 2,
         circleExponentialScaling: true,
-        embedExponentialScaling: 2,
-        embedWeightScaling: true,
+        embedExponentialScaling: true,
+        embedWeightScaling: 2,
         embedClusters: 0,
         embedPromptLimit: Object.keys(prompts).length
     })
 }
 
 export function storableActivePrompt() {
-    const store = writable({});
+    const store = writable({} as MultiPrompt);
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
@@ -59,7 +60,7 @@ export function storableActivePrompt() {
 
     return {
         subscribe,
-        update: (p: object) => {
+        update: (p: MultiPrompt) => {
             const activePromptId = selectedPromptStore.get();
             if(activePromptId) {
                 promptStore.update(activePromptId, p);

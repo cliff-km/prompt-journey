@@ -11,7 +11,7 @@ export function storablePanelMode() {
 
     return {
         subscribe,
-        update: (m) => {
+        update: (m: string) => {
             if (!m || !isBrowser) return;
             localStorage[STORE_KEY] = m;
             set(m);

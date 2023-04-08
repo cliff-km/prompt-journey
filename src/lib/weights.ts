@@ -1,3 +1,5 @@
+import type { MultiPrompt } from "../types";
+
 export function humanizeWeight(weight: number) {
     return Math.round(weight * 100);
 }
@@ -6,7 +8,7 @@ export function getWeightOpacity(weight: number) {
     return Math.max(1 - Math.pow(1 - weight, 2), 0.25).toFixed(2);
 }
 
-export function getHighestWeight(ap) {
+export function getHighestWeight(ap: MultiPrompt) {
     const weightMode = ap.weightMode;
     let weightKey = "parsedWeight";
     switch(weightMode) {
@@ -21,7 +23,7 @@ export function getHighestWeight(ap) {
     return Math.max(...Object.values(ap.weightedPrompts).map((p) => p[weightKey]));
 }
 
-export function getTotalWeight(ap) {
+export function getTotalWeight(ap: MultiPrompt) {
     const weightMode = ap.weightMode;
     let weightKey = "parsedWeight";
     switch(weightMode) {
@@ -36,7 +38,7 @@ export function getTotalWeight(ap) {
     return Object.values(ap.weightedPrompts).reduce((acc, p) => acc + p[weightKey], 0);
 }
 
-export function getRelativeWeight(ap, id) {
+export function getRelativeWeight(ap: MultiPrompt, id: number) {
     const weightMode = ap.weightMode;
     let weightKey = "parsedWeight";
     switch(weightMode) {
@@ -52,7 +54,7 @@ export function getRelativeWeight(ap, id) {
 }
 
 
-export function getDisplayWeight(ap, id) {
+export function getDisplayWeight(ap: MultiPrompt, id: number) {
     const weightMode = ap.weightMode;
     let weightKey = "parsedWeight";
     switch(weightMode) {

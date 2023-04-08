@@ -38,7 +38,7 @@
     let selectedEmbeddingModel = $preferredEmbeddingModel;
     let listPromise = null;
 
-    async function fetchModels(openaiKey) {
+    async function fetchModels(openaiKey: string) {
         if (!openaiKey || (completionModels.length && embeddingModels.length)) return;
         const openai = createOpenAI(openaiKey);
         listPromise = listModels(openai);
