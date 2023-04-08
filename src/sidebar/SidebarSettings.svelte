@@ -14,9 +14,6 @@
         activePromptStore,
         activePrompt,
     } from "../stores/activePromptStore.js";
-    import {
-        zeroPromptHandlingStore, zeroPromptHandling
-    } from '../stores/zeroPromptHandling.js';
 
     const supportedCompletionModels = [
         "text-davinci-003",
@@ -88,10 +85,6 @@
         }
     }
 
-    function updateZeroPromptHandling() {
-        zeroPromptHandlingStore.update(!$zeroPromptHandling);
-    }
-
     $: {
         fetchModels(openaiKey);
     }
@@ -100,14 +93,6 @@
 <div
     class="h-full p-4 w-full bg-base-100 overflow-y-auto text-base-content inline-block"
 >
-    <div class="flex justify-center">
-        <div class="form-control w-full max-w-xs">
-            <label class="label">
-                <span class="label-text-alt">Include Prompts With Zero Weight</span>
-            </label>
-            <input on:change={updateZeroPromptHandling} type="checkbox" class="toggle" checked={$zeroPromptHandling} />
-        </div>
-    </div>
     <div class="flex justify-center">
         <div class="form-control w-full max-w-xs">
             <label class="label">

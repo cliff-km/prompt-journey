@@ -1,40 +1,64 @@
 <script lang="ts">
-    import { getDisplayWeight, getRelativeWeight } from "$lib/weights.js";
+    import MultiPrompt from "./MultiPrompt.svelte";
+    import SinglePrompt from "./SinglePrompt.svelte";
+    import { getDisplayWeight } from "$lib/weights.js";
     import { activePrompt } from "../stores/activePromptStore.js";
-    import { zeroPromptHandling } from "../stores/zeroPromptHandling.js";
+    import {
+        showZeroPromptsStore, showZeroPrompts
+    } from '../stores/showZeroPrompts.js';
+    import {
+        outputMultiPrompt, outputMultiPromptStore
+    } from '../stores/outputMultiPrompt.js';
+    import { useWeightOrdering, useWeightOrderingStore } from "../stores/useWeightOrdering";
+    import { getPromptList, getPromptText } from "$lib/prompt";
 
     function handleClick() {
-        const promptWeightPairs = Object.entries($activePrompt.weightedPrompts)
-            .filter(
-                (e) =>
-                    $zeroPromptHandling ||
-                    getDisplayWeight($activePrompt, parseInt(e[0]))
-            )
-            .map(([id, wp]) => {
-                return `${wp.text}::${getDisplayWeight(
-                    $activePrompt,
-                    parseInt(id)
-                )}`;
-            })
-            .join(" ");
-        navigator.clipboard.writeText(promptWeightPairs);
+        const promptText = getPromptText($activePrompt, $outputMultiPrompt, $useWeightOrdering, $showZeroPrompts);
+        navigator.clipboard.writeText(promptText);
+    }
+
+
+    function updateOutputMultiPrompt() {
+        outputMultiPromptStore.update(!$outputMultiPrompt);
+    }
+
+    function updateUseWeightOrdering() {
+        useWeightOrderingStore.update(!$useWeightOrdering);
+    }
+
+    function updateZeroPromptHandling() {
+        showZeroPromptsStore.update(!$showZeroPrompts);
     }
 </script>
 
 <div
     on:click={handleClick}
-    class="normal-case font-light text-left cursor-copy bg-slate-900 rounded-md p-4 w-full h-32 overflow-y-auto hover:bg-slate-800 active:bg-slate-950"
+    class="normal-case font-light text-left cursor-copy bg-slate-900 rounded-t-md rounded-br-md p-4 w-full h-28 active:bg-slate-950 hover:bg-slate-800"
 >
-    <p class="text-sm select-none">
-        {#each Object.entries($activePrompt.weightedPrompts).filter((e) => $zeroPromptHandling || getDisplayWeight($activePrompt, parseInt(e[0]))) as [id, wp] (id)}<span
-                style={`color: rgba(255,255,255,${Math.max(
-                    0.25,
-                    getRelativeWeight($activePrompt, parseInt(id))
-                )});`}
-                >{wp.text}::<b
-                    >{getDisplayWeight($activePrompt, parseInt(id))}
-                </b></span
-            >
-        {/each}
-    </p>
+    {#if $outputMultiPrompt}
+        <MultiPrompt />
+    {:else}
+        <SinglePrompt />
+    {/if}
+</div>
+
+<div class="w-full rounded-b-md flex pl-2 justify-start bg-slate-900">
+    <div class="mx-2 flex">
+        <input on:change={updateOutputMultiPrompt} checked={$outputMultiPrompt} type="checkbox" class="toggle toggle-sm mt-2 mr-2" />
+        <label class="label w-10">
+            <span class="label-text">{$outputMultiPrompt ? 'Multi' : 'Single'}</span>
+        </label>
+    </div>
+    <div class="mx-2 flex">
+        <input on:change={updateUseWeightOrdering} checked={$useWeightOrdering} type="checkbox" class="toggle toggle-sm mt-2 mr-2" />
+        <label class="label">
+            <span class="label-text">Use Weight Ordering</span>
+        </label>
+    </div>
+    <div class="mx-2 flex">
+        <input on:change={updateZeroPromptHandling} checked={$showZeroPrompts} type="checkbox" class="toggle toggle-sm mt-2 mr-2" />
+        <label class="label">
+            <span class="label-text">Include Zero Weights</span>
+        </label>
+    </div>
 </div>

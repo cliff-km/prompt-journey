@@ -1,8 +1,8 @@
 import { get, writable, derived } from 'svelte/store'
 
-const STORE_KEY = 'zeroPromptHandlingStore';
+const STORE_KEY = 'useWeightOrdering';
 
-export function storableZeroPromptHandling() {
+export function storableUseWeightOrdering() {
     const store = writable(false);
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
@@ -28,7 +28,7 @@ export function storableZeroPromptHandling() {
     };
 }
 
-export const zeroPromptHandlingStore = storableZeroPromptHandling();
+export const useWeightOrderingStore = storableUseWeightOrdering();
 
 
-export const zeroPromptHandling = derived(zeroPromptHandlingStore, $zeroPromptHandlingStore => get(zeroPromptHandlingStore))
+export const useWeightOrdering = derived(useWeightOrderingStore, $useWeightOrderingStore => get(useWeightOrderingStore))

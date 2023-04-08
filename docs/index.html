@@ -6,18 +6,18 @@
 		<link rel="icon" href="/prompt-journey/favicon.png" />
 		<meta name="viewport" content="width=device-width" />
 		<meta http-equiv="content-security-policy" content="">
-		<link href="/prompt-journey/_app/immutable/assets/_layout.2853c514.css" rel="stylesheet">
+		<link href="/prompt-journey/_app/immutable/assets/_layout.853c6e6b.css" rel="stylesheet">
 		<link href="/prompt-journey/_app/immutable/assets/_page.d6d31e22.css" rel="stylesheet">
-		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/start.1bb2769b.js">
+		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/start.1962b4f3.js">
 		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/index.98d4e505.js">
-		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/singletons.90c36592.js">
+		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/singletons.d4c7e4b6.js">
 		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/index.29baef3a.js">
-		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/paths.c89925ac.js">
-		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/app.95fcf593.js">
-		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/_layout.svelte.021f6dbe.js">
+		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/paths.e8f72b81.js">
+		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/app.76cb885e.js">
+		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/_layout.svelte.e9a69f1a.js">
 		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/_layout.js.984db11e.js">
 		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/_layout.da46b06b.js">
-		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/_page.svelte.8b3ecb7b.js">
+		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/_page.svelte.1b985280.js">
 		<link rel="modulepreload" href="/prompt-journey/_app/immutable/entry/_page.js.05d4240e.js">
 		<link rel="modulepreload" href="/prompt-journey/_app/immutable/chunks/_page.3556dad1.js">
 	</head>
@@ -37,13 +37,20 @@
             <button class="btn btn-sm"><svg xmlns="http://www.w3.org/2000/svg" fill="rgba(255,255,255, 0.7)" class="h-6 w-6" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" stroke="rgba(255,255,255, 0.7)" stroke-width="2" fill="none"></circle><circle cx="25" cy="25" r="2" stroke="rgba(255,255,255, 0.7)" stroke-width="1" fill="rgba(255,255,255, 0.7)"></circle></svg></button>
             <button class="btn btn-sm"><svg xmlns="http://www.w3.org/2000/svg" fill="rgba(255,255,255, 0.7)" class="h-6 w-6" viewBox="0 0 100 100"><circle cx="20" cy="80" r="5" fill="rgba(255,255,255, 0.7)"></circle><circle cx="40" cy="40" r="5" fill="rgba(255,255,255, 0.7)"></circle><circle cx="70" cy="20" r="5" fill="rgba(255,255,255, 0.7)"></circle><circle cx="80" cy="60" r="5" fill="rgba(255,255,255, 0.7)"></circle><circle cx="60" cy="75" r="5" fill="rgba(255,255,255, 0.7)"></circle></svg></button></div>
         <div class="w-full h-full"><svg id="svg" class="w-full h-full"></svg></div>
-        <div class="h-48 w-full p-4 flex flex-col"><div class="normal-case font-light text-left cursor-copy bg-slate-900 rounded-md p-4 w-full h-32 overflow-y-auto hover:bg-slate-800 active:bg-slate-950"><p class="text-sm select-none"></p></div></div></div></div>
+        <div class="h-48 w-full p-4 flex flex-col"><div class="normal-case font-light text-left cursor-copy bg-slate-900 rounded-t-md rounded-br-md p-4 w-full h-28 active:bg-slate-950 hover:bg-slate-800"><div class="overflow-y-auto h-full"><p class="text-sm select-none"><span style="color: rgba(255,255,255,0.75});"></span></p></div></div>
+
+<div class="w-full rounded-b-md flex pl-2 justify-start bg-slate-900"><div class="mx-2 flex"><input  type="checkbox" class="toggle toggle-sm mt-2 mr-2">
+        <label class="label w-10"><span class="label-text">Single</span></label></div>
+    <div class="mx-2 flex"><input  type="checkbox" class="toggle toggle-sm mt-2 mr-2">
+        <label class="label"><span class="label-text">Use Weight Ordering</span></label></div>
+    <div class="mx-2 flex"><input  type="checkbox" class="toggle toggle-sm mt-2 mr-2">
+        <label class="label"><span class="label-text">Include Zero Weights</span></label></div></div></div></div></div>
 
 
 			
 			<script>
 				{
-					__sveltekit_11ufh18 = {
+					__sveltekit_mbbo9o = {
 						env: {},
 						assets: "/prompt-journey",
 						base: "/prompt-journey",
@@ -53,10 +60,10 @@
 					const data = [null,null];
 
 					Promise.all([
-						import("/prompt-journey/_app/immutable/entry/start.1bb2769b.js"),
-						import("/prompt-journey/_app/immutable/entry/app.95fcf593.js")
+						import("/prompt-journey/_app/immutable/entry/start.1962b4f3.js"),
+						import("/prompt-journey/_app/immutable/entry/app.76cb885e.js")
 					]).then(([kit, app]) => {
-						kit.start(app, __sveltekit_11ufh18.element, {
+						kit.start(app, __sveltekit_mbbo9o.element, {
 							node_ids: [0, 2],
 							data,
 							form: null,

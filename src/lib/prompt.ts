@@ -1,3 +1,6 @@
+import type { MultiPrompt } from "../types.js";
+import { getDisplayWeight } from "./weights.js";
+
 export function parsePrompts(input: string) {
     const promptWeightPairs = [];
     const regex = /((?:[^:]+|:(?!:))+)(?:::(\d+(?:\.\d+)?))?(?=\s|$)/g;
@@ -77,4 +80,55 @@ export function processString(input: string) {
     } else {
         return concepts.map(s => [s, 1]);
     }
+}
+
+export function getPromptList(activePrompt: MultiPrompt, useWeightOrdering: boolean, showZeroPrompts: boolean) {
+    let list = Object.entries(activePrompt.weightedPrompts);
+
+    if(useWeightOrdering) list = list.sort((a, b) => getDisplayWeight(activePrompt, parseInt(b[0])) - getDisplayWeight(activePrompt, parseInt(a[0])));
+    if(!showZeroPrompts) list = list.filter((e) => showZeroPrompts || getDisplayWeight(activePrompt, parseInt(e[0])));
+
+    return list;
+}
+
+function isCompleteSentence(text: string) {
+    return text.trim().endsWith('.');
+}
+  
+function joinSentencesAndFragments(textList: string[]) {
+    let result = '';
+    let fragmentBuffer: string[] = [];
+
+    textList.forEach((text, index) => {
+        if (isCompleteSentence(text)) {
+            if (fragmentBuffer.length > 0) {
+            result += fragmentBuffer.join(', ').replace(/,*\s*,/g, ',') + '. ';
+            fragmentBuffer = [];
+            }
+            result += text + ' ';
+        } else {
+            fragmentBuffer.push(text.trim());
+        }
+    });
+
+    if (fragmentBuffer.length > 0) {
+        result += fragmentBuffer.join(', ').replace(/,*\s*,/g, ',') + '.';
+    }
+
+    return result.trim();
+}
+  
+  
+export function getPromptText(activePrompt: MultiPrompt, outputMultiPrompt: boolean, useWeightOrdering: boolean, showZeroPrompts: boolean) {
+    if(outputMultiPrompt) return getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp]) => {
+        return `${wp.text}::${getDisplayWeight(
+            activePrompt,
+            parseInt(id)
+        )}`;
+    })
+    .join(" ");
+
+    const promptTextList = getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp]) => wp.text)
+    
+    return joinSentencesAndFragments(promptTextList);
 }
