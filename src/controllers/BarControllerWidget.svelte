@@ -1,4 +1,5 @@
 <script lang="ts">
+    import type { Vec2, WeightedPrompt } from "../types";
     import Bar from "../svg/Bar.svelte";
     import PromptText from "../svg/PromptText.svelte";
     import {
@@ -23,16 +24,16 @@
 
     $: prompts = Object.entries($activePrompt.weightedPrompts).map(
         ([id, prompt], idx) => {
-            return [id, idx, prompt];
+            return [parseInt(id), idx, prompt];
         }
-    );
+    ) as [number, number, WeightedPrompt][];
     $: promptCount = Object.keys($activePrompt.weightedPrompts).length;
     $: wh = [dimensions[0] - 50, dimensions[1] - 50];
     $: textDimensions = prompts.reduce((acc, [id, idx, p]) => {
         const [w, h] = getTextBoxDimensions(textWidth, p.text.length, fontSize);
         acc[id] = [w, h];
         return acc;
-    }, {});
+    }, {} as Record<number, Vec2>);
     $: maxTextHeight = Math.max(
         ...Object.values(textDimensions).map(([w, h]) => h)
     );
@@ -52,44 +53,44 @@
 
     let getColor = (n: number) => `rgba(46,67,101, ${n})`;
     let getHandleColor = (n: number) => `rgba(76,97,131, ${n})`;
-    let hoverEmptyId = null;
-    let hoverBarId = null;
-    let hoverHandleId = null;
+    let hoverEmptyId: number | null = null;
+    let hoverBarId: number | null = null;
+    let hoverHandleId: number | null = null;
     let baseHandleColor = getHandleColor(0.3);
     let hoverHandleColor = getHandleColor(0.8);
-    let activeDragId = null;
-    let mouseHoldInterval = null;
-    let mouseHoldStart = null;
+    let activeDragId: number | null = null;
+    let mouseHoldInterval: NodeJS.Timer | null = null;
+    let mouseHoldStart: number | null = null;
 
-    function handleMouseOver(id, e: Event) {
+    function handleMouseOver(id: number) {
         hoverBarId = id;
     }
 
-    function handleMouseOverEmpty(id, e: Event) {
+    function handleMouseOverEmpty(id: number) {
         hoverEmptyId = id;
     }
 
-    function handleMouseOverHandle(id, e: Event) {
+    function handleMouseOverHandle(id: number) {
         hoverHandleId = id;
     }
 
-    function handleMouseOut(id, e: Event) {
+    function handleMouseOut() {
         hoverBarId = null;
     }
 
-    function handleMouseOutEmpty(id, e: Event) {
+    function handleMouseOutEmpty() {
         hoverEmptyId = null;
     }
 
-    function handleMouseOutHandle(id, e: Event) {
+    function handleMouseOutHandle() {
         hoverHandleId = null;
     }
 
-    function handleMouseDown(id, e: Event) {
+    function handleMouseDown(id: number) {
         activeDragId = id;
     }
 
-    function handleDoubleClick(e: Event) {
+    function handleDoubleClick(e: MouseEvent) {
         let targetId =
             activeDragId || hoverBarId || hoverHandleId || hoverEmptyId;
         if (!targetId) return;
@@ -97,14 +98,14 @@
         useLocationToUpdateWeight(targetId, mouseLocation);
     }
 
-    function handleMouseUp(e: Event) {
+    function handleMouseUp() {
         activeDragId = null;
-        clearInterval(mouseHoldInterval);
+        if (mouseHoldInterval) clearInterval(mouseHoldInterval);
         mouseHoldInterval = null;
         mouseHoldStart = null;
     }
 
-    function useLocationToUpdateWeight(targetId, xy) {
+    function useLocationToUpdateWeight(targetId: number, xy: Vec2) {
         let barLength = Math.min(maxBarWidth, Math.max(0, xy[0] - barX));
         let barRatio = barLength / maxBarWidth;
         let prompts = { ...$activePrompt.weightedPrompts };
@@ -118,7 +119,7 @@
         });
     }
 
-    function handleMouseMove(e: Event) {
+    function handleMouseMove(e: MouseEvent) {
         let targetId = activeDragId;
         if (!targetId) return;
 
@@ -131,14 +132,16 @@
             if (mouseLocation[0] > barEnd && !mouseHoldInterval) {
                 mouseHoldStart = Date.now();
                 mouseHoldInterval = setInterval(() => {
+                    if (!mouseHoldStart) return;
                     if (Date.now() - mouseHoldStart < 1000) {
                         return;
                     }
                     let prompts = { ...$activePrompt.weightedPrompts };
                     const updatedPrompts = Object.entries(prompts).reduce(
                         (acc, [id, p]) => {
-                            if (id !== activeDragId) {
-                                acc[id] = {
+                            const idNum = parseInt(id);
+                            if (idNum !== activeDragId) {
+                                acc[idNum] = {
                                     ...p,
                                     barWeight: Math.max(
                                         0,
@@ -146,7 +149,7 @@
                                     ),
                                 };
                             } else {
-                                acc[id] = {
+                                acc[idNum] = {
                                     ...p,
                                     barWeight: Math.min(
                                         1,
@@ -156,7 +159,7 @@
                             }
                             return acc;
                         },
-                        {}
+                        {} as Record<number, WeightedPrompt>
                     );
                     activePromptStore.update({
                         ...$activePrompt,
@@ -166,14 +169,16 @@
             } else if (mouseLocation[0] < barStart && !mouseHoldInterval) {
                 mouseHoldStart = Date.now();
                 mouseHoldInterval = setInterval(() => {
+                    if (!mouseHoldStart) return;
                     if (Date.now() - mouseHoldStart < 1000) {
                         return;
                     }
                     let prompts = { ...$activePrompt.weightedPrompts };
                     const updatedPrompts = Object.entries(prompts).reduce(
                         (acc, [id, p]) => {
-                            if (id !== activeDragId) {
-                                acc[id] = {
+                            const idNum = parseInt(id);
+                            if (idNum !== activeDragId) {
+                                acc[idNum] = {
                                     ...p,
                                     barWeight: Math.min(
                                         1,
@@ -181,7 +186,7 @@
                                     ),
                                 };
                             } else {
-                                acc[id] = {
+                                acc[idNum] = {
                                     ...p,
                                     barWeight: Math.max(
                                         0,
@@ -191,7 +196,7 @@
                             }
                             return acc;
                         },
-                        {}
+                        {} as Record<number, WeightedPrompt>
                     );
                     activePromptStore.update({
                         ...$activePrompt,
@@ -231,8 +236,8 @@
         />
         <Bar
             color={getColor(0)}
-            handleMouseOver={(e) => handleMouseOverEmpty(id, e)}
-            handleMouseOut={(e) => handleMouseOutEmpty(id, e)}
+            handleMouseOver={(e) => handleMouseOverEmpty(id)}
+            handleMouseOut={(e) => handleMouseOutEmpty()}
             xy={[barX, xy[1] + idx * barHeight + idx]}
             wh={[maxBarWidth, barHeight - 2]}
         />
@@ -244,16 +249,16 @@
                       getWeightOpacity((p.barWeight || 0) / maxBarWeight + 0.15)
                   )
                 : getColor(getWeightOpacity(p.barWeight || 0))}
-            handleMouseOver={(e) => handleMouseOver(id, e)}
-            handleMouseOut={(e) => handleMouseOut(id, e)}
+            handleMouseOver={(e) => handleMouseOver(id)}
+            handleMouseOut={(e) => handleMouseOut()}
             xy={[barX, xy[1] + idx * barHeight + idx]}
             wh={[(p.barWeight || 0) * maxBarWidth, barHeight - 2]}
         />
         <Bar
             color={hoverHandleId === id ? hoverHandleColor : baseHandleColor}
-            handleMouseOver={(e) => handleMouseOverHandle(id, e)}
-            handleMouseOut={(e) => handleMouseOutHandle(id, e)}
-            handleMouseDown={(e) => handleMouseDown(id, e)}
+            handleMouseOver={(e) => handleMouseOverHandle(id)}
+            handleMouseOut={(e) => handleMouseOutHandle()}
+            handleMouseDown={(e) => handleMouseDown(id)}
             xy={[
                 barX + (p.barWeight || 0) * maxBarWidth,
                 xy[1] + idx * barHeight + idx,

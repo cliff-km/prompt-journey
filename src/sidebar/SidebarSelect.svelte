@@ -1,4 +1,5 @@
 <script lang="ts">
+    import type { WeightMode } from "../types.js";
     import { promptList } from "../stores/promptStore.js";
     import pkg from "lodash";
     const { orderBy } = pkg;

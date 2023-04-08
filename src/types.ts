@@ -1,4 +1,5 @@
 export type Vec2 = [number, number];
+export type VecN = number[];
 
 export type Directive = {
     name: string;
@@ -6,7 +7,9 @@ export type Directive = {
     builtIn: boolean;
 };
 
-export type DirectiveDict = { [id: string]: Directive };
+export type DirectiveDict = Record<string, Directive>;
+
+export type WeightKey = "parsedWeight" | "barWeight" | "circleWeight" | "embedWeight" | "pieWeight";
 
 export type WeightedPrompt = {
     id: number;
@@ -18,7 +21,7 @@ export type WeightedPrompt = {
     pieWeight?: number;
 }
 
-export type WeightedPromptDict = { [id: string]: WeightedPrompt };
+export type WeightedPromptDict = Record<number, WeightedPrompt>;
 
 export enum WeightMode {
     Circle = "circle",
@@ -27,16 +30,19 @@ export enum WeightMode {
     Pie = "pie",
 }
 
+export type Embeddings = Record<number, VecN>;
+
 export type MultiPrompt = {
     weightedPrompts: WeightedPromptDict;
     weightMode: WeightMode;
-    pieAngles: { [id: string]: number };
-    circleAngles: { [id: string]: number };
+    pieAngles: Record<number, number>;
+    circleAngles: Record<number, number>;
     circleMarker: Vec2;
     circleWeightScaling: number;
     circleExponentialScaling: boolean;
+    embeddings: Embeddings;
     embedWeightScaling: number;
     embedExponentialScaling: boolean;
-    embedClusters: 0 | 2 | 4 | 6 | 8;
+    embedClusters: number;
     embedPromptLimit: number;
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { WeightMode } from "../types.js";
     import { keyStore, key } from "../stores/keyStore.js";
     import {
         preferredModelStore,
@@ -79,10 +80,10 @@
         openaiKey = "";
         completionModels = [];
         embeddingModels = [];
-        if($activePrompt.weightMode === 'embed') {
+        if($activePrompt.weightMode === WeightMode.Embed) {
             activePromptStore.update({
                 ...$activePrompt,
-                weightMode: 'circle'
+                weightMode: WeightMode.Circle
             })
         }
     }

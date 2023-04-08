@@ -1,4 +1,5 @@
 <script lang="ts">
+    import type { Vec2, Embeddings } from "../types.js";
     import TSNE from "tsne-js";
     import * as clustering from "density-clustering";
     import {
@@ -10,7 +11,6 @@
     import { createOpenAI, createEmbedding } from "../lib/openai.js";
     import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModelStore";
     import { key } from "../stores/keyStore.js";
-    import { onMount } from "svelte";
 
     let controllerW = 0;
     let controllerH = 0;
@@ -19,10 +19,10 @@
     let embedPromise = null;
     let inProgressEmbeds = {};
 
-    $: wh = [controllerW || 250, controllerH || 250];
+    $: wh = [controllerW || 250, controllerH || 250] as Vec2;
     $: center = findBoxCenter(wh);
 
-    function getHighestClusterAvailable(embedCount) {
+    function getHighestClusterAvailable(embedCount: number) {
         if (embedCount < 2) return 0;
         if (embedCount < 4) return 2;
         if (embedCount < 6) return 4;
@@ -31,8 +31,14 @@
     }
 
     $: {
-        $activePrompt.embeddings && Object.keys($activePrompt.embeddings).length < $activePrompt.embedClusters &&
-            updateClusterCount(getHighestClusterAvailable(Object.keys($activePrompt.embeddings).length));
+        $activePrompt.embeddings &&
+            Object.keys($activePrompt.embeddings).length <
+                $activePrompt.embedClusters &&
+            updateClusterCount(
+                getHighestClusterAvailable(
+                    Object.keys($activePrompt.embeddings).length
+                )
+            );
     }
 
     $: {
@@ -41,35 +47,54 @@
         }
     }
 
-    function updateEmbedPromptLimit(e) {
-        if (e.target.value > 0 && e.target.value <= promptCount)
+    function updateEmbedPromptLimit(e: InputEvent) {
+        const { target } = e;
+        if (!target) return;
+
+        const t = target as HTMLInputElement;
+        if (!t.value) return;
+
+        const value = parseInt(t.value);
+
+        if (value > 0 && value <= promptCount)
             activePromptStore.update({
                 ...$activePrompt,
-                embedPromptLimit: e.target.value,
+                embedPromptLimit: value,
             });
     }
-    function updateExponentialScaling(e) {
+
+    function updateExponentialScaling() {
         activePromptStore.update({
             ...$activePrompt,
             embedExponentialScaling: !$activePrompt.embedExponentialScaling,
         });
     }
 
-    function updateWeightScaling(e) {
+    function updateWeightScaling(e: InputEvent) {
+        const { target } = e;
+        if (!target) return;
+
+        const t = target as HTMLInputElement;
+        if (!t.value) return;
+
+        const value = parseInt(t.value);
+
         activePromptStore.update({
             ...$activePrompt,
-            embedWeightScaling: e.target.value,
+            embedWeightScaling: value,
         });
     }
 
     function updateClusterCount(count: number) {
+        if([0, 2, 4, 6, 8].indexOf(count) === -1) return;
+
         activePromptStore.update({
             ...$activePrompt,
             embedClusters: count,
         });
     }
 
-    function get2DEmbeddings(embeddings) {
+    function get2DEmbeddings(embeddings: Embeddings) {
         let model = new TSNE({
             dim: 2,
             perplexity: 30.0,
@@ -307,7 +332,9 @@
                         <button
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 2}
-                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 2}
+                            class:btn-disabled={Object.keys(
+                                $activePrompt.embeddings
+                            ).length < 2}
                             on:click={() => updateClusterCount(2)}
                         >
                             2
@@ -315,7 +342,9 @@
                         <button
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 4}
-                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 4}
+                            class:btn-disabled={Object.keys(
+                                $activePrompt.embeddings
+                            ).length < 4}
                             on:click={() => updateClusterCount(4)}
                         >
                             4
@@ -323,7 +352,9 @@
                         <button
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 6}
-                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 6}
+                            class:btn-disabled={Object.keys(
+                                $activePrompt.embeddings
+                            ).length < 6}
                             on:click={() => updateClusterCount(6)}
                         >
                             6
@@ -331,7 +362,9 @@
                         <button
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 8}
-                            class:btn-disabled={Object.keys($activePrompt.embeddings).length < 8}
+                            class:btn-disabled={Object.keys(
+                                $activePrompt.embeddings
+                            ).length < 8}
                             on:click={() => updateClusterCount(8)}
                         >
                             8
