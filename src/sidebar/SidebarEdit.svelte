@@ -9,7 +9,7 @@
         createWeightedPrompt,
     } from "../stores/activePromptStore.js";
     import { panelModeStore } from "../stores/panelModeStore.js";
-    import { selectedPrompt } from "../stores/selectedPromptStore.js";
+    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
     import debounce from "lodash/debounce";
 
     let newPromptText = "";
@@ -55,8 +55,9 @@
 
     function handleDeletePrompt() {
         if ($selectedPrompt) promptStore.delete($selectedPrompt);
-        panelModeStore.update("select");
+        selectedPromptStore.delete();
         activePromptStore.delete();
+        panelModeStore.update("select");
     }
 
     const handleSinglePromptChange = debounce((id, text) => {
