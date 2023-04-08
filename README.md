@@ -4,7 +4,7 @@ See it live [here](https://cliff-km.github.io/prompt-journey/).
 
 ## Overview
 
-A tool to help play with Midjourney multi-prompts. Create multi-prompts from scratch, paste them in (and paragraphs or comma lists), or generate them from GPT if you provide an OpenAI key.
+A tool to help play with Midjourney prompts. It's mostly aimed at multi-prompts but can help you reorder and shuffle single prompts. Create multi-prompts from scratch, paste them in (and paragraphs or comma lists), or generate them from GPT if you provide an OpenAI key.
 
 ## Future Plans
 
