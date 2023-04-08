@@ -16,6 +16,7 @@ So, TBD.
 
 - Not mobile or small window friendly
 - Bar-gragh weight editing seems like it could be much better.
+- Embed mapping could use some zooming and navigation.
 - tSNE mapping feels too random
   - Partially addressed by adding in some anchoring that uses kMeans clustering.
 - Error handling 🙏
