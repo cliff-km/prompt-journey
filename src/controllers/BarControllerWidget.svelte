@@ -92,8 +92,16 @@
 
     function handleDoubleClick(e: MouseEvent) {
         let targetId =
-            activeDragId || hoverBarId || hoverHandleId || hoverEmptyId;
-        if (!targetId) return;
+            activeDragId !== null
+                ? activeDragId
+                : hoverBarId !== null
+                ? hoverBarId
+                : hoverHandleId !== null
+                ? hoverHandleId
+                : hoverEmptyId !== null
+                ? hoverEmptyId
+                : null;
+        if (targetId === null) return;
         const mouseLocation = getSVGMouseLocation(e);
         useLocationToUpdateWeight(targetId, mouseLocation);
     }
@@ -121,11 +129,11 @@
 
     function handleMouseMove(e: MouseEvent) {
         let targetId = activeDragId;
-        if (!targetId) return;
+        if (targetId === null) return;
 
         const mouseLocation = getSVGMouseLocation(e);
         useLocationToUpdateWeight(targetId, mouseLocation);
-        if (activeDragId) {
+        if (activeDragId !== null) {
             //determine if mouse is beyond end
             let barEnd = barX + maxBarWidth + handleWidth;
             let barStart = barX;
