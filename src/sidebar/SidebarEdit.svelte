@@ -52,7 +52,7 @@
                     acc[idx] = createWeightedPrompt(idx, text, parsedWeight, parsedWeight/maxSentenceWeight);
                     return acc;
                 }, {});
-
+        selectedPromptStore.delete();
         activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
         newPromptText = "";
     }

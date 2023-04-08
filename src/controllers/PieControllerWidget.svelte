@@ -179,7 +179,6 @@
         const angle = positiveAngle(pointToPolar(c, center, radius)[0]);
 
         const ca = { ...$activePrompt.pieAngles };
-        console.log(ca);
         ca[point.id] = angle;
 
         const wp = { ...$activePrompt.weightedPrompts };
