@@ -16,6 +16,7 @@ So, TBD.
 
 - Not mobile or small window friendly
 - tSNE mapping feels too random
+  - Partially addressed by adding in some anchoring that uses kMeans clustering.
 - Error handling 🙏
 - Built with tape and thumbtacks
 
