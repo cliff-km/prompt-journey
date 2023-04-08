@@ -302,8 +302,8 @@
                     0.5
                 )}
                 weight={getDisplayWeight(
-                    $activePrompt.weightedPrompts[id],
-                    $activePrompt.weightMode
+                    $activePrompt,
+                    id
                 )}
                 radius={15}
                 textColor={`rgba(255,255,255,${getWeightOpacity(

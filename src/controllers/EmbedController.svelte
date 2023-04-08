@@ -1,4 +1,6 @@
 <script lang="ts">
+    import TSNE from "tsne-js";
+    import * as clustering from "density-clustering";
     import { isUndefined } from "mathjs";
     import {
         activePromptStore,
@@ -10,7 +12,6 @@
     import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModelStore";
     import { key } from "../stores/keyStore.js";
     import { afterUpdate, beforeUpdate, onMount } from "svelte";
-    import TSNE from "tsne-js";
 
     let controllerW = 0;
     let controllerH = 0;
@@ -29,23 +30,30 @@
     }
 
     function updateEmbedPromptLimit(e) {
-        if(e.target.value > 0 && e.target.value <= promptCount)
-        activePromptStore.update({
-            ...$activePrompt,
-            embedPromptLimit: e.target.value
-        });
+        if (e.target.value > 0 && e.target.value <= promptCount)
+            activePromptStore.update({
+                ...$activePrompt,
+                embedPromptLimit: e.target.value,
+            });
     }
     function updateExponentialScaling(e) {
         activePromptStore.update({
             ...$activePrompt,
-            embedExponentialScaling: !$activePrompt.embedExponentialScaling
+            embedExponentialScaling: !$activePrompt.embedExponentialScaling,
         });
     }
 
     function updateWeightScaling(e) {
         activePromptStore.update({
             ...$activePrompt,
-            embedWeightScaling: e.target.value
+            embedWeightScaling: e.target.value,
+        });
+    }
+
+    function updateClusterCount(count: number) {
+        activePromptStore.update({
+            ...$activePrompt,
+            embedClusters: count,
         });
     }
 
@@ -91,6 +99,12 @@
         return unitScaledById;
     }
 
+    function getKMeansClusters(embeddings, k: number) {
+        const kmeans = new clustering.KMEANS();
+        const clusters = kmeans.run(embeddings, k);
+        return clusters;
+    }
+
     async function shuffleEmbeddinMap() {
         activePromptStore.update({
             ...$activePrompt,
@@ -117,9 +131,31 @@
             inProgressEmbeds[p[0]] = response.data.data[0].embedding;
         }
 
+        let orderedEmbeds = Object.entries(inProgressEmbeds).sort(
+            (a, b) => a[0] - b[0]
+        );
+
         activePromptStore.update({
             ...$activePrompt,
             embeddings: inProgressEmbeds,
+            embedClusterSets: {
+                2: getKMeansClusters(
+                    orderedEmbeds.map((e) => e[1]),
+                    2
+                ),
+                4: getKMeansClusters(
+                    orderedEmbeds.map((e) => e[1]),
+                    4
+                ),
+                6: getKMeansClusters(
+                    orderedEmbeds.map((e) => e[1]),
+                    6
+                ),
+                8: getKMeansClusters(
+                    orderedEmbeds.map((e) => e[1]),
+                    8
+                ),
+            },
             lastEmbeddingChange: Date.now(),
             scaledEmbedMappings: get2DEmbeddings(inProgressEmbeds),
         });
@@ -127,6 +163,7 @@
 
     function embeddingsRequireUpdate(activePrompt) {
         if (!activePrompt.embeddings) return true;
+        if (!activePrompt.embedClusterSets) return true;
         if (
             Object.entries(activePrompt.embeddings).length !==
             Object.entries(activePrompt.weightedPrompts).length
@@ -146,11 +183,14 @@
         }
     });
 </script>
+
 {#if !$key}
     <div class="w-full h-full flex justify-center">
         <div class="flex flex-col justify-center">
             <div class="h-20 w-52">
-                <p class="text-center text-lg">Set OpenAI key in settings to use embedding map.</p>
+                <p class="text-center text-lg">
+                    Set OpenAI key in settings to use embedding map.
+                </p>
             </div>
         </div>
     </div>
@@ -183,7 +223,7 @@
                 <input
                     on:change={updateExponentialScaling}
                     type="checkbox"
-                    class="toggle"
+                    class="toggle toggle-sm"
                     checked={$activePrompt.embedExponentialScaling}
                 />
             </div>
@@ -199,7 +239,7 @@
                         min="0.5"
                         max="3"
                         step="0.1"
-                        class="range"
+                        class="range range-sm"
                     />
                 </div>
             {/if}
@@ -214,12 +254,62 @@
                     min="1"
                     max={promptCount}
                     step="1"
-                    class="range"
+                    class="range range-sm"
                 />
             </div>
+            <div class="">
+                <div class="">
+                    <label class="label pb-1 m-0">
+                        <span class="label-text">Clusters</span>
+                    </label>
+                    <div class="btn-group btn-group-horizontal p-0">
+                        <button
+                            class={($activePrompt.embedClusters || 0) === 0
+                                ? "btn btn-xs btn-active"
+                                : "btn btn-xs"}
+                            on:click={() => updateClusterCount(0)}
+                        >
+                            0
+                        </button>
+                        <button
+                            class={$activePrompt.embedClusters === 2
+                                ? "btn btn-xs btn-active"
+                                : "btn btn-xs"}
+                            on:click={() => updateClusterCount(2)}
+                        >
+                            2
+                        </button>
+                        <button
+                            class={$activePrompt.embedClusters === 4
+                                ? "btn btn-xs btn-active"
+                                : "btn btn-xs"}
+                            on:click={() => updateClusterCount(4)}
+                        >
+                            4
+                        </button>
+                        <button
+                            class={$activePrompt.embedClusters === 6
+                                ? "btn btn-xs btn-active"
+                                : "btn btn-xs"}
+                            on:click={() => updateClusterCount(6)}
+                        >
+                            6
+                        </button>
+                        <button
+                            class={$activePrompt.embedClusters === 8
+                                ? "btn btn-xs btn-active"
+                                : "btn btn-xs"}
+                            on:click={() => updateClusterCount(8)}
+                        >
+                            8
+                        </button>
+                    </div>
+                </div>
+            </div>
             <div class="w-32 px-2 pb-1 flex flex-col justify-end">
-                <button on:click={shuffleEmbeddinMap} class="btn btn-sm btn-primary"
-                    >Shuffle</button
+                <button
+                    on:click={shuffleEmbeddinMap}
+                    class="btn btn-xs btn-primary">Shuffle</button
                 >
             </div>
         </div>

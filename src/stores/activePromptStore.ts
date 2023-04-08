@@ -41,6 +41,7 @@ export function intializeActivePrompt(prompts, weightMode = 'circle') {
         circleExponentialScaling: true,
         embedExponentialScaling: 2,
         embedWeightScaling: true,
+        embedClusters: 0,
         embedPromptLimit: Object.keys(prompts).length
     })
 }

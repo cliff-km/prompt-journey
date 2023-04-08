@@ -9,7 +9,8 @@
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getDistance, getSVGMouseLocation } from "../lib/vector";
-    import { onMount } from "svelte";
+    import { add, multiply } from "mathjs";
+    import * as Munkres from "munkres-js";
 
     // display state
     export let center = [100, 100];
@@ -25,6 +26,7 @@
     let dataPoints = null;
     let innerDimensions = dimensions;
     let innerOffsets = [0, 0];
+
     $: markerLocation = $activePrompt.embedMarker || center;
 
     $: expScaling = $activePrompt.embedExponentialScaling;
@@ -49,10 +51,6 @@
     }
 
     $: {
-        recomputeFromDimensions(innerDimensions);
-    }
-
-    $: {
         recomputeFromPromptLimit(promptLimit);
     }
 
@@ -68,6 +66,84 @@
             dimensions[0] - 2 * innerOffsets[0],
             dimensions[1] - 2 * innerOffsets[1],
         ];
+    }
+
+    function getInnerCorners() {
+        return {
+            "00": [innerOffsets[0], innerOffsets[1]],
+            "01": [innerOffsets[0], innerOffsets[1] + innerDimensions[1]],
+            "11": [
+                innerOffsets[0] + innerDimensions[0],
+                innerOffsets[1] + innerDimensions[1],
+            ],
+            "10": [innerOffsets[0] + innerDimensions[0], innerOffsets[1]],
+        };
+    }
+
+    function createDistanceMatrix(setA, setB) {
+        return setA.map((pointA) =>
+            setB.map((pointB) => getDistance(pointA, pointB))
+        );
+    }
+
+    function pairPoints(setA, setB) {
+        if (setA.length !== setB.length) {
+            throw new Error("Both sets should have the same number of points");
+        }
+
+        const distanceMatrix = createDistanceMatrix(setA, setB);
+        console.log(distanceMatrix);
+        const indexes = Munkres(distanceMatrix);
+
+        return indexes.map(([indexA, indexB]) => ({
+            ids: [indexA, indexB],
+            points: [setA[indexA], setB[indexB]],
+        }));
+    }
+
+    function avgPoint(points) {
+        const sum = points.reduce((acc, point) => add(acc, point), [0, 0]);
+        return multiply(sum, 1 / points.length);
+    }
+
+    function getClusterAnchors(k) {
+        const corners = getInnerCorners();
+        switch (k) {
+            case 2:
+                return [
+                    multiply(add(corners["00"], corners["01"]), 0.5),
+                    multiply(add(corners["10"], corners["11"]), 0.5),
+                ];
+            case 4:
+                return [
+                    corners["00"],
+                    corners["01"],
+                    corners["11"],
+                    corners["10"],
+                ];
+            case 6:
+                return [
+                    multiply(add(corners["00"], corners["01"]), 0.5),
+                    multiply(add(corners["10"], corners["11"]), 0.5),
+                    corners["00"],
+                    corners["01"],
+                    corners["11"],
+                    corners["10"],
+                ];
+            case 8:
+                return [
+                    multiply(add(corners["00"], corners["01"]), 0.5),
+                    multiply(add(corners["10"], corners["11"]), 0.5),
+                    corners["00"],
+                    corners["01"],
+                    corners["11"],
+                    corners["10"],
+                    multiply(add(corners["00"], corners["10"]), 0.5),
+                    multiply(add(corners["01"], corners["11"]), 0.5),
+                ];
+            default:
+                return null;
+        }
     }
 
     function recomputeFromPromptLimit(promptLimit) {
@@ -219,9 +295,10 @@
         activePoint = false;
     }
 
+
     function updateDataPoints() {
         const ids = Object.keys($activePrompt.scaledEmbedMappings);
-        dataPoints = ids.reduce((acc, id, idx) => {
+        const newDataPoints = ids.reduce((acc, id, idx) => {
             acc[id] = {
                 embedXY: [
                     innerOffsets[0] +
@@ -234,6 +311,33 @@
             };
             return acc;
         }, {});
+
+        const findAverageClusterPoint = (cluster) => {
+            const points = cluster.map((i) => newDataPoints[i].embedXY);
+            return avgPoint(points);
+        };
+
+        if($activePrompt.embedClusters) {
+            const k = $activePrompt.embedClusters;
+            const clusters = $activePrompt.embedClusterSets[k];
+            const setA = clusters.map((c) => findAverageClusterPoint(c));
+            const setB = getClusterAnchors(k);
+
+            const pairs = pairPoints(setA, setB);
+
+            pairs.forEach(p => {
+                const clusterId = p.ids[0];
+                const anchor = p.points[1];
+                
+                clusters[clusterId].forEach(id => {
+                    newDataPoints[id].embedXY = avgPoint([newDataPoints[id].embedXY, anchor]);
+                });
+            });
+
+            console.log("paired", pairs);
+        }
+
+        dataPoints = newDataPoints;
     }
 </script>
 
@@ -267,7 +371,7 @@
                 ]}
                 color={`rgba(255,255,255,${getWeightOpacity(wp.embedWeight)}`}
                 wh={getTextBoxDimensions(textWidth, wp.text.length, fontSize)}
-                fontSize={fontSize}
+                {fontSize}
                 text={wp.text}
             />
         {/each}
