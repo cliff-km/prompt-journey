@@ -42,15 +42,19 @@
         navigator.clipboard.readText().then((text) => {
             const sentences = processString(text);
 
-            const maxSentenceWeight = Math.max(...sentences.map(([text, weight]) => weight));
+            handleSignificantPromptChange(sentences);
+        });
+    }
 
-            const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
+    function handleSignificantPromptChange(prompts) {
+        const maxSentenceWeight = Math.max(...prompts.map(([text, weight]) => weight));
+        const weightedPrompts = prompts.reduce((acc, [text, parsedWeight], idx) => {
                     acc[idx] = createWeightedPrompt(idx, text, parsedWeight, parsedWeight/maxSentenceWeight);
                     return acc;
                 }, {});
 
-            activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
-        });
+        activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
+        newPromptText = "";
     }
 
     function handleDeletePrompt() {
@@ -61,27 +65,36 @@
     }
 
     const handleSinglePromptChange = debounce((id, text) => {
-        const weightedPrompts = ({...$activePrompt.weightedPrompts});
+        let weightedPrompts = {...$activePrompt.weightedPrompts};
+        
+        if(!text) {
+            const weightedPromptsById = Object.entries($activePrompt.weightedPrompts);
+            const newPrompts = weightedPromptsById.filter(([wpId]) => wpId !== id).map(([wpId, wp]) => [
+                wp.text,
+                wp.parsedWeight,
+            ]);
+
+            return handleSignificantPromptChange(newPrompts);
+        }
         const updatedWP = { ...weightedPrompts[id], text};
         weightedPrompts[id] = updatedWP;
-
+    
         activePromptStore.update({
             ...$activePrompt,
             weightedPrompts,
         });
-    }, 500);
+    }, 1000);
 
     const handleNewPromptChange = debounce((text) => {
-        const nextId = Object.keys($activePrompt.weightedPrompts).length;
-        const weightedPrompts = ({...$activePrompt.weightedPrompts});
-        const updatedWP = createWeightedPrompt(nextId, text, 1);
-        weightedPrompts[nextId] = updatedWP;
+        const newPrompts = Object.entries($activePrompt.weightedPrompts).map(([wpId, wp]) => [
+            wp.text,
+            wp.parsedWeight,
+        ]);
 
-        activePromptStore.update({
-            ...$activePrompt,
-            weightedPrompts,
-        });
-    }, 500);
+        newPrompts.push([text, 1]);
+
+        return handleSignificantPromptChange(newPrompts);
+    }, 1000);
 </script>
 
 <div class="flex px-8 py-2 justify-center bg-base-100">

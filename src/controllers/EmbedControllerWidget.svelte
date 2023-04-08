@@ -92,12 +92,8 @@
         }
 
         const distanceMatrix = createDistanceMatrix(setA, setB);
-        console.log(distanceMatrix);
-        console.log(Munkres);
 
         const indexes = Munkres(distanceMatrix);
-
-        console.log(indexes);
 
         if (!indexes) {
             return null;

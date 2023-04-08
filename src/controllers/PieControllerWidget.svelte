@@ -280,8 +280,6 @@
             wp[id].pieWeight = point.unitWeight;
         });
 
-        // console.log(Object.values(pieAngles));
-
         activePromptStore.update({
             ...$activePrompt,
             weightedPrompts: wp,
