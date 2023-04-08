@@ -16,6 +16,8 @@ export function getHighestWeight(ap) {
         case "pie": weightKey = "pieWeight"; break;
     }
 
+    if(!ap.weightedPrompts) return 0;
+
     return Math.max(...Object.values(ap.weightedPrompts).map((p) => p[weightKey]));
 }
 
@@ -29,6 +31,8 @@ export function getTotalWeight(ap) {
         case "pie": weightKey = "pieWeight"; break;
     }
     
+    if(!ap.weightedPrompts) return 0;
+
     return Object.values(ap.weightedPrompts).reduce((acc, p) => acc + p[weightKey], 0);
 }
 
@@ -42,6 +46,8 @@ export function getRelativeWeight(ap, id) {
         case "pie": weightKey = "pieWeight"; break;
     }
     
+    if(!ap.weightedPrompts[id]) return 0;
+
     return ap.weightedPrompts[id][weightKey] / getHighestWeight(ap);
 }
 
@@ -55,6 +61,9 @@ export function getDisplayWeight(ap, id) {
         case "embed": weightKey = "embedWeight"; break;
         case "pie": weightKey = "pieWeight"; break;
     }
+
+    if(!ap.weightedPrompts[id]) return 0;
+
     const w = ap.weightedPrompts[id][weightKey];
     return humanizeWeight((w || 0) / getTotalWeight(ap));
 }

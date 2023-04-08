@@ -31,7 +31,7 @@
                 on:click={() => selectPrompt(promptId, data)}
                 >
                 {#each Object.entries(data.weightedPrompts) as [id, wp]}{wp.text}::<b
-                        >{getDisplayWeight($activePrompt, id)}</b
+                        >{getDisplayWeight(data, id)}</b
                     >
                 {/each}</a
             >
