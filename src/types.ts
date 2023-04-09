@@ -33,6 +33,13 @@ export enum WeightMode {
 
 export type Embeddings = Record<number, VecN>;
 
+export type SlotSet = {
+    name: string;
+    values: string[];
+}
+
+export type SlotSetDict = Record<string, SlotSet>;
+
 export type MultiPrompt = {
     weightedPrompts: WeightedPromptDict;
     weightMode: WeightMode;

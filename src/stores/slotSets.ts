@@ -1,27 +1,29 @@
-import type { Directive, DirectiveDict } from '../types';
+import type { SlotSet, SlotSetDict } from '../types';
 import { get, writable, derived } from 'svelte/store'
 
-export function storableDirectiveConfigs() {
-    const store = writable({} as DirectiveDict);
+const storeKey = 'slotSet';
+
+export function storableSlotSets() {
+    const store = writable({} as SlotSetDict);
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
     set((isBrowser && Object.keys(localStorage).reduce((acc, key) => {
-        if (key.startsWith('directive')) {
+        if (key.startsWith(storeKey)) {
             const id = key.split('_')[1];
-            acc[id] = JSON.parse(localStorage[key]) as Directive;
+            acc[id] = JSON.parse(localStorage[key]) as SlotSet;
         }
         return acc;
-    }, {} as DirectiveDict)) || {});
+    }, {} as SlotSetDict)) || {});
 
     return {
         subscribe,
-        update: (id: string, p: Directive) => {
+        update: (id: string, p: SlotSet) => {
             const currentStore = get(store);
             const currentDoc = currentStore[id] || {};
             const updatedDoc = { ...currentDoc, ...p };
 
-            isBrowser && (localStorage[`directive_${id}`] = JSON.stringify(updatedDoc));
+            isBrowser && (localStorage[`${storeKey}_${id}`] = JSON.stringify(updatedDoc));
 
             const updatedStore = { ...currentStore, [id]: updatedDoc };
             set(updatedStore);
@@ -32,7 +34,7 @@ export function storableDirectiveConfigs() {
             return currentStore[id];
         },
         delete: (id: string) => {
-            isBrowser && delete localStorage[`directive_${id}`];
+            isBrowser && delete localStorage[`${storeKey}_${id}`];
 
             const newStore = { ...get(store) };
             delete newStore[id];
@@ -42,7 +44,7 @@ export function storableDirectiveConfigs() {
     };
 }
 
-export const directiveStore = storableDirectiveConfigs();
+export const slotSetStore = storableSlotSets();
 
 
-export const directiveList = derived(directiveStore, $directiveStore => Object.entries(get(directiveStore)))
+export const slotSets = derived(slotSetStore, $slotSetStore => get(slotSetStore))
