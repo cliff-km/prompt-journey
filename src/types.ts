@@ -25,6 +25,7 @@ export type WeightedPromptDict = Record<number, WeightedPrompt>;
 
 export enum WeightMode {
     Circle = "circle",
+    Ring = "ring",
     Bars = "bars",
     Embed = "embed",
     Pie = "pie",
@@ -36,6 +37,11 @@ export type MultiPrompt = {
     weightedPrompts: WeightedPromptDict;
     weightMode: WeightMode;
     pieAngles: Record<number, number>;
+    ringAngles: Record<number, number>;
+    ringStartAngle: number;
+    ringReverse: boolean;
+    ringWeightScaling: number;
+    ringExponentialScaling: boolean;
     circleAngles: Record<number, number>;
     circleMarker: Vec2;
     circleWeightScaling: number;

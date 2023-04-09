@@ -10,7 +10,7 @@
 </script>
 
 <div
-    class="w-full h-full"
+    class="w-full h-full pt-10"
     bind:clientWidth={controllerW}
     bind:clientHeight={controllerH}
 >

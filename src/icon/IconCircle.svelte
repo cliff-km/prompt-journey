@@ -8,16 +8,6 @@
         cx="25"
         cy="25"
         r="20"
-        stroke="rgba(255,255,255, 0.7)"
-        stroke-width="2"
-        fill="none"
-    />
-    <circle
-        cx="25"
-        cy="25"
-        r="2"
-        stroke="rgba(255,255,255, 0.7)"
-        stroke-width="1"
         fill="rgba(255,255,255, 0.7)"
     />
 </svg>

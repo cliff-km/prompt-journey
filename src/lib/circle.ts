@@ -53,3 +53,13 @@ export function pointOnBoundary(cxy: Vec2, angle: number) {
 
     return [x, y];
 }
+
+export function boundedAngle(angle: number) {
+    if (angle < 0) {
+        return 360 + -1 * (Math.abs(angle) % 360);
+    }
+    if (angle > 360) {
+        return (angle % 360);
+    }
+    return angle;
+}

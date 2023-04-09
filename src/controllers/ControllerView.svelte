@@ -1,54 +1,24 @@
 <script lang="ts">
     import { WeightMode } from "../types.js";
+    import ControllerSelector from "./ControllerSelector.svelte";
+    import ControllerCircleSelector from "./ControllerCircleSelector.svelte";
     import CircleController from "./CircleController.svelte";
     import BarController from "./BarController.svelte";
     import PieController from "./PieController.svelte";
     import EmbedController from "./EmbedController.svelte";
     import PromptBox from "../prompts/PromptBox.svelte";
-    import IconBars from "../svg/IconBars.svelte";
-    import IconCircle from "../svg/IconCircle.svelte";
-    import IconScatter from "../svg/IconScatter.svelte";
-    import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
-    import IconPie from "../svg/IconPie.svelte";
-
-    function selectControllerMode(mode: WeightMode) {
-        const ap = {...$activePrompt, weightMode: mode};
-        activePromptStore.update(ap);
-    }
+    import { activePrompt } from "../stores/activePromptStore.js";
+    import RingController from "./RingController.svelte";
 </script>
 
-<div class="w-full h-full flex flex-col">
+<div class="relative w-full h-full flex flex-col">
     <!-- Page content here -->
     <div class="flex flex-col h-full place-content-between">
-        <div class="btn-group btn-group-horizontal w-full flex justify-end p-2">
-            <button
-                class="btn btn-sm"
-                class:btn-active={$activePrompt.weightMode === WeightMode.Bars}
-                on:click={() => selectControllerMode(WeightMode.Bars)}
-            >
-                <IconBars />
-            </button>
-            <button
-                class="btn btn-sm"
-                class:btn-active={$activePrompt.weightMode === WeightMode.Pie}
-                on:click={() => selectControllerMode(WeightMode.Pie)}
-            >
-                <IconPie />
-            </button>
-            <button
-                class="btn btn-sm"
-                class:btn-active={$activePrompt.weightMode === WeightMode.Circle}
-                on:click={() => selectControllerMode(WeightMode.Circle)}
-            >
-                <IconCircle />
-            </button>
-            <button
-                class="btn btn-sm"
-                class:btn-active={$activePrompt.weightMode === WeightMode.Embed}
-                on:click={() => selectControllerMode(WeightMode.Embed)}
-            >
-                <IconScatter />
-            </button>
+        <div class="absolute top-0 right-0 z-10">
+            <ControllerSelector />
+            {#if $activePrompt.weightMode === WeightMode.Circle || $activePrompt.weightMode === WeightMode.Pie || $activePrompt.weightMode === WeightMode.Ring}
+                <ControllerCircleSelector />
+            {/if}
         </div>
         {#if $activePrompt.weightMode === WeightMode.Bars}
             <BarController />
@@ -56,11 +26,13 @@
             <PieController />
         {:else if $activePrompt.weightMode === WeightMode.Circle}
             <CircleController />
+        {:else if $activePrompt.weightMode === WeightMode.Ring}
+            <RingController />
         {:else if $activePrompt.weightMode === WeightMode.Embed}
             <EmbedController />
         {/if}
         <div class="h-48 w-full p-4 flex flex-col">
-            <PromptBox/>
+            <PromptBox />
         </div>
     </div>
 </div>

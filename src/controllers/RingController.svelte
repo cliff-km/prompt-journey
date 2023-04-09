@@ -1,23 +1,29 @@
 <script lang="ts">
     import { isUndefined } from "mathjs";
     import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
-    import CircleControllerWidget from "./CircleControllerWidget.svelte";
+    import RingControllerWidget from "./RingControllerWidget.svelte";
 
     let controllerW;
     let controllerH;
-    let circleWeightScaling = $activePrompt.circleWeightScaling || 2;
-    let circleExponentialScaling = !isUndefined($activePrompt.circleExponentialScaling) ? $activePrompt.circleExponentialScaling : true;
+    let ringWeightScaling = $activePrompt.ringWeightScaling || 2;
+    let ringExponentialScaling = !isUndefined($activePrompt.ringExponentialScaling) ? $activePrompt.ringExponentialScaling : true;
         
     $: {
         {
             activePromptStore.update({
                 ...activePromptStore.get(),
-                circleExponentialScaling,
-                circleWeightScaling,
+                ringExponentialScaling,
+                ringWeightScaling,
             });
         }
     }
 
+    function handleReverse() {
+        activePromptStore.update({
+            ...activePromptStore.get(),
+            ringReverse: !$activePrompt.ringReverse,
+        });
+    }
 </script>
 
 <div
@@ -25,7 +31,7 @@
     bind:clientWidth={controllerW}
     bind:clientHeight={controllerH}
 >
-    <CircleControllerWidget
+    <RingControllerWidget
         center={[Math.round(controllerW / 2), Math.round(controllerH / 2)]}
         radius={Math.round(Math.min(controllerW, controllerH) / 2) - 150}
     />
@@ -38,22 +44,28 @@
         <input
             type="checkbox"
             class="toggle toggle-xs"
-            bind:checked={circleExponentialScaling}
+            bind:checked={ringExponentialScaling}
         />
     </div>
-    {#if circleExponentialScaling}
+    {#if ringExponentialScaling}
         <div class="w-full px-2">
             <label class="label">
                 <span class="label-text">Scaling Power</span>
             </label>
             <input
-                bind:value={circleWeightScaling}
+                bind:value={ringWeightScaling}
                 type="range"
                 min="0.5"
-                max="3"
+                max="5"
                 step="0.1"
                 class="range range-xs"
             />
         </div>
     {/if}
+    <div class="w-32 px-2 pb-1 flex flex-col justify-end">
+        <button
+            on:click={handleReverse}
+            class="btn btn-xs btn-primary">Reverse</button
+        >
+    </div>
 </div>

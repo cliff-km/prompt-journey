@@ -13,6 +13,7 @@
         polarToPoint,
         closestPointOnCircle,
         pointOnBoundary,
+        boundedAngle,
     } from "../lib/circle";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
@@ -86,7 +87,7 @@
                 const angle =
                     acc[id] ||
                     idx * (360 / Object.keys(weightedPrompts).length) - 90;
-                acc[id] = positiveAngle(angle);
+                acc[id] = boundedAngle(angle);
                 return acc;
             },
             angles
@@ -131,7 +132,7 @@
 
         // getIds in angle order
         const ids = Object.entries(ca)
-            .sort((a, b) => positiveAngle(a[1]) - positiveAngle(b[1]))
+            .sort((a, b) => boundedAngle(a[1]) - boundedAngle(b[1]))
             .map((p) => p[0]);
 
         // get next id
@@ -152,13 +153,13 @@
         const angleChange = mouseAngle - mouseStartAngle;
 
         const nextCa = { ...ca };
-        nextCa[id] = positiveAngle(angleChange + segmentAngleOffsets[id]);
-        nextCa[nextId] = positiveAngle(angleChange + segmentAngleOffsets[nextId]);
+        nextCa[id] = boundedAngle(angleChange + segmentAngleOffsets[id]);
+        nextCa[nextId] = boundedAngle(angleChange + segmentAngleOffsets[nextId]);
 
 
         // determine if order will change
         const nextIds = Object.entries(nextCa)
-            .sort((a, b) => positiveAngle(a[1]) - positiveAngle(b[1]))
+            .sort((a, b) => boundedAngle(a[1]) - boundedAngle(b[1]))
             .map((p) => p[0]);
 
         // if order will change, don't update
@@ -176,7 +177,7 @@
     function handlePointDrag(mouseLocation) {
         const point = { ...$activePrompt.weightedPrompts[activePoint] };
         const c = closestPointOnCircle(mouseLocation, center, radius);
-        const angle = positiveAngle(pointToPolar(c, center, radius)[0]);
+        const angle = boundedAngle(pointToPolar(c, center, radius)[0]);
 
         const ca = { ...$activePrompt.pieAngles };
         ca[point.id] = angle;
@@ -199,23 +200,13 @@
         }
     }
 
-    function positiveAngle(angle) {
-        if (angle < 0) {
-            return 360 + -1 * (Math.abs(angle) % 360);
-        }
-        if (angle > 360) {
-            return (angle % 360);
-        }
-        return angle;
-    }
-
     function handleMouseWheel(e, id) {
         e.preventDefault();
         const ca = { ...$activePrompt.pieAngles };
 
         // getIds in angle order
         const ids = Object.entries(ca)
-            .sort((a, b) => positiveAngle(a[1]) - positiveAngle(b[1]))
+            .sort((a, b) => boundedAngle(a[1]) - boundedAngle(b[1]))
             .map((p) => p[0]);
 
         // get next id
@@ -223,8 +214,8 @@
         const nextIdx = idx + 1 === ids.length ? 0 : idx + 1;
         const nextId = ids[nextIdx];
         
-        ca[id] = positiveAngle(ca[id] - e.deltaY / 100);
-        ca[nextId] = positiveAngle(ca[nextId] + e.deltaY / 100);
+        ca[id] = boundedAngle(ca[id] - e.deltaY / 100);
+        ca[nextId] = boundedAngle(ca[nextId] + e.deltaY / 100);
         pointData = computePointData(
             $activePrompt.weightedPrompts,
             center,
@@ -240,7 +231,7 @@
 
         // sort prompts by angle
         const sortedPrompts = Object.entries(weightedPrompts).sort(
-            (a, b) => positiveAngle(pieAngles[a[0]]) - positiveAngle(pieAngles[b[0]])
+            (a, b) => boundedAngle(pieAngles[a[0]]) - boundedAngle(pieAngles[b[0]])
         );
 
         // compute angle differences
