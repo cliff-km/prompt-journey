@@ -20,7 +20,7 @@
     import { preferredModel } from "../stores/preferredModelStore";
     import { metaPrompt } from "../stores/metaPromptStore";
     import { directiveText } from "../stores/directiveText";
-    import { instructions, dealiasedInstructions } from "../stores/instructions";
+    import { dealiasedInstructions } from "../stores/instructions";
 
     const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301"];
 
@@ -134,7 +134,7 @@
     }
 
     function togglePreview() {
-        console.log($instructions);
+        console.log($dealiasedInstructions);
         previewMode = !previewMode;
     }
 </script>

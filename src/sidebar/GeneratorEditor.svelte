@@ -13,9 +13,7 @@
         preferredDirective,
     } from "../stores/preferredDirectiveStore.js";
     import { metaPromptStore, metaPrompt } from "../stores/metaPromptStore.js";
-    import { seed } from "../stores/slotSets";
     import { directiveText } from "../stores/directiveText";
-    import { instructions, createInstructions } from "../stores/instructions";
 
     export let togglePreview = ()=>{};
     export let isGenerating = false;
@@ -92,11 +90,9 @@
         if (newDirective && newDirective !== "new") {
             newPromptName = directives[newDirective].name;
             directiveText.set(directives[newDirective].text);
-            instructions.set(createInstructions($directiveText, $metaPrompt));
         } else if (newDirective === "new") {
             newPromptName = "";
             directiveText.set("");
-            instructions.set(createInstructions($directiveText, $metaPrompt));
         }
     }
 
