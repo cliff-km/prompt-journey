@@ -1,4 +1,5 @@
 import type { MultiPrompt } from "../types.js";
+import { replaceAliasesWithSlotValue } from "./slots.js";
 import { getDisplayWeight } from "./weights.js";
 
 export function parsePrompts(input: string) {
@@ -34,23 +35,23 @@ function trimTrailingCommas(str: string) {
 
 function removeListMarkers(str: string) {
     if (typeof str !== 'string') {
-      throw new Error('Input must be a string');
+        throw new Error('Input must be a string');
     }
-  
+
     const listMarkers = ['-', '#', '*', '•', '◦', '>', '<', '+', '^', '~', '(', ')', '[', ']', '{', '}'];
     let newStr = str.trim();
-  
+
     while (listMarkers.includes(newStr[0])) {
-      newStr = newStr.slice(1).trim();
+        newStr = newStr.slice(1).trim();
     }
-  
+
     // Handle cases like "1. ", "2) ", or "3) "
     if (/^\d+(\.|\))\s/.test(newStr)) {
-      newStr = newStr.replace(/^\d+(\.|\))\s/, '');
+        newStr = newStr.replace(/^\d+(\.|\))\s/, '');
     }
-  
+
     return newStr;
-  }
+}
 
 export function processString(input: string) {
     // Remove newline characters from the beginning and end of the input
@@ -85,8 +86,8 @@ export function processString(input: string) {
 export function getPromptList(activePrompt: MultiPrompt, useWeightOrdering: boolean, showZeroPrompts: boolean) {
     let list = Object.entries(activePrompt.weightedPrompts);
 
-    if(useWeightOrdering) list = list.sort((a, b) => getDisplayWeight(activePrompt, parseInt(b[0])) - getDisplayWeight(activePrompt, parseInt(a[0])));
-    if(!showZeroPrompts) list = list.filter((e) => showZeroPrompts || getDisplayWeight(activePrompt, parseInt(e[0])));
+    if (useWeightOrdering) list = list.sort((a, b) => getDisplayWeight(activePrompt, parseInt(b[0])) - getDisplayWeight(activePrompt, parseInt(a[0])));
+    if (!showZeroPrompts) list = list.filter((e) => showZeroPrompts || getDisplayWeight(activePrompt, parseInt(e[0])));
 
     return list;
 }
@@ -94,7 +95,7 @@ export function getPromptList(activePrompt: MultiPrompt, useWeightOrdering: bool
 function isCompleteSentence(text: string) {
     return text.trim().endsWith('.');
 }
-  
+
 function joinSentencesAndFragments(textList: string[]) {
     let result = '';
     let fragmentBuffer: string[] = [];
@@ -102,8 +103,8 @@ function joinSentencesAndFragments(textList: string[]) {
     textList.forEach((text, index) => {
         if (isCompleteSentence(text)) {
             if (fragmentBuffer.length > 0) {
-            result += fragmentBuffer.join(', ').replace(/,*\s*,/g, ',') + '. ';
-            fragmentBuffer = [];
+                result += fragmentBuffer.join(', ').replace(/,*\s*,/g, ',') + '. ';
+                fragmentBuffer = [];
             }
             result += text + ' ';
         } else {
@@ -117,18 +118,20 @@ function joinSentencesAndFragments(textList: string[]) {
 
     return result.trim();
 }
-  
-  
-export function getPromptText(activePrompt: MultiPrompt, outputMultiPrompt: boolean, useWeightOrdering: boolean, showZeroPrompts: boolean) {
-    if(outputMultiPrompt) return getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp]) => {
-        return `${wp.text}::${getDisplayWeight(
+
+
+
+export function getPromptText(activePrompt: MultiPrompt, seed: string, outputMultiPrompt: boolean, useWeightOrdering: boolean, showZeroPrompts: boolean) {
+    if (outputMultiPrompt) return getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp], idx) => {
+        const text = replaceAliasesWithSlotValue(wp.text, `${seed}${id}${idx}`)
+        return `${text}::${getDisplayWeight(
             activePrompt,
             parseInt(id)
         )}`;
     })
-    .join(" ");
+        .join(" ");
 
-    const promptTextList = getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp]) => wp.text)
-    
+    const promptTextList = getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp], idx) => replaceAliasesWithSlotValue(wp.text, `${seed}${id}${idx}`))
+
     return joinSentencesAndFragments(promptTextList);
 }

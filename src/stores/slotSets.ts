@@ -33,6 +33,11 @@ export function storableSlotSets() {
 
             return currentStore[id];
         },
+        getAll: () => {
+            const currentStore = get(store);
+
+            return currentStore;
+        },
         delete: (id: string) => {
             isBrowser && delete localStorage[`${storeKey}_${id}`];
 
@@ -46,5 +51,29 @@ export function storableSlotSets() {
 
 export const slotSetStore = storableSlotSets();
 
-
 export const slotSets = derived(slotSetStore, $slotSetStore => get(slotSetStore))
+
+function getRandomSeed() {
+    return (Math.random() * 1000000).toFixed(0);
+}
+
+export function storableSeed() {
+    const store = writable(getRandomSeed());
+    const { subscribe, set } = store;
+
+    return {
+        subscribe,
+        get: () => {
+            const currentStore = get(store);
+
+            return currentStore;
+        },
+        shuffle: () => {
+            set(getRandomSeed());
+        },
+    };
+}
+
+export const seedStore = storableSeed();
+
+export const seed = derived(seedStore, $seedStore => get(seedStore));

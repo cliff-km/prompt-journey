@@ -174,7 +174,6 @@
             };
             return acc;
         }, {});
-        console.log("relativeAngles", pd);
 
         // get weights by id
 
@@ -182,8 +181,6 @@
         Object.entries(pd).forEach(([id, data]) => {
             wp[id].ringWeight = data.unitWeight;
         });
-
-        console.log("ringStartAngle", ringStartAngle);
 
         activePromptStore.update({
             ...$activePrompt,
@@ -193,11 +190,6 @@
         });
 
         return pd;
-    }
-
-    $: {
-        console.log("pointData", pointData);
-        console.log("weightedPrompts", $activePrompt.weightedPrompts);
     }
 </script>
 

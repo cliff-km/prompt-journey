@@ -1,7 +1,6 @@
 <script lang="ts">
     import MultiPrompt from "./MultiPrompt.svelte";
     import SinglePrompt from "./SinglePrompt.svelte";
-    import { getDisplayWeight } from "$lib/weights.js";
     import { activePrompt } from "../stores/activePromptStore.js";
     import {
         showZeroPromptsStore, showZeroPrompts
@@ -10,11 +9,13 @@
         outputMultiPrompt, outputMultiPromptStore
     } from '../stores/outputMultiPrompt.js';
     import { useWeightOrdering, useWeightOrderingStore } from "../stores/useWeightOrdering";
-    import { getPromptList, getPromptText } from "$lib/prompt";
+    import { getPromptText } from "$lib/prompt";
+    import { seedStore, seed } from "../stores/slotSets";
 
     function handleClick() {
-        const promptText = getPromptText($activePrompt, $outputMultiPrompt, $useWeightOrdering, $showZeroPrompts);
+        const promptText = getPromptText($activePrompt, $seed, $outputMultiPrompt, $useWeightOrdering, $showZeroPrompts);
         navigator.clipboard.writeText(promptText);
+        seedStore.shuffle();
     }
 
 

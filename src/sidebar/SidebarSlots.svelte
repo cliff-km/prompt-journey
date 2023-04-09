@@ -67,7 +67,6 @@
     }
 
     const handleSinglePromptChange = debounce((idx, text) => {
-        console.log("handleSinglePromptChange", idx, text);
         if (!activeSlotSet || !activeSlotSetId) return;
         const newSlots = [...activeSlotSet.values];
 
@@ -83,16 +82,17 @@
     }, 1000);
 
     const handleNewSlotChange = debounce((text) => {
-        console.log("handleNewSlotChange", text);
         if (!activeSlotSet || !activeSlotSetId) return;
         const newSlots = [...activeSlotSet.values];
 
-        newSlots.push(text);
+        if(text.length > 0) {
+            newSlots.push(text);
 
-        activeSlotSet.values = newSlots;
-        newSlotText = "";
+            activeSlotSet.values = newSlots;
+            newSlotText = "";
 
-        if(activeSlotSetId !== "new") slotSetStore.update(activeSlotSetId, activeSlotSet);
+            if(activeSlotSetId !== "new") slotSetStore.update(activeSlotSetId, activeSlotSet);
+        }
     }, 1000);
 </script>
 
@@ -128,9 +128,11 @@
                     placeholder="Name"
                     class="input input-bordered input-sm w-full max-w-xs"
                 />
-                <label class="label">
-                    <span class="label-text">Alias: <b>{getSlotAlias(slotName)}</b></span>
-                </label>
+                <div class="tooltip tooltip-primary tooltip-bottom" data-tip="Use in prompts to get random slot.">
+                    <label class="label">
+                        <span class="label-text">Alias: <b on:click={()=>navigator.clipboard.writeText(getSlotAlias(slotName))} class="text-white cursor-copy">{getSlotAlias(slotName)}</b></span>
+                    </label>
+                </div>
                 {#if ((activeSlotSetId==="new" || (activeSlotSet && activeSlotSet.name !== slotName)) && !checkNameAvailability(slotName))}
                     <label class="label">
                         <span class="label-text text-orange-300">Name In Use</span>
