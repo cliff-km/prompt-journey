@@ -128,7 +128,7 @@
                     placeholder="Name"
                     class="input input-bordered input-sm w-full max-w-xs"
                 />
-                <div class="tooltip tooltip-primary tooltip-bottom" data-tip="Use in prompts to get random slot.">
+                <div class="tooltip tooltip-primary tooltip-bottom" data-tip="Use in prompts or directives to get random slot.">
                     <label class="label">
                         <span class="label-text">Alias: <b on:click={()=>navigator.clipboard.writeText(getSlotAlias(slotName))} class="text-white cursor-copy">{getSlotAlias(slotName)}</b></span>
                     </label>

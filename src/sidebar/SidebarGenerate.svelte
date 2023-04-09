@@ -1,34 +1,26 @@
 <script lang="ts">
-    import { v4 as uuidv4 } from "uuid";
-    import { ClarinetPuppet1 } from "../directives/clarinet-puppet-1";
-    import { ClarinetPuppet2 } from "../directives/clarinet-puppet-2";
-    import { FiveSentences } from "../directives/five-sentences";
-    import { TenSentences } from "../directives/ten-sentences";
-    import { Fragments } from "../directives/fragments";
-    import { FragmentShotgun } from "../directives/fragment-shotgun";
-    import { PoeticAccents } from "../directives/poetic-accent";
-    import { directiveStore, directiveList } from "../stores/directiveStore.js";
-    import {
-        preferredModel,
-    } from "../stores/preferredModelStore.js";
-    import {
-        preferredDirectiveStore,
-        preferredDirective,
-    } from "../stores/preferredDirectiveStore.js";
-    import { metaPromptStore, metaPrompt } from "../stores/metaPromptStore.js";
+    import GeneratorEditor from "./GeneratorEditor.svelte";
+    import GeneratorPreview from "./GeneratorPreview.svelte";
+    import { key } from "../stores/keyStore";
+    import { replaceAliasesWithSlotValue } from "$lib/slots";
     import {
         createOpenAI,
         createCompletion,
         createChatCompletion,
-    } from "../lib/openai.js";
-    import { panelModeStore } from "../stores/panelModeStore.js";
-    import { intializeActivePrompt, activePromptStore, activePrompt, createWeightedPrompt } from "../stores/activePromptStore";
-    import { key } from "../stores/keyStore.js";
-    import { processString } from "../lib/prompt.js";
-
-    let openaiKey = $key;
-    let selectedModel = $preferredModel;
-    let genPromise = null;
+    } from "../lib/openai";
+    import { panelModeStore } from "../stores/panelModeStore";
+    import {
+        intializeActivePrompt,
+        activePromptStore,
+        activePrompt,
+        createWeightedPrompt,
+    } from "../stores/activePromptStore";
+    import { processString } from "../lib/prompt";
+    import { seedStore, seed } from "../stores/slotSets";
+    import { preferredModel } from "../stores/preferredModelStore";
+    import { metaPrompt } from "../stores/metaPromptStore";
+    import { directiveText } from "../stores/directiveText";
+    import { instructions, dealiasedInstructions } from "../stores/instructions";
 
     const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301"];
 
@@ -39,254 +31,136 @@
         "text-ada-001",
     ];
 
-    let builtInDirectives = {
-        // "A": {name: "Clarinet Puppet 1", text: ClarinetPuppet1, builtIn: true},
-        // "B": {name: "Clarinet Puppet 2", text: ClarinetPuppet2, builtIn: true},
-        C: { name: "Five Sentences", text: FiveSentences, builtIn: true },
-        D: { name: "Ten Sentences", text: TenSentences, builtIn: true },
-        E: { name: "Fragments", text: Fragments, builtIn: true },
-        F: { name: "Concept Shotgun", text: FragmentShotgun, builtIn: true },
-        G: { name: "Poetic Accents", text: PoeticAccents, builtIn: true },
-    };
+    let isGenerating = false;
+    let openaiKey = $key;
+    let previewMode = false;
+    $: selectedModel = $preferredModel || null;
 
-    $: userDirectives = $directiveList.reduce((acc, [id, data]) => {
-        acc[id] = { name: data.name, text: data.text, builtIn: false };
-        return acc;
-    }, {});
-
-    $: directives = Object.entries({
-        ...builtInDirectives,
-        ...userDirectives,
-    }).reduce((acc, [id, data]) => {
-        acc[id] = data;
-        return acc;
-    }, {});
-
-    let selectedDirective = null;
-    let newPromptName = "";
-    let directiveText = "";
-
-    function saveToStore() {
-        const id = selectedDirective === "new" ? uuidv4() : selectedDirective;
-        directiveStore.update(id, {
-            name: newPromptName,
-            text: directiveText,
-            builtIn: false,
-        });
-
-        if (selectedDirective === "new") {
-            selectedDirective = id;
-        }
-    }
-
-    $: {
-        if (selectedDirective === null) {
-            selectedDirective = $preferredDirective;
-        }
-        updateDirective(selectedDirective);
-    }
-
-    function deleteFromStore() {
-        directiveStore.delete(selectedDirective);
-        selectedDirective = null;
-        newPromptName = "";
-        directiveText = "";
-        preferredDirectiveStore.delete();
-    }
-
-    function updateDirective(newDirective) {
-        selectedDirective = newDirective;
-        preferredDirectiveStore.update(newDirective);
-        if (newDirective && newDirective !== "new") {
-            newPromptName = directives[newDirective].name;
-            directiveText = directives[newDirective].text;
-        } else if (newDirective === "new") {
-            newPromptName = "";
-            directiveText = "";
-        }
-    }
-
-    function handleSelectedDirectiveChange(e) {
-        updateDirective(e.target.value);
-    }
-
-    function handleChatPrompt(openai, instructions) {
+    function handleChatPrompt(openaiKey: string, instructions: string) {
+        const openai = createOpenAI(openaiKey);
         const model = selectedModel || "gpt-3.5-turbo";
-        genPromise = createChatCompletion(openai, instructions, model);
-        genPromise.then((response) => {
-            console.log(response);
+        isGenerating = true;
+        createChatCompletion(openai, instructions, model)
+            .then((response) => {
+                console.log(response);
 
-            response.data.choices.forEach((choice, i) => {
-                const sentences = processString(choice.message.content);
-                console.log(sentences);
+                response.data.choices.forEach((choice, i) => {
+                    const sentences = processString(choice.message.content);
+                    console.log(sentences);
 
-                const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
-                    acc[idx] = createWeightedPrompt(idx, text, parsedWeight);
-                    return acc;
-                }, {});
+                    const weightedPrompts = sentences.reduce(
+                        (acc, [text, parsedWeight], idx) => {
+                            acc[idx] = createWeightedPrompt(
+                                idx,
+                                text,
+                                parsedWeight
+                            );
+                            return acc;
+                        },
+                        {}
+                    );
 
-                activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
-                panelModeStore.update("edit");
+                    activePromptStore.update(
+                        intializeActivePrompt(
+                            weightedPrompts,
+                            $activePrompt.weightMode
+                        )
+                    );
+                    panelModeStore.update("edit");
+                    seedStore.shuffle();
+                });
+            })
+            .finally(() => {
+                isGenerating = false;
             });
-        });
     }
 
-    function handleInsertPrompt(openai, instructions) {
+    function handleInsertPrompt(openaiKey: string, instructions: string) {
+        const openai = createOpenAI(openaiKey);
         const model = selectedModel || "text-davinci-003";
-        genPromise = createCompletion(openai, instructions, model);
-        genPromise.then((response) => {
-            console.log(response);
+        isGenerating = true;
+        createCompletion(openai, instructions, model)
+            .then((response) => {
+                console.log(response);
 
-            response.data.choices.forEach((choice, i) => {
-                const sentences = processString(choice.text); // insert
-                console.log(sentences);
+                response.data.choices.forEach((choice, i) => {
+                    const sentences = processString(choice.text); // insert
+                    console.log(sentences);
 
-                const weightedPrompts = sentences.reduce((acc, [text, parsedWeight], idx) => {
-                    acc[idx] = createWeightedPrompt(idx, text, parsedWeight);
-                    return acc;
-                }, {});
+                    const weightedPrompts = sentences.reduce(
+                        (acc, [text, parsedWeight], idx) => {
+                            acc[idx] = createWeightedPrompt(
+                                idx,
+                                text,
+                                parsedWeight
+                            );
+                            return acc;
+                        },
+                        {}
+                    );
 
-                activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
-                panelModeStore.update("edit");
+                    activePromptStore.update(
+                        intializeActivePrompt(
+                            weightedPrompts,
+                            $activePrompt.weightMode
+                        )
+                    );
+                    panelModeStore.update("edit");
+                    seedStore.shuffle();
+                });
+            })
+            .finally(() => {
+                isGenerating = false;
             });
-        });
     }
 
     function handleGeneratePrompt() {
+        console.log("handleGeneratePrompt");
+        console.log(openaiKey);
+        console.log(directiveText);
+        console.log($metaPrompt);
+        console.log($seed);
         if (!openaiKey) {
             return;
         }
-        if (!directiveText) {
-            return;
-        }
-        if (!$metaPrompt) {
-            return;
-        }
-        const openai = createOpenAI(openaiKey);
 
-        const instructions = `${directiveText}
-
-        Using the above rules create a prompt from:
-        ${$metaPrompt}
-        `;
+        console.log($dealiasedInstructions);
 
         if (insertModels.includes(selectedModel)) {
-            handleInsertPrompt(openai, instructions);
+            handleInsertPrompt(openaiKey, $dealiasedInstructions);
         } else {
-            handleChatPrompt(openai, instructions);
+            handleChatPrompt(openaiKey, $dealiasedInstructions);
         }
     }
 
-    $: builtInDirective =
-        selectedDirective &&
-        selectedDirective !== "new" &&
-        directives[selectedDirective].builtIn;
-    $: isUserDirective =
-        selectedDirective &&
-        selectedDirective !== "new" &&
-        !directives[selectedDirective].builtIn;
+    function togglePreview() {
+        console.log($instructions);
+        previewMode = !previewMode;
+    }
 </script>
 
 <div
     class="h-full p-2 w-full bg-base-100 overflow-y-auto text-base-content inline-block"
 >
     {#if openaiKey}
-        <div class="flex justify-center">
-            <div class="form-control w-full max-w-xs mb-4">
-                <label class="label">
-                    <span class="label-text"
-                        >Pick a directive for prompt creation</span
-                    >
-                </label>
-                <select
-                    value={selectedDirective}
-                    on:change={handleSelectedDirectiveChange}
-                    class="select select-bordered"
-                >
-                    <option disabled selected={selectedDirective === null}
-                        >Pick one</option
-                    >
-                    {#each Object.entries(directives) as [id, data] (id)}
-                        <option value={id} selected={selectedDirective === id}
-                            >{data.name}{data.builtIn
-                                ? " (Built-In)"
-                                : " (User)"}</option
-                        >
-                    {/each}
-                    <option value="new" selected={selectedDirective === "new"}
-                        >New</option
-                    >
-                </select>
-            </div>
-        </div>
-        {#if selectedDirective}
-            {#if !builtInDirective}
-                <div class="w-full p-2 h-12 flex justify-between">
-                    <input
-                        bind:value={newPromptName}
-                        type="text"
-                        placeholder="Name"
-                        class="input input-bordered input-sm w-full max-w-xs"
-                    />
-                    <button
-                        on:click={saveToStore}
-                        class="btn btn-sm btn-primary ml-4">Save</button
-                    >
-                </div>
-            {/if}
-            <div class="w-full p-2 h-1/2">
-                <textarea
-                    bind:value={directiveText}
-                    class="textarea textarea-bordered w-full h-full"
-                    placeholder="GPT Directives"
-                />
-            </div>
-            <div class="w-full p-2 h-1/5">
-                <textarea
-                    value={$metaPrompt}
-                    on:input={(e) =>
-                        metaPromptStore.update(e.target.value)}
-                    class="textarea textarea-bordered w-full h-full"
-                    placeholder="Describe the prompt to generate."
-                />
-            </div>
-            {#if isUserDirective}
-                <div class="w-full p-2 h-12 flex justify-between">
-                    <button
-                        on:click={deleteFromStore}
-                        class="btn btn-sm btn-error ml-4">Delete</button
-                    >
-                    {#await genPromise}
-                        <button
-                            on:click={handleGeneratePrompt}
-                            class="btn btn-sm btn ml-4 disabled" >Generating</button
-                        >
-                    {:then result} 
-                        <button
-                            on:click={handleGeneratePrompt}
-                            class="btn btn-sm btn-primary ml-4" >Generate</button
-                        >
-                    {/await}
-                </div>
-            {:else}
-                <div class="w-full p-2 h-12 flex justify-end">
-                    {#await genPromise}
-                        <button
-                            on:click={handleGeneratePrompt}
-                            class="btn btn-sm btn ml-4 disabled" >Generating</button
-                        >
-                    {:then result} 
-                        <button
-                            on:click={handleGeneratePrompt}
-                            class="btn btn-sm btn-primary ml-4" >Generate</button
-                        >
-                    {/await}
-                </div>
-            {/if}
+        {#if previewMode}
+            <GeneratorPreview
+                {togglePreview}
+                {handleGeneratePrompt}
+                {isGenerating}
+            />
+        {:else}
+            <GeneratorEditor
+                {togglePreview}
+                {handleGeneratePrompt}
+                {isGenerating}
+            />
         {/if}
     {:else}
         <div class="w-full p-2 flex justify-center">
-            <p class="text-center">Set Open AI Key in settings for GPT generation.</p>
+            <p class="text-center">
+                Set Open AI Key in settings for GPT generation.
+            </p>
         </div>
     {/if}
 </div>
