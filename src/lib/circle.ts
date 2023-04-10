@@ -18,7 +18,7 @@ export function polarToPoint(cxy: Vec2, polar: Vec2, radius: number) {
     return add(cxy, offset);
 }
 
-export function closestPointOnCircle(pxy: Vec2, cxy: Vec2, radius: number) {
+export function closestPointOnCircle(pxy: Vec2, cxy: Vec2, radius: number) : Vec2 {
     const dx = pxy[0] - cxy[0];
     const dy = pxy[1] - cxy[1];
     const distance = Math.sqrt(dx * dx + dy * dy);

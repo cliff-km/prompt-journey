@@ -26,4 +26,5 @@
     on:mouseover={handleMouseOver}
     on:mouseout={handleMouseOut}
     on:mousedown={_handleMouseDown}
+    on:touchstart={_handleMouseDown}
 />

@@ -8,7 +8,7 @@
     } from "../stores/activePromptStore.js";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
-    import { getSVGMouseLocation } from "../lib/vector";
+    import { getSVGInputLocation } from "../lib/vector";
 
     // display state
     export let center = [0, 0];
@@ -102,7 +102,7 @@
                 ? hoverEmptyId
                 : null;
         if (targetId === null) return;
-        const mouseLocation = getSVGMouseLocation(e);
+        const mouseLocation = getSVGInputLocation(e);
         useLocationToUpdateWeight(targetId, mouseLocation);
     }
 
@@ -127,11 +127,11 @@
         });
     }
 
-    function handleMouseMove(e: MouseEvent) {
+    function handleMouseMove(e: MouseEvent | TouchEvent) {
         let targetId = activeDragId;
         if (targetId === null) return;
 
-        const mouseLocation = getSVGMouseLocation(e);
+        const mouseLocation = getSVGInputLocation(e);
         useLocationToUpdateWeight(targetId, mouseLocation);
         if (activeDragId !== null) {
             //determine if mouse is beyond end
@@ -229,6 +229,8 @@
     class="w-full h-full"
     on:mousemove={handleMouseMove}
     on:mouseup={handleMouseUp}
+    on:touchend={handleMouseUp}
+    on:touchmove={handleMouseMove}
     on:dblclick={handleDoubleClick}
 >
     {#each prompts as [id, idx, p] (id)}

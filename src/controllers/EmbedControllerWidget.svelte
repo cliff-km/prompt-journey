@@ -8,7 +8,7 @@
     } from "../stores/activePromptStore.js";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
-    import { getDistance, getSVGMouseLocation } from "../lib/vector";
+    import { getDistance, getSVGInputLocation } from "../lib/vector";
     import { add, multiply } from "mathjs";
     import Munkres from "munkres-js";
 
@@ -270,7 +270,7 @@
     }
 
     function handleDoubleClick(e) {
-        const mouseLocation = getSVGMouseLocation(e, svg);
+        const mouseLocation = getSVGInputLocation(e);
         markerLocation = mouseLocation;
         recomputeWeights(
             markerLocation,
@@ -281,9 +281,9 @@
         );
     }
 
-    function handleMouseMove(e) {
+    function handleMouseMove(e: MouseEvent | TouchEvent) {
         if (activePoint) {
-            const mouseLocation = getSVGMouseLocation(e, svg);
+            const mouseLocation = getSVGInputLocation(e);
             markerLocation = mouseLocation;
             recomputeWeights(
                 markerLocation,
@@ -295,7 +295,7 @@
         }
     }
 
-    function handleMouseUp(e) {
+    function handleMouseUp(e: Event) {
         activePoint = false;
     }
 
@@ -352,7 +352,9 @@
     id="svg"
     class="w-full h-full"
     on:mousemove={handleMouseMove}
+    on:touchmove={handleMouseMove}
     on:mouseup={handleMouseUp}
+    on:touchend={handleMouseUp}
     on:dblclick={handleDoubleClick}
 >
     {#if Object.entries($activePrompt.weightedPrompts).length > 0 && Object.entries(dataPoints || {}).length > 0}

@@ -19,9 +19,10 @@
     import { getTextBoxDimensions } from "../lib/text";
     import {
         findBoxCenter,
-        getSVGMouseLocation,
+        getSVGInputLocation,
     } from "../lib/vector";
     import SolidLine from "../svg/SolidLine.svelte";
+    import type { Vec2 } from "../types";
 
     // display state
     export let center = [450, 450];
@@ -31,7 +32,7 @@
     export let fontSize = 13;
 
     // inner state
-    let mouseLocation = [0, 0];
+    let mouseLocation = [0, 0] as Vec2;
     let mouseStartAngle = null;
     let segmentAngleOffsets = {};
     let mouseAngleChange = 0;
@@ -188,9 +189,9 @@
         pointData = computePointData(wp, center, radius, ca);
     }
 
-    function handleMouseMove(e) {
+    function handleMouseMove(e: MouseEvent | TouchEvent) {
         e.preventDefault();
-        mouseLocation = getSVGMouseLocation(e);
+        mouseLocation = getSVGInputLocation(e);
         if (activePoint) {
             handlePointDrag(mouseLocation)
         } else if(activeSegment) {
@@ -295,7 +296,9 @@
     id="svg"
     class="w-full h-full"
     on:mousemove={handleMouseMove}
+    on:touchmove={handleMouseMove}
     on:mouseup={handleMouseUp}
+    on:touchend={handleMouseUp}
 >
     {#if pointData && $activePrompt.weightedPrompts}
         <Circle xy={center} {radius} />
@@ -304,6 +307,7 @@
             <SolidLine p1={center} p2={pointData[id].xy} />
             <path
                 on:mousewheel={(e)=>handleMouseWheel(e, id)}
+                on:touchstart={(e)=>handleSegmentDragStart(e, id)}
                 on:mousedown={(e)=>handleSegmentDragStart(e, id)}
                 d={createPieSegment(
                     center,

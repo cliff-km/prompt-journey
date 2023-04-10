@@ -22,18 +22,19 @@
     import {
         getDistance,
         findBoxCenter,
-        getSVGMouseLocation,
+        getSVGInputLocation,
     } from "../lib/vector";
+    import type { Vec2 } from "../types";
 
     // display state
-    export let center = [450, 450];
+    export let center = [450, 450] as Vec2;
     export let radius = 250;
     export let pointRadius = 10;
     export let textWidth = 150;
     export let fontSize = 13;
 
     // inner state
-    let mouseLocation = [0, 0];
+    let mouseLocation = [0, 0] as Vec2;
     let activePoint: ActivePoint = null;
 
     $: {
@@ -113,8 +114,8 @@
         );
     }
 
-    function handleMouseMove(e) {
-        mouseLocation = getSVGMouseLocation(e);
+    function handleMouseMove(e: MouseEvent | TouchEvent) {
+        mouseLocation = getSVGInputLocation(e);
         if (activePoint === "main") {
             updateMarkerFromMouseLocation(mouseLocation);
         } else if (activePoint) {
@@ -141,7 +142,7 @@
     }
 
     function handleDoubleClick(e: Event) {
-        mouseLocation = getSVGMouseLocation(e);
+        mouseLocation = getSVGInputLocation(e);
         updateMarkerFromMouseLocation(mouseLocation);
     }
 
@@ -256,7 +257,9 @@
     id="svg"
     class="w-full h-full"
     on:mousemove={handleMouseMove}
+    on:touchmove={handleMouseMove}
     on:mouseup={handleMouseUp}
+    on:touchend={handleMouseUp}
     on:dblclick={handleDoubleClick}
 >
     {#if pointData && $activePrompt.weightedPrompts}
