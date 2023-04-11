@@ -16,7 +16,7 @@
     }
 </script>
 
-<div class="max-w-md w-1/2 h-screen overflow-y-auto">
+<div class="max-w-md w-1/2 h-screen">
     <div class="h-screen overflow-y-auto flex flex-col">
         <div
             class="btn-group btn-group-vertical sm:btn-group-horizontal bg-base-100 w-full flex justify-center p-2"

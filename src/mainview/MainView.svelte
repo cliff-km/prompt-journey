@@ -7,7 +7,7 @@
     import ConceptView from "./ConceptView.svelte";
 </script>
 
-<div class="relative w-full h-full flex flex-col">
+<div class="relative w-full h-screen flex flex-col">
     <!-- Page content here -->
     <div class="absolute top-0 left-0 z-10">
         <StageSelector />
@@ -17,11 +17,11 @@
             <ControlView />
         </div>
     {:else if $appStage === AppStage.Concept}
-        <div class="h-full w-full flex flex-col justify-center items-center">
+        <div class="flex flex-col h-full mt-10 overflow-hidden">
             <ConceptView />
         </div>
     {:else if $appStage === AppStage.History}
-        <div class="mt-10">
+        <div class="flex flex-col h-full mt-10 overflow-hidden">
             <HistoryView />
         </div>
     {/if}

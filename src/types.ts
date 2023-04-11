@@ -44,6 +44,8 @@ export type SlotSet = {
     values: string[];
 }
 
+export type EmbeddedConcepts = Record<string, VecN | null>;
+
 export type PromptHistory = PromptEvent[];
 
 export type PromptEvent = {

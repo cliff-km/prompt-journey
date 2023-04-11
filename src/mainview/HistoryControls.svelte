@@ -1,8 +1,11 @@
 <script lang="ts">
     import { promptHistory } from "../stores/promptHistory";
 
+    export let onChange = () => {};
+
     function clearHistory() {
         promptHistory.delete();
+        onChange();
     }
 </script>
 
