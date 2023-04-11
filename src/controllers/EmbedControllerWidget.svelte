@@ -9,8 +9,9 @@
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getDistance, getSVGInputLocation } from "../lib/vector";
-    import { add, multiply } from "mathjs";
+    import { add, multiply, subtract } from "mathjs";
     import Munkres from "munkres-js";
+    import type { Vec2 } from "../types";
 
     // display state
     export let center = [100, 100];
@@ -25,7 +26,11 @@
     let activePoint: boolean = false;
     let dataPoints = null;
     let innerDimensions = dimensions;
-    let innerOffsets = [0, 0];
+    let innerOffsets = [0, 0] as Vec2;
+    let zoomFactor = 1;
+    let zoomOffset = [0, 0] as Vec2;
+    let zoomCenter = [0, 0] as Vec2;
+    let focused = true;
 
     $: markerLocation = $activePrompt.embedMarker || center;
 
@@ -271,7 +276,10 @@
 
     function handleDoubleClick(e) {
         const mouseLocation = getSVGInputLocation(e);
-        markerLocation = mouseLocation;
+        markerLocation = multiply(
+            subtract(mouseLocation, zoomOffset),
+            1 / zoomFactor
+        );
         recomputeWeights(
             markerLocation,
             expScaling,
@@ -284,7 +292,10 @@
     function handleMouseMove(e: MouseEvent | TouchEvent) {
         if (activePoint) {
             const mouseLocation = getSVGInputLocation(e);
-            markerLocation = mouseLocation;
+            markerLocation = multiply(
+                subtract(mouseLocation, zoomOffset),
+                1 / zoomFactor
+            );
             recomputeWeights(
                 markerLocation,
                 expScaling,
@@ -292,6 +303,15 @@
                 innerDimensions,
                 promptLimit
             );
+        } else {
+            const mouseLocation = getSVGInputLocation(e);
+            const ml = add(multiply(markerLocation, zoomFactor), zoomOffset);
+            const zoomLocation = multiply(
+                subtract(mouseLocation, zoomOffset),
+                1 / zoomFactor
+            );
+            const DPR = window.devicePixelRatio || 1;
+            console.log(DPR, mouseLocation, ml);
         }
     }
 
@@ -346,52 +366,138 @@
 
         dataPoints = newDataPoints;
     }
+
+    function detectTrackPad(e) {
+        var isTrackpad = false;
+        if (e.wheelDeltaY) {
+            if (e.wheelDeltaY === e.deltaY * -3) {
+                isTrackpad = true;
+            }
+        } else if (e.deltaMode === 0) {
+            isTrackpad = true;
+        }
+        // console.log(isTrackpad ? "Trackpad detected" : "Mousewheel detected");
+        return isTrackpad;
+    }
+
+    function handleMouseWheel(e: WheelEvent) {
+        e.preventDefault();
+        const trackpad = detectTrackPad(e);
+
+        const mouseLocation = getSVGInputLocation(e);
+
+        // ml = zf * zl + zo
+        // zl = (ml - zo) / zf
+        const zoomLocation = multiply(
+            subtract(mouseLocation, zoomOffset),
+            1 / zoomFactor
+        );
+        //console.log(ml, zoomLocation);
+        const direction = trackpad ? -1 : 1;
+
+        zoomFactor = Math.min(
+            Math.max(zoomFactor + direction * e.deltaY * -0.01, 0.5),
+            20
+        );
+
+        //zoomOffset should center the zoom on the mouse location and keep it centered as the zoom changes
+        // zo = ml - zl * zf
+        zoomOffset = [
+            mouseLocation[0] - zoomLocation[0] * zoomFactor,
+            mouseLocation[1] - zoomLocation[1] * zoomFactor,
+        ];
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+        if(!focused) return;
+        console.log(e.key);
+        e = e || window.event;
+
+        if (e.key === "ArrowUp" || e.key === "w") {
+            zoomOffset[1] += 10;
+        } else if (e.key == "ArrowDown" || e.key == "s") {
+            zoomOffset[1] -= 10;
+        } else if (e.key == "ArrowLeft" || e.key == "a") {
+            zoomOffset[0] += 10;
+        } else if (e.key == "ArrowRight" || e.key == "d") {
+            zoomOffset[0] -= 10;
+        }
+    }
 </script>
 
-<svg
-    id="svg"
-    class="w-full h-full"
-    on:mousemove={handleMouseMove}
-    on:touchmove={handleMouseMove}
-    on:mouseup={handleMouseUp}
-    on:touchend={handleMouseUp}
-    on:dblclick={handleDoubleClick}
->
-    {#if Object.entries($activePrompt.weightedPrompts).length > 0 && Object.entries(dataPoints || {}).length > 0}
-        {#each Object.entries($activePrompt.weightedPrompts) as [id, wp] (id)}
-            {#if wp.embedActive}
-                <Line p1={dataPoints[id].embedXY} p2={markerLocation} />
-            {/if}
+<svelte:window 
+    on:keydown={handleKeyDown}
+/>
+<div class="w-full h-full">
+    <svg
+        id="svg"
+        class="w-full h-full outline-none"
+        on:mousewheel={handleMouseWheel}
+        on:mousemove={handleMouseMove}
+        on:touchmove={handleMouseMove}
+        on:mouseup={handleMouseUp}
+        on:touchend={handleMouseUp}
+        on:dblclick={handleDoubleClick}
+        on:focusin={()=>focused = true}
+        on:focusout={()=>focused = false}
+    >
+        {#if Object.entries($activePrompt.weightedPrompts).length > 0 && Object.entries(dataPoints || {}).length > 0}
+            {#each Object.entries($activePrompt.weightedPrompts) as [id, wp] (id)}
+                {#if wp.embedActive}
+                    <Line
+                        p1={add(
+                            multiply(dataPoints[id].embedXY, zoomFactor),
+                            zoomOffset
+                        )}
+                        p2={add(
+                            multiply(markerLocation, zoomFactor),
+                            zoomOffset
+                        )}
+                    />
+                {/if}
+                <Point
+                    xy={add(
+                        multiply(dataPoints[id].embedXY, zoomFactor),
+                        zoomOffset
+                    )}
+                    radius={pointRadius}
+                    color="rgba(136,157,191, 1)"
+                />
+                <PromptText
+                    xy={[
+                        dataPoints[id].embedXY[0] * zoomFactor +
+                            zoomOffset[0] -
+                            getTextBoxDimensions(
+                                textWidth,
+                                wp.text.length,
+                                fontSize
+                            )[0] /
+                                2,
+                        dataPoints[id].embedXY[1] * zoomFactor +
+                            zoomOffset[1] +
+                            pointRadius,
+                    ]}
+                    color={`rgba(255,255,255,${getWeightOpacity(
+                        wp.embedWeight
+                    )}`}
+                    wh={getTextBoxDimensions(
+                        textWidth,
+                        wp.text.length,
+                        fontSize
+                    )}
+                    {fontSize}
+                    text={wp.text}
+                />
+            {/each}
             <Point
-                xy={dataPoints[id].embedXY}
-                radius={pointRadius}
+                xy={add(multiply(markerLocation, zoomFactor), zoomOffset)}
+                radius={markerRadius}
                 color="rgba(136,157,191, 1)"
+                handleMouseDown={() => (activePoint = true)}
             />
-            <PromptText
-                xy={[
-                    dataPoints[id].embedXY[0] -
-                        getTextBoxDimensions(
-                            textWidth,
-                            wp.text.length,
-                            fontSize
-                        )[0] /
-                            2,
-                    dataPoints[id].embedXY[1] + pointRadius,
-                ]}
-                color={`rgba(255,255,255,${getWeightOpacity(wp.embedWeight)}`}
-                wh={getTextBoxDimensions(textWidth, wp.text.length, fontSize)}
-                {fontSize}
-                text={wp.text}
-            />
-        {/each}
-        <Point
-            xy={markerLocation}
-            radius={markerRadius}
-            color="rgba(136,157,191, 1)"
-            handleMouseDown={() => (activePoint = true)}
-        />
-    {/if}
-</svg>
+        {/if}
+    </svg>
+</div>
 
 <style>
     :global(svg) {
