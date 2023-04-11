@@ -21,6 +21,7 @@ So, TBD.
   - Partially addressed by adding in some anchoring that uses kMeans clustering.
 - Error handling 🙏
 - Built with tape and thumbtacks
+- Started hitting the bounds of localStorage. It was fun while it lasted.
 
 If you find anything else, let me know with an issue.
 
