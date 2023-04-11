@@ -67,9 +67,19 @@ export type MultiPrompt = {
     circleMarker: Vec2;
     circleWeightScaling: number;
     circleExponentialScaling: boolean;
+    embedMarker?: Vec2;
+    embedClusterSets?: Record<number, number[][]>;
     embeddings: Embeddings;
     embedWeightScaling: number;
     embedExponentialScaling: boolean;
     embedClusters: number;
     embedPromptLimit: number;
+    scaledEmbedMappings?: Record<number, Vec2>;
 }
+
+export type PointData = {
+    xy: Vec2;
+    text: string;
+    connected: boolean;
+    opacity: number;
+};

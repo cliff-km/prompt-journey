@@ -15,13 +15,13 @@
     >
         Build
     </button>
-    <button
+    <!--<button
         class="btn btn-sm"
         class:btn-active={$appStage === AppStage.Concept}
         on:click={() => selectStage(AppStage.Concept)}
     >
         Concept
-    </button>
+    </button>-->
     <button
         class="btn btn-sm"
         class:btn-active={$appStage === AppStage.History}

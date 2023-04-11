@@ -1,44 +1,24 @@
 <script lang="ts">
-    import Point from "../svg/Point.svelte";
-    import Line from "../svg/DashedLine.svelte";
-    import PromptText from "../svg/PromptText.svelte";
+    import type { Embeddings, PointData, Vec2 } from "../types";
+    import EmbedExplorer from "../embeds/EmbedExplorer.svelte";
     import {
         activePromptStore,
         activePrompt,
     } from "../stores/activePromptStore.js";
     import { getWeightOpacity } from "../lib/weights";
-    import { getTextBoxDimensions } from "../lib/text";
-    import { getDistance, getSVGInputLocation } from "../lib/vector";
-    import { add, multiply, subtract } from "mathjs";
+    import { getDistance } from "../lib/vector";
+    import { add, multiply } from "mathjs";
     import Munkres from "munkres-js";
-    import type { Vec2 } from "../types";
 
-    // display state
-    export let center = [100, 100];
-    export let dimensions = [100, 100];
-    export let pointRadius = 4;
-    export let markerRadius = 10;
-    export let textWidth = 150;
-    export let fontSize = 12;
-    export let innerPad = 100;
+    export let center = [100, 100] as Vec2;
+    export let dimensions = [100, 100] as Vec2;
 
-    // inner state
-    let activePoint: boolean = false;
-    let dataPoints = null;
-    let innerDimensions = dimensions;
-    let innerOffsets = [0, 0] as Vec2;
-    let zoomFactor = 1;
-    let zoomOffset = [0, 0] as Vec2;
-    let zoomCenter = [0, 0] as Vec2;
-    let focused = true;
+    let dataPoints: Record<number, PointData> = {};
 
-    $: markerLocation = $activePrompt.embedMarker || center;
-
+    $: markerLocation = $activePrompt.embedMarker || [0.5, 0.5];
+    $: promptLimit = $activePrompt.embedPromptLimit || Object.keys($activePrompt.weightedPrompts).length;
     $: expScaling = $activePrompt.embedExponentialScaling;
     $: weightScaling = $activePrompt.embedWeightScaling;
-    $: promptLimit =
-        $activePrompt.embedPromptLimit ||
-        Object.keys($activePrompt.weightedPrompts).length;
 
     $: {
         recomputeFromScaling(expScaling, weightScaling);
@@ -52,53 +32,62 @@
     }
 
     $: {
-        recomputeFromDimensions(innerDimensions);
-    }
-
-    $: {
         recomputeFromPromptLimit(promptLimit);
     }
 
-    $: {
-        const minDim = Math.min(...dimensions);
-        const minIsX = dimensions[0] === minDim;
-        const minIsY = dimensions[1] === minDim;
-        innerOffsets = [
-            Math.max(minIsX ? 0 : (dimensions[0] - minDim) / 2, innerPad),
-            Math.max(minIsY ? 0 : (dimensions[1] - minDim) / 2, innerPad),
-        ];
-        innerDimensions = [
-            dimensions[0] - 2 * innerOffsets[0],
-            dimensions[1] - 2 * innerOffsets[1],
-        ];
+    function getClusterAnchors(k: number) : Vec2[] {
+        switch (k) {
+            case 2:
+                return [
+                    multiply(add([0, 0], [0, 1]), 0.5) as Vec2,
+                    multiply(add([1, 0], [1, 1]), 0.5) as Vec2,
+                ];
+            case 4:
+                return [
+                    [0, 0],
+                    [0, 1],
+                    [1, 1],
+                    [1, 0],
+                ];
+            case 6:
+                return [
+                    multiply(add([0, 0], [0, 1]), 0.5) as Vec2,
+                    multiply(add([1, 0], [1, 1]), 0.5) as Vec2,
+                    [0, 0],
+                    [0, 1],
+                    [1, 1],
+                    [1, 0],
+                ];
+            case 8:
+                return [
+                    multiply(add([0, 0], [0, 1]), 0.5) as Vec2,
+                    multiply(add([1, 0], [1, 1]), 0.5) as Vec2,
+                    [0, 0],
+                    [0, 1],
+                    [1, 1],
+                    [1, 0],
+                    multiply(add([0, 0], [1, 0]), 0.5) as Vec2,
+                    multiply(add([0, 1], [1, 1]), 0.5) as Vec2,
+                ];
+            default:
+                return [];
+        }
     }
 
-    function getInnerCorners() {
-        return {
-            "00": [innerOffsets[0], innerOffsets[1]],
-            "01": [innerOffsets[0], innerOffsets[1] + innerDimensions[1]],
-            "11": [
-                innerOffsets[0] + innerDimensions[0],
-                innerOffsets[1] + innerDimensions[1],
-            ],
-            "10": [innerOffsets[0] + innerDimensions[0], innerOffsets[1]],
-        };
-    }
-
-    function createDistanceMatrix(setA, setB) {
+    function createDistanceMatrix(setA: Vec2[], setB: Vec2[]) {
         return setA.map((pointA) =>
             setB.map((pointB) => getDistance(pointA, pointB))
         );
     }
 
-    function pairPoints(setA, setB) {
+    function pairPoints(setA: Vec2[], setB: Vec2[]) {
         if (setA.length !== setB.length) {
             throw new Error("Both sets should have the same number of points");
         }
 
         const distanceMatrix = createDistanceMatrix(setA, setB);
 
-        const indexes = Munkres(distanceMatrix);
+        const indexes: Vec2[] = Munkres(distanceMatrix);
 
         if (!indexes) {
             return null;
@@ -110,106 +99,49 @@
         }));
     }
 
-    function avgPoint(points) {
+    function avgPoint(points: Vec2[]) : Vec2 {
         const sum = points.reduce((acc, point) => add(acc, point), [0, 0]);
-        return multiply(sum, 1 / points.length);
+        return multiply(sum, 1 / points.length) as Vec2;
     }
 
-    function getClusterAnchors(k) {
-        const corners = getInnerCorners();
-        switch (k) {
-            case 2:
-                return [
-                    multiply(add(corners["00"], corners["01"]), 0.5),
-                    multiply(add(corners["10"], corners["11"]), 0.5),
-                ];
-            case 4:
-                return [
-                    corners["00"],
-                    corners["01"],
-                    corners["11"],
-                    corners["10"],
-                ];
-            case 6:
-                return [
-                    multiply(add(corners["00"], corners["01"]), 0.5),
-                    multiply(add(corners["10"], corners["11"]), 0.5),
-                    corners["00"],
-                    corners["01"],
-                    corners["11"],
-                    corners["10"],
-                ];
-            case 8:
-                return [
-                    multiply(add(corners["00"], corners["01"]), 0.5),
-                    multiply(add(corners["10"], corners["11"]), 0.5),
-                    corners["00"],
-                    corners["01"],
-                    corners["11"],
-                    corners["10"],
-                    multiply(add(corners["00"], corners["10"]), 0.5),
-                    multiply(add(corners["01"], corners["11"]), 0.5),
-                ];
-            default:
-                return null;
-        }
-    }
-
-    function recomputeFromPromptLimit(promptLimit) {
+    function recomputeFromPromptLimit(promptLimit: number) {
         if ($activePrompt.embeddings && $activePrompt.scaledEmbedMappings) {
             updateDataPoints();
             recomputeWeights(
                 markerLocation,
                 expScaling,
                 weightScaling,
-                innerDimensions,
                 promptLimit
             );
         }
     }
 
-    function recomputeFromEmbeddings(embeddings, scaledEmbedMappings) {
+    function recomputeFromEmbeddings(embeddings: Embeddings, scaledEmbedMappings: Record<number, Vec2> | undefined) {
         if (embeddings && scaledEmbedMappings) {
             updateDataPoints();
             recomputeWeights(
                 markerLocation,
                 expScaling,
                 weightScaling,
-                innerDimensions,
                 promptLimit
             );
         }
     }
 
-    function recomputeFromScaling(expScaling, weightScaling) {
+    function recomputeFromScaling(expScaling: boolean, weightScaling: number) {
         recomputeWeights(
             markerLocation,
             expScaling,
             weightScaling,
-            innerDimensions,
             promptLimit
         );
     }
 
-    function recomputeFromDimensions(innerDimensions) {
-        if ($activePrompt.embeddings && $activePrompt.scaledEmbedMappings) {
-            updateDataPoints();
-            recomputeWeights(
-                markerLocation,
-                expScaling,
-                weightScaling,
-                innerDimensions,
-                promptLimit
-            );
-        }
-    }
-
     function recomputeWeights(
-        pivot,
-        expScaling,
-        weightScaling,
-        innerDimensions,
-        promptLimit
+        pivot: Vec2,
+        expScaling: boolean,
+        weightScaling: number,
+        promptLimit: number
     ) {
         if (!dataPoints) return;
 
@@ -220,22 +152,22 @@
         // find furthest distance between datapoints
         Object.values(dataPoints).forEach((pointA) => {
             Object.values(dataPoints).forEach((pointB) => {
-                const dist = getDistance(pointA.embedXY, pointB.embedXY);
+                const dist = getDistance(pointA.xy, pointB.xy);
                 if (dist > maxDistance) maxDistance = dist;
             });
         });
 
         const distances = Object.entries(dataPoints).reduce(
             (acc, [id, point]) => {
-                const distance = getDistance(pivot, point.embedXY);
-                acc[id] = distance;
+                const distance = getDistance(pivot, point.xy);
+                acc[parseInt(id)] = distance;
                 return acc;
             },
-            {}
+            {} as Record<number, number>
         );
 
-        const useExpScaling = (embedActive, dist) => {
-            const value = embedActive
+        const useExpScaling = (active: boolean, dist: number) => {
+            const value = active
                 ? Math.round(
                       Math.pow(1 - dist / maxDistance, weightScaling) * 100
                   ) / 100
@@ -244,8 +176,8 @@
             return value;
         };
 
-        const useStdScaling = (embedActive, dist) => {
-            const value = embedActive
+        const useStdScaling = (active: boolean, dist: number) => {
+            const value = active
                 ? Math.round((1 - dist / maxDistance) * 100) / 100
                 : 0;
             if (value < 0) return 0;
@@ -256,15 +188,17 @@
         Object.entries(distances)
             .sort((a, b) => a[1] - b[1])
             .forEach(([id, dist], idx) => {
-                if (!weightedPrompts[id]) return;
-                const embedActive = idx < promptLimit;
-                weightedPrompts[id] = {
-                    ...weightedPrompts[id],
-                    embedWeight: expScaling
-                        ? useExpScaling(embedActive, dist)
-                        : useStdScaling(embedActive, dist),
-                    embedActive,
+                if (!weightedPrompts[parseInt(id)]) return;
+                const active = idx < promptLimit;
+                const embedWeight = expScaling
+                    ? useExpScaling(active, dist)
+                    : useStdScaling(active, dist);
+                weightedPrompts[parseInt(id)] = {
+                    ...weightedPrompts[parseInt(id)],
+                    embedWeight
                 };
+                dataPoints[parseInt(id)].opacity = getWeightOpacity(embedWeight);
+                dataPoints[parseInt(id)].connected = active;
             });
 
         activePromptStore.update({
@@ -274,74 +208,28 @@
         });
     }
 
-    function handleDoubleClick(e) {
-        const mouseLocation = getSVGInputLocation(e);
-        markerLocation = multiply(
-            subtract(mouseLocation, zoomOffset),
-            1 / zoomFactor
-        );
-        recomputeWeights(
-            markerLocation,
-            expScaling,
-            weightScaling,
-            innerDimensions,
-            promptLimit
-        );
-    }
-
-    function handleMouseMove(e: MouseEvent | TouchEvent) {
-        if (activePoint) {
-            const mouseLocation = getSVGInputLocation(e);
-            markerLocation = multiply(
-                subtract(mouseLocation, zoomOffset),
-                1 / zoomFactor
-            );
-            recomputeWeights(
-                markerLocation,
-                expScaling,
-                weightScaling,
-                innerDimensions,
-                promptLimit
-            );
-        } else {
-            const mouseLocation = getSVGInputLocation(e);
-            const ml = add(multiply(markerLocation, zoomFactor), zoomOffset);
-            const zoomLocation = multiply(
-                subtract(mouseLocation, zoomOffset),
-                1 / zoomFactor
-            );
-            const DPR = window.devicePixelRatio || 1;
-            console.log(DPR, mouseLocation, ml);
-        }
-    }
-
-    function handleMouseUp(e: Event) {
-        activePoint = false;
-    }
-
     function updateDataPoints() {
+        if(!$activePrompt.embeddings || !$activePrompt.scaledEmbedMappings) return;
         const ids = Object.keys($activePrompt.scaledEmbedMappings);
-        const newDataPoints = ids.reduce((acc, id, idx) => {
-            acc[id] = {
-                embedXY: [
-                    innerOffsets[0] +
-                        innerDimensions[0] *
-                            $activePrompt.scaledEmbedMappings[idx][0],
-                    innerOffsets[1] +
-                        innerDimensions[1] *
-                            $activePrompt.scaledEmbedMappings[idx][1],
-                ],
-            };
-            return acc;
-        }, {});
 
-        const findAverageClusterPoint = (cluster) => {
+        const findAverageClusterPoint = (cluster: number[]) => {
             if (!cluster.length) return center;
-            const points = cluster.map((i) => newDataPoints[i].embedXY);
+            const points = cluster.map((i) => newDataPoints[i].xy);
             return avgPoint(points);
         };
 
-        if ($activePrompt.embedClusters) {
+        const newDataPoints = ids.reduce((acc, id, idx) => {
+            acc[id] = {
+                xy: $activePrompt.scaledEmbedMappings[idx],
+                text: $activePrompt.weightedPrompts[idx].text,
+                connected: true,
+                opacity: 1
+            };
+            return acc;
+        }, {} as Record<string, PointData>);
+
+
+        if ($activePrompt.embedClusters && $activePrompt.embedClusterSets) {
             const k = $activePrompt.embedClusters;
             const clusters = $activePrompt.embedClusterSets[k];
             let setA = clusters.map((c) => findAverageClusterPoint(c));
@@ -355,8 +243,8 @@
                     const anchor = p.points[1];
 
                     clusters[clusterId].forEach((id) => {
-                        newDataPoints[id].embedXY = avgPoint([
-                            newDataPoints[id].embedXY,
+                        newDataPoints[id].xy = avgPoint([
+                            newDataPoints[id].xy,
                             anchor,
                         ]);
                     });
@@ -367,142 +255,20 @@
         dataPoints = newDataPoints;
     }
 
-    function detectTrackPad(e) {
-        var isTrackpad = false;
-        if (e.wheelDeltaY) {
-            if (e.wheelDeltaY === e.deltaY * -3) {
-                isTrackpad = true;
-            }
-        } else if (e.deltaMode === 0) {
-            isTrackpad = true;
-        }
-        // console.log(isTrackpad ? "Trackpad detected" : "Mousewheel detected");
-        return isTrackpad;
-    }
-
-    function handleMouseWheel(e: WheelEvent) {
-        e.preventDefault();
-        const trackpad = detectTrackPad(e);
-
-        const mouseLocation = getSVGInputLocation(e);
-
-        // ml = zf * zl + zo
-        // zl = (ml - zo) / zf
-        const zoomLocation = multiply(
-            subtract(mouseLocation, zoomOffset),
-            1 / zoomFactor
+    function onMarkerMove(pos: Vec2) {
+        markerLocation = pos;
+        recomputeWeights(
+            markerLocation,
+            expScaling,
+            weightScaling,
+            promptLimit
         );
-        //console.log(ml, zoomLocation);
-        const direction = trackpad ? -1 : 1;
-
-        zoomFactor = Math.min(
-            Math.max(zoomFactor + direction * e.deltaY * -0.01, 0.5),
-            20
-        );
-
-        //zoomOffset should center the zoom on the mouse location and keep it centered as the zoom changes
-        // zo = ml - zl * zf
-        zoomOffset = [
-            mouseLocation[0] - zoomLocation[0] * zoomFactor,
-            mouseLocation[1] - zoomLocation[1] * zoomFactor,
-        ];
-    }
-
-    function handleKeyDown(e: KeyboardEvent) {
-        if(!focused) return;
-        console.log(e.key);
-        e = e || window.event;
-
-        if (e.key === "ArrowUp" || e.key === "w") {
-            zoomOffset[1] += 10;
-        } else if (e.key == "ArrowDown" || e.key == "s") {
-            zoomOffset[1] -= 10;
-        } else if (e.key == "ArrowLeft" || e.key == "a") {
-            zoomOffset[0] += 10;
-        } else if (e.key == "ArrowRight" || e.key == "d") {
-            zoomOffset[0] -= 10;
-        }
     }
 </script>
 
-<svelte:window 
-    on:keydown={handleKeyDown}
+<EmbedExplorer 
+    {center}
+    {dimensions}
+    {onMarkerMove}
+    {dataPoints}
 />
-<div class="w-full h-full">
-    <svg
-        id="svg"
-        class="w-full h-full outline-none"
-        on:mousewheel={handleMouseWheel}
-        on:mousemove={handleMouseMove}
-        on:touchmove={handleMouseMove}
-        on:mouseup={handleMouseUp}
-        on:touchend={handleMouseUp}
-        on:dblclick={handleDoubleClick}
-        on:focusin={()=>focused = true}
-        on:focusout={()=>focused = false}
-    >
-        {#if Object.entries($activePrompt.weightedPrompts).length > 0 && Object.entries(dataPoints || {}).length > 0}
-            {#each Object.entries($activePrompt.weightedPrompts) as [id, wp] (id)}
-                {#if wp.embedActive}
-                    <Line
-                        p1={add(
-                            multiply(dataPoints[id].embedXY, zoomFactor),
-                            zoomOffset
-                        )}
-                        p2={add(
-                            multiply(markerLocation, zoomFactor),
-                            zoomOffset
-                        )}
-                    />
-                {/if}
-                <Point
-                    xy={add(
-                        multiply(dataPoints[id].embedXY, zoomFactor),
-                        zoomOffset
-                    )}
-                    radius={pointRadius}
-                    color="rgba(136,157,191, 1)"
-                />
-                <PromptText
-                    xy={[
-                        dataPoints[id].embedXY[0] * zoomFactor +
-                            zoomOffset[0] -
-                            getTextBoxDimensions(
-                                textWidth,
-                                wp.text.length,
-                                fontSize
-                            )[0] /
-                                2,
-                        dataPoints[id].embedXY[1] * zoomFactor +
-                            zoomOffset[1] +
-                            pointRadius,
-                    ]}
-                    color={`rgba(255,255,255,${getWeightOpacity(
-                        wp.embedWeight
-                    )}`}
-                    wh={getTextBoxDimensions(
-                        textWidth,
-                        wp.text.length,
-                        fontSize
-                    )}
-                    {fontSize}
-                    text={wp.text}
-                />
-            {/each}
-            <Point
-                xy={add(multiply(markerLocation, zoomFactor), zoomOffset)}
-                radius={markerRadius}
-                color="rgba(136,157,191, 1)"
-                handleMouseDown={() => (activePoint = true)}
-            />
-        {/if}
-    </svg>
-</div>
-
-<style>
-    :global(svg) {
-        display: block;
-        width: 100%;
-        height: 100%;
-    }
-</style>

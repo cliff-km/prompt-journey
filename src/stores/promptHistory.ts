@@ -8,7 +8,8 @@ export function storablePromptHistory() {
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
-    set((isBrowser && JSON.parse(localStorage[STORE_KEY] || "[]")) || []);
+    const load = ((isBrowser && JSON.parse(localStorage[STORE_KEY] || "[]")) || []).map((m: PromptEvent) => ({...m, date: new Date(m.date)}));
+    set(load);
 
     return {
         subscribe,

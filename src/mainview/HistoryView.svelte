@@ -16,7 +16,6 @@
         <!-- head -->
         <thead>
             <tr>
-                <th />
                 <th>Date</th>
                 <th>Prompt</th>
             </tr>
@@ -25,7 +24,6 @@
             {#each $promptHistory as pe, i (i)}
                 <!-- row 1 -->
                 <tr>
-                    <th>{i + 1}</th>
                     <td>{pe.date}</td>
                     <td
                         on:click={() => copy(pe.prompt)}

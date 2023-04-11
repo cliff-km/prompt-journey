@@ -13,9 +13,6 @@
         selectedPromptStore,
         selectedPrompt,
     } from "../stores/selectedPromptStore.js";
-    import { getDisplayWeight } from "$lib/weights.js";
-
-    console.log($promptList)
 
     function selectNew() {
         selectedPromptStore.delete();

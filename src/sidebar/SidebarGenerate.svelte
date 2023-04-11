@@ -115,16 +115,9 @@
     }
 
     function handleGeneratePrompt() {
-        console.log("handleGeneratePrompt");
-        console.log(openaiKey);
-        console.log(directiveText);
-        console.log($metaPrompt);
-        console.log($seed);
         if (!openaiKey) {
             return;
         }
-
-        console.log($dealiasedInstructions);
 
         if (insertModels.includes(selectedModel)) {
             handleInsertPrompt(openaiKey, $dealiasedInstructions);
