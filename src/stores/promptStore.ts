@@ -6,7 +6,7 @@ export function storablePromptConfigs() {
     const isBrowser = typeof window !== 'undefined';
 
     set((isBrowser && Object.keys(localStorage).reduce((acc, key) => {
-        if (key.startsWith('prompt')) {
+        if (key.startsWith('prompt_')) {
             const id = key.split('_')[1];
             acc[id] = JSON.parse(localStorage[key]);
         }

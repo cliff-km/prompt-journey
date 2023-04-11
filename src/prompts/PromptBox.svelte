@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { v4 as uuidv4 } from "uuid";
     import MultiPrompt from "./MultiPrompt.svelte";
     import SinglePrompt from "./SinglePrompt.svelte";
     import { activePrompt } from "../stores/activePromptStore.js";
@@ -11,11 +12,13 @@
     import { useWeightOrdering, useWeightOrderingStore } from "../stores/useWeightOrdering";
     import { getPromptText } from "$lib/prompt";
     import { seedStore, seed } from "../stores/slotSets";
+    import { promptHistory } from "../stores/promptHistory";
 
     function handleClick() {
         const promptText = getPromptText($activePrompt, $seed, $outputMultiPrompt, $useWeightOrdering, $showZeroPrompts);
         navigator.clipboard.writeText(promptText);
         seedStore.shuffle();
+        promptHistory.add({id: uuidv4(), prompt: promptText, date: new Date()});
     }
 
 

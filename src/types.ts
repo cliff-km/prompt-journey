@@ -31,11 +31,25 @@ export enum WeightMode {
     Pie = "pie",
 }
 
+export enum AppStage {
+    Build = "build",
+    Concept = "concept",
+    History = "history",
+}
+
 export type Embeddings = Record<number, VecN>;
 
 export type SlotSet = {
     name: string;
     values: string[];
+}
+
+export type PromptHistory = PromptEvent[];
+
+export type PromptEvent = {
+    id: string;
+    date: Date;
+    prompt: string;
 }
 
 export type SlotSetDict = Record<string, SlotSet>;

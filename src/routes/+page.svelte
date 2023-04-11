@@ -1,6 +1,6 @@
 <script lang="ts">
     import { e } from "mathjs";
-    import ControllerView from "../controllers/ControllerView.svelte";
+    import ControllerView from "../mainview/MainView.svelte";
     import SideberPanel from "../sidebar/SidebarPanel.svelte";
 
     let innerWidth: number | null = null;

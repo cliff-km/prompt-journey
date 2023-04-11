@@ -32,5 +32,6 @@ export function getSVGInputLocation(e: TouchEvent | MouseEvent) : Vec2 {
     if(!domMatrix) throw new Error("No DOM Matrix found");
 
     const loc = pt.matrixTransform(domMatrix.inverse());
+    console.log("XY", loc.x, loc.y)
     return [loc.x, loc.y];
 }
