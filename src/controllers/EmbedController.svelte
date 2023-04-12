@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Vec2, Embeddings } from "../types.js";
+    import type { Vec2, Embeddings, MultiPrompt, VecN } from "../types.js";
     import TSNE from "tsne-js";
     import * as clustering from "density-clustering";
     import { activePrompt } from "../stores/activePrompt.js";
@@ -8,13 +8,15 @@
     import { createOpenAI, createEmbedding } from "../lib/openai.js";
     import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModel.js";
     import { key } from "../stores/key.js";
+    import { activeEmbeddings } from "../stores/activeEmbeddings.js";
+    import { concepts } from "../stores/concepts.js";
 
     let controllerW = 0;
     let controllerH = 0;
     $: promptCount = Object.keys($activePrompt.weightedPrompts || {}).length;
     $: promptLimit = $activePrompt.embedPromptLimit || promptCount;
     let embedPromise = null;
-    let inProgressEmbeds = {};
+    let inProgressEmbeds = {} as Embeddings;
 
     $: wh = [controllerW || 250, controllerH || 250] as Vec2;
     $: center = findBoxCenter(wh);
@@ -28,18 +30,19 @@
     }
 
     $: {
-        $activePrompt.embeddings &&
-            Object.keys($activePrompt.embeddings).length <
+        $activeEmbeddings &&
+            Object.keys($activeEmbeddings).length <
                 $activePrompt.embedClusters &&
             updateClusterCount(
                 getHighestClusterAvailable(
-                    Object.keys($activePrompt.embeddings).length
+                    Object.keys($activeEmbeddings).length
                 )
             );
     }
 
     $: {
-        if ($key && embeddingsRequireUpdate($activePrompt)) {
+        if ($key && embeddingsRequireUpdate($activePrompt, $activeEmbeddings)) {
+            console.log("Embeddings require update");
             embedPromise = fetchEmbeddings();
         }
     }
@@ -142,7 +145,36 @@
     async function shuffleEmbeddinMap() {
         activePrompt.update({
             ...$activePrompt,
-            scaledEmbedMappings: get2DEmbeddings($activePrompt.embeddings),
+            scaledEmbedMappings: get2DEmbeddings($activeEmbeddings),
+        });
+    }
+
+    async function getStoredEmbedding(text: string) {
+        console.log("waiting for embedding for", text);
+
+        return new Promise((resolve, reject) => {
+            const checkForEmbedding = () => {
+                const embeddingFromConcept = concepts.get()[text];
+                console.log("embeddingFromConcept", embeddingFromConcept);
+                if (embeddingFromConcept) {
+                    resolve(embeddingFromConcept);
+                } else if (embeddingFromConcept === null) {
+                    setTimeout(checkForEmbedding, 500);
+                } else if (embeddingFromConcept === undefined) {
+                    console.log("setting embedding to null for", text);
+                    concepts.update(text, null);
+                    setTimeout(checkForEmbedding, 5000);
+                } else {
+                    console.log(
+                        "not found embedding for",
+                        text,
+                        embeddingFromConcept
+                    );
+                    reject(embeddingFromConcept);
+                }
+            };
+
+            checkForEmbedding();
         });
     }
 
@@ -155,15 +187,12 @@
             ([id, prompt]) => [id, prompt.text]
         );
 
-        const openai = createOpenAI($key);
-        inProgressEmbeds = {};
+        inProgressEmbeds = {} as Embeddings;
+        console.log($concepts);
         for (let p of prompts) {
-            const response = await createEmbedding(
-                openai,
-                p[1],
-                $preferredEmbeddingModel
-            );
-            inProgressEmbeds[p[0]] = response.data.data[0].embedding;
+            console.log("fetching embedding for", p[1]);
+            const response = await getStoredEmbedding(p[1]);
+            inProgressEmbeds[p[0]] = response;
         }
 
         let orderedEmbeds = Object.entries(inProgressEmbeds).sort(
@@ -208,7 +237,6 @@
 
         activePrompt.update({
             ...$activePrompt,
-            embeddings: inProgressEmbeds,
             embedClusterSets: {
                 2: [...set2, ...padArray(2 - set2.length)],
                 4: [...set4, ...padArray(4 - set4.length)],
@@ -219,22 +247,42 @@
             scaledEmbedMappings: get2DEmbeddings(inProgressEmbeds),
         });
 
+        activeEmbeddings.set(inProgressEmbeds);
+
         console.log("embeddings complete");
     }
 
-    function embeddingsRequireUpdate(activePrompt) {
-        if (!activePrompt.embeddings) return true;
-        if (!activePrompt.embedClusterSets) return true;
-        if (
-            Object.entries(activePrompt.embeddings).length !==
-            Object.entries(activePrompt.weightedPrompts).length
-        )
+    function embeddingsRequireUpdate(
+        activePrompt: MultiPrompt,
+        activeEmbeddings: Embeddings
+    ) {
+        if (!activeEmbeddings) {
+            console.log("no active embeddings");
             return true;
+        }
+        if (!activePrompt.embedClusterSets) {
+            console.log("no active cluster sets");
+            return true;
+        }
+        if (
+            Object.entries(activeEmbeddings).length !==
+            Object.entries(activePrompt.weightedPrompts).length
+        ) {
+            console.log(
+                "embeddings length mismatch",
+                Object.entries(activeEmbeddings).length,
+                Object.entries(activePrompt.weightedPrompts).length
+            );
+            console.log(activeEmbeddings);
+            return true;
+        }
         if (
             (activePrompt.lastPromptChange || 0) >
             (activePrompt.lastEmbeddingChange || 0)
-        )
+        ) {
+            console.log("prompt change after embedding change");
             return true;
+        }
         return false;
     }
 </script>
@@ -330,7 +378,7 @@
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 2}
                             class:btn-disabled={Object.keys(
-                                $activePrompt.embeddings
+                                $activePrompt.weightedPrompts
                             ).length < 2}
                             on:click={() => updateClusterCount(2)}
                         >
@@ -340,7 +388,7 @@
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 4}
                             class:btn-disabled={Object.keys(
-                                $activePrompt.embeddings
+                                $activePrompt.weightedPrompts
                             ).length < 4}
                             on:click={() => updateClusterCount(4)}
                         >
@@ -350,7 +398,7 @@
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 6}
                             class:btn-disabled={Object.keys(
-                                $activePrompt.embeddings
+                                $activePrompt.weightedPrompts
                             ).length < 6}
                             on:click={() => updateClusterCount(6)}
                         >
@@ -360,7 +408,7 @@
                             class="btn btn-xs"
                             class:btn-active={$activePrompt.embedClusters === 8}
                             class:btn-disabled={Object.keys(
-                                $activePrompt.embeddings
+                                $activePrompt.weightedPrompts
                             ).length < 8}
                             on:click={() => updateClusterCount(8)}
                         >

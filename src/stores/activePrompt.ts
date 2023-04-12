@@ -47,7 +47,6 @@ export function intializeActivePrompt(prompts: WeightedPromptDict, weightMode = 
         circleMarker: [270, 0.33],
         circleWeightScaling: 2,
         circleExponentialScaling: true,
-        embeddings: {},
         embedWeightScaling: 2,
         embedExponentialScaling: true,
         embedClusters: 0,

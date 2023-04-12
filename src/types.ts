@@ -71,7 +71,6 @@ export type MultiPrompt = {
     circleExponentialScaling: boolean;
     embedMarker?: Vec2;
     embedClusterSets?: Record<number, number[][]>;
-    embeddings: Embeddings;
     embedWeightScaling: number;
     embedExponentialScaling: boolean;
     embedClusters: number;

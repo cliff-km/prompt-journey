@@ -3,6 +3,7 @@
     import { concepts } from "../stores/concepts.js";
     import Paginator from "./Paginator.svelte";
     import ConceptControls from "./ConceptControls.svelte";
+    import debounce from "lodash/debounce";
 
     let currentPage = 1;
     let pageSize = 10;
@@ -43,6 +44,10 @@
         currentPage = 1;
         pageSize = size;
     }
+
+    const changeConcept = debounce((concept: string) => {
+        concepts.update(concept, null);
+    }, 500);
 </script>
 
 <Paginator
@@ -57,19 +62,31 @@
         <!-- head -->
         <thead>
             <tr>
-                <th />
                 <th>Concept</th>
+                <th />
                 <th />
             </tr>
         </thead>
         <tbody>
-            {#each pageChunk as pe, i (i)}
+            {#each pageChunk as c, i (i)}
                 <!-- row 1 -->
                 <tr>
-                    <td style="max-width: 3rem; width: 3rem;">
+                    <td
+                        style="max-width: 20px;"
+                        class="text-ellipsis whitespace-nowrap overflow-hidden select-none hover:text-white"
+                        on:change={(e) => changeConcept(e.target.value)}
+                    >
+                        <input
+                            value={c}
+                            type="text"
+                            placeholder=""
+                            class="input input-bordered input-sm w-full"
+                        />
+                    </td>
+                    <td style="max-width: 4rem; width: 4rem;">
                         <button
                             class="btn btn-sm btn-circle btn-outline"
-                            on:click={() => copy(pe)}
+                            on:click={() => copy(c)}
                         >
                             <svg
                                 class="h-5 w-5"
@@ -82,19 +99,7 @@
                             >
                         </button>
                     </td>
-                    <td
-                        on:click={() => copy(pe)}
-                        style="max-width: 20px;"
-                        class="text-ellipsis whitespace-nowrap overflow-hidden select-none hover:text-white"
-                    >
-                        <input
-                            value={pe}
-                            type="text"
-                            placeholder=""
-                            class="input input-bordered input-sm w-full"
-                        />
-                    </td>
-                    <td style="max-width: 4rem; width: 4rem;" class="">
+                    <td style="max-width: 4rem; width: 4rem;" class="" on:click={()=>concepts.remove(c)}>
                         <button class="btn btn-sm btn-circle btn-outline">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

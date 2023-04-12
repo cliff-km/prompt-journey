@@ -28,6 +28,13 @@ export function storableConcepts() {
             const concepts = get(store);
             return concepts;
         },
+        remove: (c: string) => {
+            if (!c || !isBrowser) return;
+            const concepts = get(store);
+            delete concepts[c];
+            delete localStorage[`concept_${c}`];
+            set(concepts);
+        },
         delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];

@@ -8,6 +8,7 @@
     import { getDistance } from "../lib/vector";
     import { add, multiply } from "mathjs";
     import Munkres from "munkres-js";
+    import { activeEmbeddings } from "../stores/activeEmbeddings.js";
 
     export let center = [100, 100] as Vec2;
     export let dimensions = [100, 100] as Vec2;
@@ -25,7 +26,7 @@
 
     $: {
         recomputeFromEmbeddings(
-            $activePrompt.embeddings,
+            $activeEmbeddings,
             $activePrompt.scaledEmbedMappings
         );
     }
@@ -104,7 +105,7 @@
     }
 
     function recomputeFromPromptLimit(promptLimit: number) {
-        if ($activePrompt.embeddings && $activePrompt.scaledEmbedMappings) {
+        if ($activeEmbeddings && $activePrompt.scaledEmbedMappings) {
             updateDataPoints();
             recomputeWeights(
                 markerLocation,
@@ -208,7 +209,7 @@
     }
 
     function updateDataPoints() {
-        if(!$activePrompt.embeddings || !$activePrompt.scaledEmbedMappings) return;
+        if(!$activeEmbeddings || !$activePrompt.scaledEmbedMappings) return;
         const ids = Object.keys($activePrompt.scaledEmbedMappings);
 
         const findAverageClusterPoint = (cluster: number[]) => {

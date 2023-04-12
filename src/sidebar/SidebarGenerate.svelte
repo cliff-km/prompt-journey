@@ -20,6 +20,7 @@
     import { metaPrompt } from "../stores/metaPrompt";
     import { directiveText } from "../stores/directiveText";
     import { dealiasedInstructions } from "../stores/instructions";
+    import { concepts } from "../stores/concepts";
 
     const chatModels = ["gpt-3.5-turbo", "gpt-3.5-turbo-0301"];
 
@@ -54,10 +55,15 @@
                                 text,
                                 parsedWeight
                             );
+                            if(!$concepts[text]) {
+                                concepts.update(text as string, null);
+                            }
                             return acc;
                         },
                         {}
                     );
+
+
 
                     activePrompt.update(
                         intializeActivePrompt(
@@ -93,6 +99,9 @@
                                 text,
                                 parsedWeight
                             );
+                            if(!$concepts[text]) {
+                                concepts.update(text as string, null);
+                            }
                             return acc;
                         },
                         {}

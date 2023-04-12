@@ -2,15 +2,14 @@
     import { v4 as uuidv4 } from "uuid";
     import { processString } from "../lib/prompt.js";
     import { promptStore } from "../stores/prompt.js";
+    import { concepts } from "../stores/concepts.js";
     import {
         intializeActivePrompt,
         activePrompt,
         createWeightedPrompt,
     } from "../stores/activePrompt.js";
     import { panelMode } from "../stores/panelMode.js";
-    import {
-        selectedPrompt,
-    } from "../stores/selectedPrompt.js";
+    import { selectedPrompt } from "../stores/selectedPrompt.js";
     import debounce from "lodash/debounce";
 
     let newPromptText = "";
@@ -63,6 +62,10 @@
                     parsedWeight,
                     parsedWeight / maxSentenceWeight
                 );
+
+                if (!$concepts[text]) {
+                    concepts.update(text as string, null);
+                }
                 return acc;
             },
             {}
