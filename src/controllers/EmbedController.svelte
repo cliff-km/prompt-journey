@@ -1,152 +1,21 @@
 <script lang="ts">
-    import type { Vec2, Embeddings, MultiPrompt, VecN } from "../types.js";
-    import TSNE from "tsne-js";
-    import * as clustering from "density-clustering";
-    import { activePrompt } from "../stores/activePrompt.js";
-    import { findBoxCenter } from "../lib/vector";
+    import type { Embeddings, MultiPrompt } from "../types";
+    import { activePrompt } from "../stores/activePrompt";
     import EmbedControllerWidget from "./EmbedControllerWidget.svelte";
-    import { createOpenAI, createEmbedding } from "../lib/openai.js";
-    import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModel.js";
-    import { key } from "../stores/key.js";
-    import { activeEmbeddings } from "../stores/activeEmbeddings.js";
-    import { concepts } from "../stores/concepts.js";
+    import { key } from "../stores/key";
+    import { activeEmbeddings } from "../stores/activeEmbeddings";
+    import { concepts } from "../stores/concepts";
+    import { get2DEmbeddings, getKMeansClusters } from "../lib/embedMap";
 
-    let controllerW = 0;
-    let controllerH = 0;
-    $: promptCount = Object.keys($activePrompt.weightedPrompts || {}).length;
-    $: promptLimit = $activePrompt.embedPromptLimit || promptCount;
     let embedPromise = null;
     let inProgressEmbeds = {} as Embeddings;
 
-    $: wh = [controllerW || 250, controllerH || 250] as Vec2;
-    $: center = findBoxCenter(wh);
-
-    function getHighestClusterAvailable(embedCount: number) {
-        if (embedCount < 2) return 0;
-        if (embedCount < 4) return 2;
-        if (embedCount < 6) return 4;
-        if (embedCount < 8) return 6;
-        return 8;
-    }
-
-    $: {
-        $activeEmbeddings &&
-            Object.keys($activeEmbeddings).length <
-                $activePrompt.embedClusters &&
-            updateClusterCount(
-                getHighestClusterAvailable(
-                    Object.keys($activeEmbeddings).length
-                )
-            );
-    }
 
     $: {
         if ($key && embeddingsRequireUpdate($activePrompt, $activeEmbeddings)) {
             console.log("Embeddings require update");
             embedPromise = fetchEmbeddings();
         }
-    }
-
-    function updateEmbedPromptLimit(e: InputEvent) {
-        const { target } = e;
-        if (!target) return;
-
-        const t = target as HTMLInputElement;
-        if (!t.value) return;
-
-        const value = parseInt(t.value);
-
-        if (value > 0 && value <= promptCount)
-            activePrompt.update({
-                ...$activePrompt,
-                embedPromptLimit: value,
-            });
-    }
-
-    function updateExponentialScaling() {
-        activePrompt.update({
-            ...$activePrompt,
-            embedExponentialScaling: !$activePrompt.embedExponentialScaling,
-        });
-    }
-
-    function updateWeightScaling(e: InputEvent) {
-        const { target } = e;
-        if (!target) return;
-
-        const t = target as HTMLInputElement;
-        if (!t.value) return;
-
-        const value = parseInt(t.value);
-
-        activePrompt.update({
-            ...$activePrompt,
-            embedWeightScaling: value,
-        });
-    }
-
-    function updateClusterCount(count: number) {
-        if ([0, 2, 4, 6, 8].indexOf(count) === -1) return;
-
-        activePrompt.update({
-            ...$activePrompt,
-            embedClusters: count,
-        });
-    }
-
-    function get2DEmbeddings(embeddings: Embeddings) {
-        let model = new TSNE({
-            dim: 2,
-            perplexity: 30.0,
-            earlyExaggeration: 4.0,
-            learningRate: 100.0,
-            nIter: 5000,
-            metric: "euclidean",
-        });
-
-        // inputData is a nested array which can be converted into an ndarray
-        // alternatively, it can be an array of coordinates (second argument should be specified as 'sparse')
-
-        const ids = Object.keys(embeddings);
-        const data = Object.values(embeddings);
-
-        model.init({
-            data,
-            type: "dense",
-        });
-
-        // `error`,  `iter`: final error and iteration number
-        // note: computation-heavy action happens here
-        let [error, iter] = model.run();
-
-        // `outputScaled` is `output` scaled to a range of [-1, 1]
-        let outputScaled = model.getOutputScaled();
-
-        // adjust to [0, 1]
-        let unitScaled = outputScaled.map(([x, y]) => [
-            (x + 1) / 2,
-            (y + 1) / 2,
-        ]);
-
-        let unitScaledById = ids.reduce((acc, id, idx) => {
-            acc[id] = unitScaled[idx];
-            return acc;
-        }, {});
-
-        return unitScaledById;
-    }
-
-    function getKMeansClusters(embeddings, k: number) {
-        const kmeans = new clustering.KMEANS();
-        const clusters = kmeans.run(embeddings, k);
-        return clusters;
-    }
-
-    async function shuffleEmbeddinMap() {
-        activePrompt.update({
-            ...$activePrompt,
-            scaledEmbedMappings: get2DEmbeddings($activeEmbeddings),
-        });
     }
 
     async function getStoredEmbedding(text: string) {
@@ -311,119 +180,7 @@
             </div>
         </div>
     {:then response}
-        <div
-            class="w-full h-full"
-            bind:clientWidth={controllerW}
-            bind:clientHeight={controllerH}
-        >
-            <EmbedControllerWidget dimensions={wh} {center} />
-        </div>
-        <div class="px-2 py-4 pb-0 flex">
-            <div class="min-w-max px-2">
-                <label class="label">
-                    <span class="label-text">Exponential Scaling</span>
-                </label>
-                <input
-                    on:change={updateExponentialScaling}
-                    type="checkbox"
-                    class="toggle toggle-sm"
-                    checked={$activePrompt.embedExponentialScaling}
-                />
-            </div>
-            {#if $activePrompt.embedExponentialScaling}
-                <div class="w-full px-2">
-                    <label class="label">
-                        <span class="label-text">Scaling Power</span>
-                    </label>
-                    <input
-                        on:change={updateWeightScaling}
-                        value={$activePrompt.embedWeightScaling}
-                        type="range"
-                        min="0.5"
-                        max="3"
-                        step="0.1"
-                        class="range range-sm"
-                    />
-                </div>
-            {/if}
-            <div class="w-full px-2">
-                <label class="label">
-                    <span class="label-text"># Prompts</span>
-                </label>
-                <input
-                    on:change={updateEmbedPromptLimit}
-                    value={promptLimit}
-                    type="range"
-                    min="1"
-                    max={promptCount}
-                    step="1"
-                    class="range range-sm"
-                />
-            </div>
-            <div class="">
-                <div class="">
-                    <label class="label pb-1 m-0">
-                        <span class="label-text">Clusters</span>
-                    </label>
-                    <div class="btn-group btn-group-horizontal p-0">
-                        <button
-                            class={($activePrompt.embedClusters || 0) === 0
-                                ? "btn btn-xs btn-active"
-                                : "btn btn-xs"}
-                            on:click={() => updateClusterCount(0)}
-                        >
-                            0
-                        </button>
-                        <button
-                            class="btn btn-xs"
-                            class:btn-active={$activePrompt.embedClusters === 2}
-                            class:btn-disabled={Object.keys(
-                                $activePrompt.weightedPrompts
-                            ).length < 2}
-                            on:click={() => updateClusterCount(2)}
-                        >
-                            2
-                        </button>
-                        <button
-                            class="btn btn-xs"
-                            class:btn-active={$activePrompt.embedClusters === 4}
-                            class:btn-disabled={Object.keys(
-                                $activePrompt.weightedPrompts
-                            ).length < 4}
-                            on:click={() => updateClusterCount(4)}
-                        >
-                            4
-                        </button>
-                        <button
-                            class="btn btn-xs"
-                            class:btn-active={$activePrompt.embedClusters === 6}
-                            class:btn-disabled={Object.keys(
-                                $activePrompt.weightedPrompts
-                            ).length < 6}
-                            on:click={() => updateClusterCount(6)}
-                        >
-                            6
-                        </button>
-                        <button
-                            class="btn btn-xs"
-                            class:btn-active={$activePrompt.embedClusters === 8}
-                            class:btn-disabled={Object.keys(
-                                $activePrompt.weightedPrompts
-                            ).length < 8}
-                            on:click={() => updateClusterCount(8)}
-                        >
-                            8
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="w-32 px-2 pb-1 flex flex-col justify-end">
-                <button
-                    on:click={shuffleEmbeddinMap}
-                    class="btn btn-xs btn-primary">Shuffle</button
-                >
-            </div>
-        </div>
+        <EmbedControllerWidget />
     {:catch error}
         <p style="color: red">{error.message}</p>
     {/await}

@@ -1,5 +1,5 @@
 import type { Vec2 } from "../types";
-import { multiply } from "mathjs";
+import { multiply, add } from "mathjs";
 
 
 export function getDistance(p1: Vec2, p2: Vec2) {
@@ -33,4 +33,9 @@ export function getSVGInputLocation(e: TouchEvent | MouseEvent) : Vec2 {
 
     const loc = pt.matrixTransform(domMatrix.inverse());
     return [loc.x, loc.y];
+}
+
+export function avgPoint(points: Vec2[]) : Vec2 {
+    const sum = points.reduce((acc, point) => add(acc, point), [0, 0]);
+    return multiply(sum, 1 / points.length) as Vec2;
 }

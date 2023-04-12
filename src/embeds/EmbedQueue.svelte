@@ -1,46 +1,67 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
     import { embedString } from "$lib/embed";
     import { concepts } from "../stores/concepts";
     import { key } from "../stores/key";
+    import { embedQueue } from "../stores/embedQueue";
 
-    let queue: Record<string, boolean> = {};
     let embedding = false;
 
-    $: unembeddedConcepts = Object.entries($concepts).filter(([c, e]) => !e);
-
-    $: {
-        if ($key && unembeddedConcepts.length > 0) {
-            unembeddedConcepts.forEach(([c, e]) => {
-                queue[c] = false;
-            });
-        }
+    function queueLength() {
+        return Object.keys($embedQueue).length;
     }
 
-    $: {
-        if ($key && !embedding && Object.keys(queue).length > 0) {
+    const conceptUnsub = concepts.subscribe((c) => {
+        console.log("concepts", c);
+
+        const unembeddedConcepts = Object.entries(c).filter(([cKey, embed]) => !embed);
+        
+        if ($key && unembeddedConcepts.length > 0) {
+            unembeddedConcepts.forEach(([c, e]) => {
+                embedQueue.update((q) => {
+                    q[c] = false;
+                    return q;
+                });
+            })}
+        ;
+    });
+
+    const embedUnsub = embedQueue.subscribe((q) => {
+        console.log("embedQueue", q);
+        const requiresEmbedStart = Boolean(key.get() && queueLength() > 0 && !embedding);
+
+        if(requiresEmbedStart) {
             embedding = true;
             embedNext();
         }
-    }
+    });
 
     function embedNext() {
         console.log("start embedding");
-        const next = Object.keys(queue)[0];
-        queue[next] = true;
+        const next = Object.keys($embedQueue)[0];
+        embedQueue.update((q) => {
+            q[next] = true;
+            return q;
+        });
         console.log("embedding", next);
         embedString(next).then((e) => {
             console.log("embedded", next);
             concepts.update(next, e);
-            const newQueue = { ...queue };
+            const newQueue = { ...$embedQueue };
             delete newQueue[next];
-            queue = newQueue;
-            if (Object.keys(queue).length > 0) embedNext();
+            embedQueue.set(newQueue);
+            if (queueLength() > 0) embedNext();
             else embedding = false;
         });
     }
+
+    onDestroy(() => {
+        conceptUnsub();
+        embedUnsub();
+    });
 </script>
 
-{#if Object.keys(queue).length > 0}
+{#if embedding}
     <div class="w-full flex justify-center p-4">
         <div class="flex flex-col justify-start mr-5">
             <progress class="progress progress-primary w-20" />

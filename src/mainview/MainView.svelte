@@ -9,8 +9,8 @@
     import ControlView from "./ControlView.svelte";
     import HistoryView from "./HistoryView.svelte";
     import ConceptView from "./ConceptView.svelte";
-    import EmbedQueue from "./EmbedQueue.svelte";
-    import ConceptControls from "./ConceptControls.svelte";
+    import EmbedQueue from "../embeds/EmbedQueue.svelte";
+    import ConceptControls from "../embeds/ConceptControls.svelte";
     import HistoryControls from "./HistoryControls.svelte";
 </script>
 

@@ -11,7 +11,7 @@
     export let onMarkerMove = (pos: Vec2) => {};
 
     // display state
-    export let dataPoints = {} as Record<string, PointData>;
+    export let dataPoints : Record<string, PointData>;
     export let center = [100, 100] as Vec2;
     export let dimensions = [100, 100] as Vec2;
     export let pointRadius = 4;

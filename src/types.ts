@@ -37,6 +37,11 @@ export enum AppStage {
     History = "history",
 }
 
+export enum ConceptMode {
+    List = "list",
+    Map = "map"
+}
+
 export type Embeddings = Record<number, VecN>;
 
 export type SlotSet = {
@@ -44,7 +49,8 @@ export type SlotSet = {
     values: string[];
 }
 
-export type EmbeddedConcepts = Record<string, VecN | null>;
+export type Concepts = Record<string, VecN | null>;
+export type EmbeddedConcepts = Record<string, VecN>;
 
 export type PromptHistory = PromptEvent[];
 

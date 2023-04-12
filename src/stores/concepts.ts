@@ -1,9 +1,9 @@
-import type { EmbeddedConcepts, VecN } from '../types';
-import { get, writable } from 'svelte/store'
+import type { Concepts, EmbeddedConcepts, VecN } from '../types';
+import { derived, get, writable } from 'svelte/store'
 
 const STORE_KEY = 'concept';
 export function storableConcepts() {
-    const store = writable({} as EmbeddedConcepts);
+    const store = writable({} as Concepts);
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
@@ -13,7 +13,7 @@ export function storableConcepts() {
             acc[id] = JSON.parse(localStorage[key]) as VecN | null;
         }
         return acc;
-    }, {} as EmbeddedConcepts)) || {});
+    }, {} as Concepts)) || {});
 
     return {
         subscribe,
@@ -38,9 +38,17 @@ export function storableConcepts() {
         delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
-            set({} as EmbeddedConcepts);
+            set({} as Concepts);
         },
     };
 }
 
 export const concepts = storableConcepts();
+
+export const embeddedConcepts = derived(concepts, $concepts => {
+    return Object.entries($concepts).reduce((acc, [id, data]) => {
+        if (!data) return acc;
+        acc[id] = data;
+        return acc;
+    }, {} as EmbeddedConcepts);
+});
