@@ -2,10 +2,7 @@
     import type { Vec2, WeightedPrompt } from "../types";
     import Bar from "../svg/Bar.svelte";
     import PromptText from "../svg/PromptText.svelte";
-    import {
-        activePromptStore,
-        activePrompt,
-    } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
     import { getSVGInputLocation } from "../lib/vector";
@@ -121,7 +118,7 @@
         wp.barWeight = barRatio;
 
         prompts[targetId] = wp;
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             weightedPrompts: prompts,
         });
@@ -169,7 +166,7 @@
                         },
                         {} as Record<number, WeightedPrompt>
                     );
-                    activePromptStore.update({
+                    activePrompt.update({
                         ...$activePrompt,
                         weightedPrompts: updatedPrompts,
                     });
@@ -206,7 +203,7 @@
                         },
                         {} as Record<number, WeightedPrompt>
                     );
-                    activePromptStore.update({
+                    activePrompt.update({
                         ...$activePrompt,
                         weightedPrompts: updatedPrompts,
                     });

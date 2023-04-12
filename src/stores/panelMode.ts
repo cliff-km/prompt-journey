@@ -1,6 +1,6 @@
 import { get, writable, derived } from 'svelte/store'
 
-const STORE_KEY = 'panelModeStore';
+const STORE_KEY = 'panelMode';
 
 export function storablePanelMode() {
     const store = writable("select");
@@ -28,7 +28,4 @@ export function storablePanelMode() {
     };
 }
 
-export const panelModeStore = storablePanelMode();
-
-
-export const panelMode = derived(panelModeStore, $panelModeStore => get(panelModeStore))
+export const panelMode = storablePanelMode();

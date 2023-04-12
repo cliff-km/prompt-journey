@@ -49,9 +49,7 @@ export function storableSlotSets() {
     };
 }
 
-export const slotSetStore = storableSlotSets();
-
-export const slotSets = derived(slotSetStore, $slotSetStore => get(slotSetStore))
+export const slotSets = storableSlotSets();
 
 function getRandomSeed() {
     return (Math.random() * 1000000).toFixed(0);
@@ -74,6 +72,4 @@ export function storableSeed() {
     };
 }
 
-export const seedStore = storableSeed();
-
-export const seed = derived(seedStore, $seedStore => get(seedStore));
+export const seed = storableSeed();

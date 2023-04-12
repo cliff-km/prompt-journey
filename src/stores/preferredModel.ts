@@ -1,8 +1,8 @@
 import { get, writable, derived } from 'svelte/store'
 
-const STORE_KEY = 'preferredEmbeddingModelStore';
+const STORE_KEY = 'preferredModel';
 
-export function storablePreferredEmbeddingModel() {
+export function storablePreferredModel() {
     const store = writable("");
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
@@ -28,7 +28,4 @@ export function storablePreferredEmbeddingModel() {
     };
 }
 
-export const preferredEmbeddingModelStore = storablePreferredEmbeddingModel();
-
-
-export const preferredEmbeddingModel = derived(preferredEmbeddingModelStore, $preferredEmbeddingModelStore => get(preferredEmbeddingModelStore))
+export const preferredModel = storablePreferredModel();

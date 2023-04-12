@@ -1,31 +1,29 @@
 <script lang="ts">
     import type { WeightMode } from "../types.js";
-    import { promptList } from "../stores/promptStore.js";
+    import { promptList } from "../stores/prompt.js";
     import pkg from "lodash";
     const { orderBy } = pkg;
     import {
         intializeActivePrompt,
-        activePromptStore,
         activePrompt,
-    } from "../stores/activePromptStore.js";
-    import { panelModeStore } from "../stores/panelModeStore.js";
+    } from "../stores/activePrompt.js";
+    import { panelMode } from "../stores/panelMode.js";
     import {
-        selectedPromptStore,
         selectedPrompt,
-    } from "../stores/selectedPromptStore.js";
+    } from "../stores/selectedPrompt.js";
 
     function selectNew() {
-        selectedPromptStore.delete();
-        activePromptStore.update(
+        selectedPrompt.delete();
+        activePrompt.update(
             intializeActivePrompt({}, $activePrompt.weightMode)
         );
-        panelModeStore.update("edit");
+        panelMode.update("edit");
     }
 
     function selectPrompt(id, data) {
-        selectedPromptStore.update(id);
-        activePromptStore.update({ ...data });
-        panelModeStore.update("edit");
+        selectedPrompt.update(id);
+        activePrompt.update({ ...data });
+        panelMode.update("edit");
     }
 </script>
 
@@ -41,8 +39,8 @@
                 on:click={() => selectPrompt(promptId, data)}
             >
                 {#each Object.entries(data.weightedPrompts) as [id, wp]}{wp.text}<b
-                        >:: </b
-                    >
+                        >::
+                    </b>
                 {/each}</a
             >
         </li>

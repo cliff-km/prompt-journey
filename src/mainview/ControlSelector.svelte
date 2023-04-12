@@ -3,11 +3,11 @@
     import IconBars from "../icon/IconBars.svelte";
     import IconCircle from "../icon/IconCircle.svelte";
     import IconScatter from "../icon/IconScatter.svelte";
-    import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
 
     function selectControllerMode(mode: WeightMode) {
         const ap = {...$activePrompt, weightMode: mode};
-        activePromptStore.update(ap);
+        activePrompt.update(ap);
     }
 </script>
 

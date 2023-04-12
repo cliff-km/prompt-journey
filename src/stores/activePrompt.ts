@@ -1,9 +1,9 @@
 import { type WeightedPrompt, type WeightedPromptDict, type MultiPrompt, WeightMode } from '../types';
 import { get, writable, derived } from 'svelte/store'
-import { selectedPromptStore } from './selectedPromptStore';
-import { promptStore } from './promptStore';
+import { selectedPrompt } from './selectedPrompt';
+import { promptStore } from './prompt';
 
-const STORE_KEY = 'activePromptStore';
+const STORE_KEY = 'activePrompt';
 
 export function createWeightedPrompt(id: number, text: string, parsedWeight: number, barWeight = 1) : WeightedPrompt {
     return {
@@ -67,7 +67,7 @@ export function storableActivePrompt() {
     return {
         subscribe,
         update: (p: MultiPrompt) => {
-            const activePromptId = selectedPromptStore.get();
+            const activePromptId = selectedPrompt.get();
             if(activePromptId) {
                 promptStore.update(activePromptId, p);
             }
@@ -88,7 +88,4 @@ export function storableActivePrompt() {
     };
 }
 
-export const activePromptStore = storableActivePrompt();
-
-
-export const activePrompt = derived(activePromptStore, $activePromptStore => get(activePromptStore))
+export const activePrompt = storableActivePrompt();

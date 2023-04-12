@@ -1,19 +1,10 @@
 <script lang="ts">
     import { WeightMode } from "../types.js";
-    import { keyStore, key } from "../stores/keyStore.js";
-    import {
-        preferredModelStore,
-        preferredModel,
-    } from "../stores/preferredModelStore.js";
-    import {
-        preferredEmbeddingModelStore,
-        preferredEmbeddingModel,
-    } from "../stores/preferredEmbeddingModelStore.js";
+    import { key } from "../stores/key.js";
+    import { preferredModel } from "../stores/preferredModel.js";
+    import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModel.js";
     import { createOpenAI, listModels } from "../lib/openai.js";
-    import {
-        activePromptStore,
-        activePrompt,
-    } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
 
     const supportedCompletionModels = [
         "text-davinci-003",
@@ -24,9 +15,7 @@
         "gpt-3.5-turbo-0301",
     ];
 
-    const supportedEmbeddingModels = [
-        "text-embedding-ada-002"
-    ];
+    const supportedEmbeddingModels = ["text-embedding-ada-002"];
 
     let openaiKey = $key;
 
@@ -37,51 +26,52 @@
     let listPromise = null;
 
     async function fetchModels(openaiKey: string) {
-        if (!openaiKey || (completionModels.length && embeddingModels.length)) return;
+        if (!openaiKey || (completionModels.length && embeddingModels.length))
+            return;
         const openai = createOpenAI(openaiKey);
         listPromise = listModels(openai);
 
         const response = await listPromise;
         if (response.data)
             completionModels = response.data.data
-                    .map(({ id }) => id)
-                    .filter((id) => supportedCompletionModels.includes(id));
-            embeddingModels = response.data.data
-                    .map(({ id }) => id)
-                    .filter((id) => supportedEmbeddingModels.includes(id));
+                .map(({ id }) => id)
+                .filter((id) => supportedCompletionModels.includes(id));
+        embeddingModels = response.data.data
+            .map(({ id }) => id)
+            .filter((id) => supportedEmbeddingModels.includes(id));
     }
 
     function handleModelSelect(e) {
         selectedCompletionModel = e.target.value;
-        preferredModelStore.update(selectedCompletionModel);
+        preferredModel.update(selectedCompletionModel);
     }
 
     function handleEmbeddingSelect(e) {
         selectedEmbeddingModel = e.target.value;
-        preferredEmbeddingModelStore.update(selectedEmbeddingModel);
+        preferredEmbeddingModel.update(selectedEmbeddingModel);
     }
 
     function handleKeyInput(e) {
         const newKey = e.target.value;
-        keyStore.update(newKey);
-        if(newKey.length === 51) {
+        key.update(newKey);
+        if (newKey.length === 51) {
             fetchModels(newKey);
         }
-        if(newKey.length === 0) {
+        if (newKey.length === 0) {
             handleKeyClear();
         }
     }
 
     function handleKeyClear() {
-        keyStore.delete();
+        key.delete();
         openaiKey = "";
         completionModels = [];
         embeddingModels = [];
-        if($activePrompt.weightMode === WeightMode.Embed) {
-            activePromptStore.update({
+        if ($activePrompt.weightMode === WeightMode.Embed) {
+            activePrompt.update({
                 ...$activePrompt,
-                weightMode: WeightMode.Circle
-            })
+                weightMode: WeightMode.Circle,
+            });
         }
     }
 
@@ -106,17 +96,19 @@
                 class="input input-bordered w-full max-w-xs"
             />
             <label class="label">
-                <button on:click={handleKeyClear} class="btn btn-xs btn-error">Clear</button>
+                <button on:click={handleKeyClear} class="btn btn-xs btn-error"
+                    >Clear</button
+                >
             </label>
         </div>
     </div>
-    {#await listPromise }
+    {#await listPromise}
         <div class="py-10 flex justify-center">
             <div class="form-control w-full flex flex-col max-w-xs">
-                <progress class="progress progress-primary w-56"></progress>
+                <progress class="progress progress-primary w-56" />
             </div>
         </div>
-    {:then response } 
+    {:then response}
         {#if completionModels.length > 0}
             <div class="flex justify-center">
                 <div class="form-control w-full max-w-xs mb-4">
@@ -130,11 +122,15 @@
                         on:change={handleModelSelect}
                         class="select select-bordered"
                     >
-                        <option disabled selected={selectedCompletionModel === null}
+                        <option
+                            disabled
+                            selected={selectedCompletionModel === null}
                             >Pick one</option
                         >
                         {#each completionModels as m (m)}
-                            <option value={m} selected={selectedCompletionModel === m}
+                            <option
+                                value={m}
+                                selected={selectedCompletionModel === m}
                                 >{m}</option
                             >
                         {/each}
@@ -155,11 +151,15 @@
                         on:change={handleEmbeddingSelect}
                         class="select select-bordered"
                     >
-                        <option disabled selected={selectedEmbeddingModel === null}
+                        <option
+                            disabled
+                            selected={selectedEmbeddingModel === null}
                             >Pick one</option
                         >
                         {#each embeddingModels as m (m)}
-                            <option value={m} selected={selectedEmbeddingModel === m}
+                            <option
+                                value={m}
+                                selected={selectedEmbeddingModel === m}
                                 >{m}</option
                             >
                         {/each}

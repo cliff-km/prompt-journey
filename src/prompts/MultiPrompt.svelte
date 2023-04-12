@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getDisplayWeight, getRelativeWeight } from "$lib/weights.js";
-    import { activePrompt } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import { showZeroPrompts } from "../stores/showZeroPrompts.js";
     import { useWeightOrdering } from "../stores/useWeightOrdering";
     import { getPromptList } from "$lib/prompt";

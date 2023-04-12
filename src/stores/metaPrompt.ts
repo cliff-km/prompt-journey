@@ -1,8 +1,8 @@
 import { get, writable, derived } from 'svelte/store'
 
-const STORE_KEY = 'selectedPromptStore';
+const STORE_KEY = 'metaPrompt';
 
-export function storableSelectedPrompt() {
+export function storableMetaPrompt() {
     const store = writable("");
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
@@ -11,14 +11,14 @@ export function storableSelectedPrompt() {
 
     return {
         subscribe,
-        update: (id: string) => {
-            if (!id || !isBrowser) return;
-            localStorage[STORE_KEY] = id;
-            set(id);
+        update: (p: string) => {
+            if (!isBrowser) return;
+            localStorage[STORE_KEY] = p;
+            set(p);
         },
         get: () => {
-            const id = get(store);
-            return id;
+            const p = get(store);
+            return p;
         },
         delete: () => {
             if (!isBrowser) return;
@@ -28,7 +28,4 @@ export function storableSelectedPrompt() {
     };
 }
 
-export const selectedPromptStore = storableSelectedPrompt();
-
-
-export const selectedPrompt = derived(selectedPromptStore, $selectedPromptStore => get(selectedPromptStore))
+export const metaPrompt = storableMetaPrompt();

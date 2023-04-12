@@ -2,15 +2,12 @@
     import type { Vec2, Embeddings } from "../types.js";
     import TSNE from "tsne-js";
     import * as clustering from "density-clustering";
-    import {
-        activePromptStore,
-        activePrompt,
-    } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import { findBoxCenter } from "../lib/vector";
     import EmbedControllerWidget from "./EmbedControllerWidget.svelte";
     import { createOpenAI, createEmbedding } from "../lib/openai.js";
-    import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModelStore";
-    import { key } from "../stores/keyStore.js";
+    import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModel.js";
+    import { key } from "../stores/key.js";
 
     let controllerW = 0;
     let controllerH = 0;
@@ -57,14 +54,14 @@
         const value = parseInt(t.value);
 
         if (value > 0 && value <= promptCount)
-            activePromptStore.update({
+            activePrompt.update({
                 ...$activePrompt,
                 embedPromptLimit: value,
             });
     }
 
     function updateExponentialScaling() {
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             embedExponentialScaling: !$activePrompt.embedExponentialScaling,
         });
@@ -79,16 +76,16 @@
 
         const value = parseInt(t.value);
 
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             embedWeightScaling: value,
         });
     }
 
     function updateClusterCount(count: number) {
-        if([0, 2, 4, 6, 8].indexOf(count) === -1) return;
+        if ([0, 2, 4, 6, 8].indexOf(count) === -1) return;
 
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             embedClusters: count,
         });
@@ -143,7 +140,7 @@
     }
 
     async function shuffleEmbeddinMap() {
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             scaledEmbedMappings: get2DEmbeddings($activePrompt.embeddings),
         });
@@ -209,7 +206,7 @@
                 : set6;
         console.log("set of 8 complete");
 
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             embeddings: inProgressEmbeds,
             embedClusterSets: {

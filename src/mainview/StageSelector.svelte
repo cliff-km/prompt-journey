@@ -1,13 +1,13 @@
 <script lang="ts">
     import { AppStage } from "../types";
-    import { appStage, appStageStore } from "../stores/appStage";
+    import { appStage } from "../stores/appStage";
 
     function selectStage(stage: AppStage) {
-        appStageStore.update(stage);
+        appStage.update(stage);
     }
 </script>
 
-<div class="btn-group btn-group-horizontal w-full flex justify-end p-2">
+<div class="btn-group btn-group-horizontal p-2">
     <button
         class="btn btn-sm"
         class:btn-active={$appStage === AppStage.Build}

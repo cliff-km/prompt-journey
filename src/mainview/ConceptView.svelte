@@ -45,9 +45,6 @@
     }
 </script>
 
-<div class="absolute top-0 right-0 z-10">
-    <ConceptControls onChange={()=>{}} />
-</div>
 <Paginator
     total={pageCount}
     current={currentPage}

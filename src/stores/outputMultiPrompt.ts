@@ -28,7 +28,4 @@ export function storableOutputMultiPrompt() {
     };
 }
 
-export const outputMultiPromptStore = storableOutputMultiPrompt();
-
-
-export const outputMultiPrompt = derived(outputMultiPromptStore, $outputMultiPromptStore => get(outputMultiPromptStore))
+export const outputMultiPrompt = storableOutputMultiPrompt();

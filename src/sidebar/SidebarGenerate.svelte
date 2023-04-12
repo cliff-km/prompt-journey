@@ -1,24 +1,23 @@
 <script lang="ts">
     import GeneratorEditor from "./GeneratorEditor.svelte";
     import GeneratorPreview from "./GeneratorPreview.svelte";
-    import { key } from "../stores/keyStore";
+    import { key } from "../stores/key";
     import { replaceAliasesWithSlotValue } from "$lib/slots";
     import {
         createOpenAI,
         createCompletion,
         createChatCompletion,
     } from "../lib/openai";
-    import { panelModeStore } from "../stores/panelModeStore";
+    import { panelMode } from "../stores/panelMode";
     import {
         intializeActivePrompt,
-        activePromptStore,
         activePrompt,
         createWeightedPrompt,
-    } from "../stores/activePromptStore";
+    } from "../stores/activePrompt";
     import { processString } from "../lib/prompt";
-    import { seedStore, seed } from "../stores/slotSets";
-    import { preferredModel } from "../stores/preferredModelStore";
-    import { metaPrompt } from "../stores/metaPromptStore";
+    import { seed } from "../stores/slotSets";
+    import { preferredModel } from "../stores/preferredModel";
+    import { metaPrompt } from "../stores/metaPrompt";
     import { directiveText } from "../stores/directiveText";
     import { dealiasedInstructions } from "../stores/instructions";
 
@@ -60,14 +59,14 @@
                         {}
                     );
 
-                    activePromptStore.update(
+                    activePrompt.update(
                         intializeActivePrompt(
                             weightedPrompts,
                             $activePrompt.weightMode
                         )
                     );
-                    panelModeStore.update("edit");
-                    seedStore.shuffle();
+                    panelMode.update("edit");
+                    seed.shuffle();
                 });
             })
             .finally(() => {
@@ -99,14 +98,14 @@
                         {}
                     );
 
-                    activePromptStore.update(
+                    activePrompt.update(
                         intializeActivePrompt(
                             weightedPrompts,
                             $activePrompt.weightMode
                         )
                     );
-                    panelModeStore.update("edit");
-                    seedStore.shuffle();
+                    panelMode.update("edit");
+                    seed.shuffle();
                 });
             })
             .finally(() => {

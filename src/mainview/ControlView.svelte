@@ -1,22 +1,14 @@
 <script lang="ts">
     import { WeightMode } from "../types.js";
-    import ControlSelector from "./ControlSelector.svelte";
-    import ControllerCircleSelector from "../controllers/ControllerCircleSelector.svelte";
     import CircleController from "../controllers/CircleController.svelte";
     import BarController from "../controllers/BarController.svelte";
     import PieController from "../controllers/PieController.svelte";
     import EmbedController from "../controllers/EmbedController.svelte";
     import PromptBox from "../prompts/PromptBox.svelte";
-    import { activePrompt } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import RingController from "../controllers/RingController.svelte";
 </script>
 
-<div class="absolute top-0 right-0 z-10">
-    <ControlSelector />
-    {#if $activePrompt.weightMode === WeightMode.Circle || $activePrompt.weightMode === WeightMode.Pie || $activePrompt.weightMode === WeightMode.Ring}
-        <ControllerCircleSelector />
-    {/if}
-</div>
 {#if $activePrompt.weightMode === WeightMode.Bars}
     <BarController />
 {:else if $activePrompt.weightMode === WeightMode.Pie}

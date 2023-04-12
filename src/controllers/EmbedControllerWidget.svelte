@@ -2,9 +2,8 @@
     import type { Embeddings, PointData, Vec2 } from "../types";
     import EmbedExplorer from "../embeds/EmbedExplorer.svelte";
     import {
-        activePromptStore,
         activePrompt,
-    } from "../stores/activePromptStore.js";
+    } from "../stores/activePrompt.js";
     import { getWeightOpacity } from "../lib/weights";
     import { getDistance } from "../lib/vector";
     import { add, multiply } from "mathjs";
@@ -201,7 +200,7 @@
                 dataPoints[parseInt(id)].connected = active;
             });
 
-        activePromptStore.update({
+            activePrompt.update({
             ...$activePrompt,
             embedMarker: markerLocation,
             weightedPrompts,

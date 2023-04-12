@@ -4,10 +4,7 @@
     import Circle from "../svg/Circle.svelte";
     import Point from "../svg/Point.svelte";
     import PromptText from "../svg/PromptText.svelte";
-    import {
-        activePromptStore,
-        activePrompt,
-    } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import {
         pointToPolar,
         polarToPoint,
@@ -17,10 +14,7 @@
     } from "../lib/circle";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
-    import {
-        findBoxCenter,
-        getSVGInputLocation,
-    } from "../lib/vector";
+    import { findBoxCenter, getSVGInputLocation } from "../lib/vector";
     import SolidLine from "../svg/SolidLine.svelte";
     import type { Vec2 } from "../types";
 
@@ -44,7 +38,7 @@
             Object.keys($activePrompt.pieAngles || {}).length !==
             Object.keys($activePrompt.weightedPrompts).length
         ) {
-            activePromptStore.update({
+            activePrompt.update({
                 ...$activePrompt,
                 pieAngles: initializeAngles($activePrompt.weightedPrompts, {}),
             });
@@ -95,7 +89,7 @@
         );
     }
 
-    function handleSegmentDragStart(e, id){
+    function handleSegmentDragStart(e, id) {
         activeSegment = id;
     }
 
@@ -109,8 +103,8 @@
 
         for (let i = 0; i < len; i++) {
             if (arr2[i] === arr1[0]) {
-            offset = i;
-            break;
+                offset = i;
+                break;
             }
         }
 
@@ -120,7 +114,7 @@
 
         for (let i = 0; i < len; i++) {
             if (arr1[i] !== arr2[(i + offset) % len]) {
-            return false;
+                return false;
             }
         }
 
@@ -148,15 +142,16 @@
         if (!segmentAngleOffsets[nextId]) {
             segmentAngleOffsets[nextId] = ca[nextId];
         }
-        
+
         // get mouse angle change
         const mouseAngle = pointToPolar(mouseLocation, center, radius)[0];
         const angleChange = mouseAngle - mouseStartAngle;
 
         const nextCa = { ...ca };
         nextCa[id] = boundedAngle(angleChange + segmentAngleOffsets[id]);
-        nextCa[nextId] = boundedAngle(angleChange + segmentAngleOffsets[nextId]);
-
+        nextCa[nextId] = boundedAngle(
+            angleChange + segmentAngleOffsets[nextId]
+        );
 
         // determine if order will change
         const nextIds = Object.entries(nextCa)
@@ -165,7 +160,7 @@
 
         // if order will change, don't update
         const areSameOrder = areCircularlyOrdered(ids, nextIds);
-        if(!areSameOrder) return;
+        if (!areSameOrder) return;
 
         pointData = computePointData(
             $activePrompt.weightedPrompts,
@@ -193,9 +188,9 @@
         e.preventDefault();
         mouseLocation = getSVGInputLocation(e);
         if (activePoint) {
-            handlePointDrag(mouseLocation)
-        } else if(activeSegment) {
-            handleSegmentDrag(mouseLocation)
+            handlePointDrag(mouseLocation);
+        } else if (activeSegment) {
+            handleSegmentDrag(mouseLocation);
         } else {
             mouseStartAngle = pointToPolar(mouseLocation, center, radius)[0];
         }
@@ -214,7 +209,7 @@
         const idx = ids.indexOf(id);
         const nextIdx = idx + 1 === ids.length ? 0 : idx + 1;
         const nextId = ids[nextIdx];
-        
+
         ca[id] = boundedAngle(ca[id] - e.deltaY / 100);
         ca[nextId] = boundedAngle(ca[nextId] + e.deltaY / 100);
         pointData = computePointData(
@@ -232,7 +227,8 @@
 
         // sort prompts by angle
         const sortedPrompts = Object.entries(weightedPrompts).sort(
-            (a, b) => boundedAngle(pieAngles[a[0]]) - boundedAngle(pieAngles[b[0]])
+            (a, b) =>
+                boundedAngle(pieAngles[a[0]]) - boundedAngle(pieAngles[b[0]])
         );
 
         // compute angle differences
@@ -272,7 +268,7 @@
             wp[id].pieWeight = point.unitWeight;
         });
 
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             weightedPrompts: wp,
             pieAngles,
@@ -306,9 +302,9 @@
         {#each Object.entries($activePrompt.weightedPrompts) as [id, point]}
             <SolidLine p1={center} p2={pointData[id].xy} />
             <path
-                on:mousewheel={(e)=>handleMouseWheel(e, id)}
-                on:touchstart={(e)=>handleSegmentDragStart(e, id)}
-                on:mousedown={(e)=>handleSegmentDragStart(e, id)}
+                on:mousewheel={(e) => handleMouseWheel(e, id)}
+                on:touchstart={(e) => handleSegmentDragStart(e, id)}
+                on:mousedown={(e) => handleSegmentDragStart(e, id)}
                 d={createPieSegment(
                     center,
                     radius,

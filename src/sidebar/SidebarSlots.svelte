@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { SlotSet } from "../types";
     import { v4 as uuidv4 } from "uuid";
-    import { slotSetStore, slotSets } from "../stores/slotSets.js";
+    import { slotSets } from "../stores/slotSets.js";
     import debounce from "lodash/debounce";
     import { getSlotAlias, validateSlotName } from "$lib/slots";
 
@@ -36,7 +36,7 @@
     function saveSlotSet() {
         if (!activeSlotSet) return;
         if (activeSlotSetId && activeSlotSetId !== "new") {
-            slotSetStore.update(activeSlotSetId, {
+            slotSets.update(activeSlotSetId, {
                 ...activeSlotSet,
                 name: slotName,
             });
@@ -50,7 +50,7 @@
             }
 
             const id = uuidv4();
-            slotSetStore.update(id, {
+            slotSets.update(id, {
                 ...activeSlotSet,
                 name: slotName,
             });
@@ -59,7 +59,7 @@
     }
 
     function deleteSlotSet() {
-        slotSetStore.delete(activeSlotSetId);
+        slotSets.delete(activeSlotSetId);
         slotName = "";
         newSlotText = ""
         activeSlotSetId = null;
@@ -78,7 +78,7 @@
 
         activeSlotSet.values = newSlots;
 
-        if(activeSlotSetId !== "new") slotSetStore.update(activeSlotSetId, activeSlotSet);
+        if(activeSlotSetId !== "new") slotSets.update(activeSlotSetId, activeSlotSet);
     }, 1000);
 
     const handleNewSlotChange = debounce((text) => {
@@ -91,7 +91,7 @@
             activeSlotSet.values = newSlots;
             newSlotText = "";
 
-            if(activeSlotSetId !== "new") slotSetStore.update(activeSlotSetId, activeSlotSet);
+            if(activeSlotSetId !== "new") slotSets.update(activeSlotSetId, activeSlotSet);
         }
     }, 1000);
 </script>

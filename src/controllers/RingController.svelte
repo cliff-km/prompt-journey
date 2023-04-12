@@ -1,6 +1,6 @@
 <script lang="ts">
     import { isUndefined } from "mathjs";
-    import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import RingControllerWidget from "./RingControllerWidget.svelte";
 
     let controllerW;
@@ -10,8 +10,8 @@
         
     $: {
         {
-            activePromptStore.update({
-                ...activePromptStore.get(),
+            activePrompt.update({
+                ...activePrompt.get(),
                 ringExponentialScaling,
                 ringWeightScaling,
             });
@@ -19,8 +19,8 @@
     }
 
     function handleReverse() {
-        activePromptStore.update({
-            ...activePromptStore.get(),
+        activePrompt.update({
+            ...activePrompt.get(),
             ringReverse: !$activePrompt.ringReverse,
         });
     }

@@ -3,16 +3,16 @@
     import SidebarEdit from "./SidebarEdit.svelte";
     import SidebarGenerate from "./SidebarGenerate.svelte";
     import SidebarSettings from "./SidebarSettings.svelte";
-    import { panelModeStore, panelMode } from "../stores/panelModeStore.js";
+    import { panelMode } from "../stores/panelMode.js";
     import IconGear from "../icon/IconGear.svelte";
     import SidebarSlots from "./SidebarSlots.svelte";
 
     $: {
-        if(!$panelMode) panelModeStore.update("select");
+        if (!$panelMode) panelMode.update("select");
     }
 
     function selectPanelMode(mode: string) {
-        panelModeStore.update(mode);
+        panelMode.update(mode);
     }
 </script>
 
@@ -39,7 +39,8 @@
             >
             <button
                 class={$panelMode === "settings" ? "btn btn-active" : "btn"}
-                on:click={() => selectPanelMode("settings")}><IconGear /></button
+                on:click={() => selectPanelMode("settings")}
+                ><IconGear /></button
             >
         </div>
         <!-- Sidebar content here -->

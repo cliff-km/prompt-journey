@@ -1,5 +1,5 @@
 import Rand, { PRNG } from 'rand-seed';
-import { slotSetStore } from "../stores/slotSets";
+import { slotSets } from "../stores/slotSets";
 
 export function getSlotAlias(name: string) {
     let alias = name.replace(/\s+/g, "_");
@@ -17,13 +17,13 @@ export function validateSlotName(name: string) {
 }
 
 function getByAlias() {
-    const slotSets = slotSetStore.getAll();
+    const sets = slotSets.getAll();
 
-    const slotSetsByAlias = Object.values(slotSets).reduce((acc, slotSet) => {
-        const alias = getSlotAlias(slotSet.name);
+    const slotSetsByAlias = Object.values(sets).reduce((acc, slot) => {
+        const alias = getSlotAlias(slot.name);
 
         if (alias) {
-            acc[alias] = [...slotSet.values];
+            acc[alias] = [...slot.values];
         }
 
         return acc;

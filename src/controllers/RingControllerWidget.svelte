@@ -5,10 +5,7 @@
     import Point from "../svg/Point.svelte";
     import Ring from "../svg/Ring.svelte";
     import PromptText from "../svg/PromptText.svelte";
-    import {
-        activePromptStore,
-        activePrompt,
-    } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import {
         pointToPolar,
         polarToPoint,
@@ -18,10 +15,7 @@
     } from "../lib/circle";
     import { getWeightOpacity } from "../lib/weights";
     import { getTextBoxDimensions } from "../lib/text";
-    import {
-        findBoxCenter,
-        getSVGInputLocation,
-    } from "../lib/vector";
+    import { findBoxCenter, getSVGInputLocation } from "../lib/vector";
     import RingHandle from "../svg/RingHandle.svelte";
     import type { Vec2 } from "../types";
 
@@ -42,7 +36,7 @@
             Object.keys($activePrompt.ringAngles).length !==
             Object.keys($activePrompt.weightedPrompts).length
         ) {
-            activePromptStore.update({
+            activePrompt.update({
                 ...$activePrompt,
                 ringAngles: initializeAngles($activePrompt.weightedPrompts, {}),
             });
@@ -183,7 +177,7 @@
             wp[id].ringWeight = data.unitWeight;
         });
 
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             ringStartAngle,
             weightedPrompts: wp,
@@ -232,11 +226,7 @@
         {/each}
 
         {#if Object.entries($activePrompt.weightedPrompts).length > 0}
-            <Ring
-                xy={center}
-                radius={ringRadius}
-                stroke={30}
-            />
+            <Ring xy={center} radius={ringRadius} stroke={30} />
             <RingHandle
                 reverse={$activePrompt.ringReverse}
                 xy={center}

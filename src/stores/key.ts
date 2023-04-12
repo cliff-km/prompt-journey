@@ -1,8 +1,8 @@
 import { get, writable, derived } from 'svelte/store'
 
-const STORE_KEY = 'preferredDirectiveStore';
+const STORE_KEY = 'oKey';
 
-export function storablePreferredDirective() {
+export function storableKey() {
     const store = writable("");
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
@@ -28,7 +28,4 @@ export function storablePreferredDirective() {
     };
 }
 
-export const preferredDirectiveStore = storablePreferredDirective();
-
-
-export const preferredDirective = derived(preferredDirectiveStore, $preferredDirectiveStore => get(preferredDirectiveStore))
+export const key = storableKey();

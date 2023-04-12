@@ -6,10 +6,7 @@
     import Line from "../svg/DashedLine.svelte";
     import PromptText from "../svg/PromptText.svelte";
     import WeightMarker from "../svg/WeightMarker.svelte";
-    import {
-        activePromptStore,
-        activePrompt,
-    } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
     import {
         pointToPolar,
         polarToPoint,
@@ -42,7 +39,7 @@
             Object.keys($activePrompt.circleAngles).length !==
             Object.keys($activePrompt.weightedPrompts).length
         ) {
-            activePromptStore.update({
+            activePrompt.update({
                 ...$activePrompt,
                 circleAngles: initializeAngles(
                     $activePrompt.weightedPrompts,
@@ -242,7 +239,7 @@
             wp[id].circleWeight = data.unitWeight;
         });
 
-        activePromptStore.update({
+        activePrompt.update({
             ...$activePrompt,
             circleMarker,
             weightedPrompts: wp,
@@ -304,10 +301,7 @@
                     ),
                     0.5
                 )}
-                weight={getDisplayWeight(
-                    $activePrompt,
-                    id
-                )}
+                weight={getDisplayWeight($activePrompt, id)}
                 radius={15}
                 textColor={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight

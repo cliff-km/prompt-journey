@@ -43,5 +43,4 @@ export function storablePromptConfigs() {
 
 export const promptStore = storablePromptConfigs();
 
-
 export const promptList = derived(promptStore, $promptStore => Object.entries(get(promptStore)))

@@ -2,7 +2,7 @@
     import { embedString } from "$lib/embed.js";
     import { concepts } from "../stores/concepts.js";
 
-    let queue : Record<string, boolean> = { a: false };
+    let queue : Record<string, boolean> = {};
     let embedding = false;
 
     $: unembeddedConcepts = Object.entries($concepts).filter(
@@ -45,11 +45,11 @@
 </script>
 
 {#if Object.keys(queue).length > 0}
-    <div class="flex justify-end">
-        <div class="flex flex-col justify-center mr-5">
+    <div class="w-full flex justify-center p-4">
+        <div class="flex flex-col justify-start mr-5">
             <progress class="progress progress-primary w-20" />
         </div>
-        <div class="flex flex-col justify-center mr-5">
+        <div class="flex flex-col justify-start mr-5">
             <p class="text-xs">Embedding...</p>
         </div>
     </div>

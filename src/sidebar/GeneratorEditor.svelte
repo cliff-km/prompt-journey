@@ -7,17 +7,14 @@
     import { Fragments } from "../directives/fragments";
     import { FragmentShotgun } from "../directives/fragment-shotgun";
     import { PoeticAccents } from "../directives/poetic-accent";
-    import { directiveStore, directiveList } from "../stores/directiveStore.js";
-    import {
-        preferredDirectiveStore,
-        preferredDirective,
-    } from "../stores/preferredDirectiveStore.js";
-    import { metaPromptStore, metaPrompt } from "../stores/metaPromptStore.js";
+    import { directiveStore, directiveList } from "../stores/directive.js";
+    import { preferredDirective } from "../stores/preferredDirective.js";
+    import { metaPrompt } from "../stores/metaPrompt.js";
     import { directiveText } from "../stores/directiveText";
 
-    export let togglePreview = ()=>{};
+    export let togglePreview = () => {};
     export let isGenerating = false;
-    export let handleGeneratePrompt = ()=>{};
+    export let handleGeneratePrompt = () => {};
 
     let builtInDirectives = {
         // "A": {name: "Clarinet Puppet 1", text: ClarinetPuppet1, builtIn: true},
@@ -61,7 +58,6 @@
         selectedDirective !== "new" &&
         !directives[selectedDirective].builtIn;
 
-
     function saveToStore() {
         const id = selectedDirective === "new" ? uuidv4() : selectedDirective;
         directiveStore.update(id, {
@@ -72,7 +68,7 @@
 
         if (selectedDirective === "new") {
             selectedDirective = id;
-            preferredDirectiveStore.update(id);
+            preferredDirective.update(id);
         }
     }
 
@@ -81,12 +77,12 @@
         selectedDirective = null;
         newPromptName = "";
         directiveText.set("");
-        preferredDirectiveStore.delete();
+        preferredDirective.delete();
     }
 
     function updateDirective(newDirective) {
         selectedDirective = newDirective;
-        preferredDirectiveStore.update(newDirective);
+        preferredDirective.update(newDirective);
         if (newDirective && newDirective !== "new") {
             newPromptName = directives[newDirective].name;
             directiveText.set(directives[newDirective].text);
@@ -101,13 +97,10 @@
     }
 </script>
 
-
 <div class="flex justify-center">
     <div class="form-control w-full max-w-xs mb-4">
         <label class="label">
-            <span class="label-text"
-                >Pick a directive for prompt creation</span
-            >
+            <span class="label-text">Pick a directive for prompt creation</span>
         </label>
         <select
             value={selectedDirective}
@@ -139,9 +132,8 @@
                 placeholder="Name"
                 class="input input-bordered input-sm w-full max-w-xs"
             />
-            <button
-                on:click={saveToStore}
-                class="btn btn-sm btn-primary ml-4">Save</button
+            <button on:click={saveToStore} class="btn btn-sm btn-primary ml-4"
+                >Save</button
             >
         </div>
     {/if}
@@ -155,23 +147,22 @@
     <div class="w-full p-2 h-1/5">
         <textarea
             value={$metaPrompt}
-            on:input={(e) => metaPromptStore.update(e.target.value)}
+            on:input={(e) => metaPrompt.update(e.target.value)}
             class="textarea textarea-bordered w-full h-full resize-none"
             placeholder="Describe the prompt to generate."
         />
     </div>
     <div class="w-full p-2 h-12 flex justify-between">
         {#if isUserDirective}
-            <button
-                on:click={deleteFromStore}
-                class="btn btn-sm btn-error">Delete</button
+            <button on:click={deleteFromStore} class="btn btn-sm btn-error"
+                >Delete</button
             >
         {/if}
-        <button on:click={togglePreview} class="btn btn-sm btn btn-info">Preview</button>
+        <button on:click={togglePreview} class="btn btn-sm btn btn-info"
+            >Preview</button
+        >
         {#if isGenerating}
-            <button class="btn btn-sm btn disabled"
-                >Generating</button
-            >
+            <button class="btn btn-sm btn disabled">Generating</button>
         {:else}
             <button
                 on:click={handleGeneratePrompt}

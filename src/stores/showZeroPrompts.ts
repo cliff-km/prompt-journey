@@ -28,7 +28,4 @@ export function storableShowZeroPrompts() {
     };
 }
 
-export const showZeroPromptsStore = storableShowZeroPrompts();
-
-
-export const showZeroPrompts = derived(showZeroPromptsStore, $showZeroPromptsStore => get(showZeroPromptsStore))
+export const showZeroPrompts = storableShowZeroPrompts();

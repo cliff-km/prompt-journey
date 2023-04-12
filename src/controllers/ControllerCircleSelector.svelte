@@ -3,11 +3,11 @@
     import IconPie from "../icon/IconPie.svelte";
     import IconCompass from "../icon/IconCompass.svelte";
     import IconRing from "../icon/IconRing.svelte";
-    import { activePromptStore, activePrompt } from "../stores/activePromptStore.js";
+    import { activePrompt } from "../stores/activePrompt.js";
 
     function selectControllerMode(mode: WeightMode) {
         const ap = {...$activePrompt, weightMode: mode};
-        activePromptStore.update(ap);
+        activePrompt.update(ap);
     }
 </script>
 

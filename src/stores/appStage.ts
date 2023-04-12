@@ -1,7 +1,7 @@
 import { AppStage } from '../types';
 import { get, writable, derived } from 'svelte/store'
 
-const STORE_KEY = 'appState';
+const STORE_KEY = 'appStage';
 
 export function storableAppStage() {
     const store = writable(AppStage.Build);
@@ -29,6 +29,4 @@ export function storableAppStage() {
     };
 }
 
-export const appStageStore = storableAppStage();
-
-export const appStage = derived(appStageStore, $appStageStore => get(appStageStore))
+export const appStage = storableAppStage();

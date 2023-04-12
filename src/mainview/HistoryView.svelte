@@ -2,20 +2,16 @@
     import type { PromptHistory } from "../types";
     import { onMount } from "svelte";
     import { promptHistory } from "../stores/promptHistory";
-    import HistoryControls from "./HistoryControls.svelte";
     import Paginator from "./Paginator.svelte";
 
     let currentPage = 1;
     let pageSize = 10;
     let pageChunk = [] as PromptHistory;
 
-    
-    function setPageChunk() {
-        pageChunk = $promptHistory.slice(
-            (currentPage - 1) * pageSize,
-            currentPage * pageSize
-        );
-    }
+    $: pageChunk = $promptHistory.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
 
     function copy(prompt: string) {
         navigator.clipboard.writeText(prompt);
@@ -23,23 +19,14 @@
 
     function changePage(page: number) {
         currentPage = page;
-        setPageChunk();
     }
 
     function changePageSize(size: number) {
         currentPage = 1;
         pageSize = size;
-        setPageChunk();
     }
-
-    onMount(() => {
-        setPageChunk();
-    });
 </script>
 
-<div class="absolute top-0 right-0 z-10">
-    <HistoryControls onChange={setPageChunk} />
-</div>
 <Paginator
     total={Math.ceil($promptHistory.length / pageSize)}
     current={currentPage}

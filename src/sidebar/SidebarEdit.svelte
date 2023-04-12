@@ -1,41 +1,46 @@
 <script lang="ts">
     import { v4 as uuidv4 } from "uuid";
     import { processString } from "../lib/prompt.js";
-    import { promptStore } from "../stores/promptStore.js";
+    import { promptStore } from "../stores/prompt.js";
     import {
         intializeActivePrompt,
-        activePromptStore,
         activePrompt,
         createWeightedPrompt,
-    } from "../stores/activePromptStore.js";
-    import { panelModeStore } from "../stores/panelModeStore.js";
-    import { selectedPromptStore, selectedPrompt } from "../stores/selectedPromptStore.js";
+    } from "../stores/activePrompt.js";
+    import { panelMode } from "../stores/panelMode.js";
+    import {
+        selectedPrompt,
+    } from "../stores/selectedPrompt.js";
     import debounce from "lodash/debounce";
 
     let newPromptText = "";
     let promptCount = Object.keys($activePrompt.weightedPrompts).length;
 
     $: {
-        const newPromptCount = Object.keys($activePrompt.weightedPrompts).length;
+        const newPromptCount = Object.keys(
+            $activePrompt.weightedPrompts
+        ).length;
         if (newPromptCount > promptCount) {
             promptCount = newPromptCount;
             newPromptText = "";
         }
     }
 
-    $: promptText = Object.entries($activePrompt.weightedPrompts).map(([id, prompt]) => {
-        return {
-            id,
-            text: prompt.text,
-        };
-    });
+    $: promptText = Object.entries($activePrompt.weightedPrompts).map(
+        ([id, prompt]) => {
+            return {
+                id,
+                text: prompt.text,
+            };
+        }
+    );
 
     function saveToStore() {
         promptStore.update(uuidv4(), {
             ...$activePrompt,
             date: Date.now(),
         });
-        panelModeStore.update("select");
+        panelMode.update("select");
     }
 
     function pasteFromClipboard() {
@@ -47,49 +52,61 @@
     }
 
     function handleSignificantPromptChange(prompts) {
-        const maxSentenceWeight = Math.max(...prompts.map(([text, weight]) => weight));
-        const weightedPrompts = prompts.reduce((acc, [text, parsedWeight], idx) => {
-                    acc[idx] = createWeightedPrompt(idx, text, parsedWeight, parsedWeight/maxSentenceWeight);
-                    return acc;
-                }, {});
-        selectedPromptStore.delete();
-        activePromptStore.update(intializeActivePrompt(weightedPrompts, $activePrompt.weightMode));
+        const maxSentenceWeight = Math.max(
+            ...prompts.map(([text, weight]) => weight)
+        );
+        const weightedPrompts = prompts.reduce(
+            (acc, [text, parsedWeight], idx) => {
+                acc[idx] = createWeightedPrompt(
+                    idx,
+                    text,
+                    parsedWeight,
+                    parsedWeight / maxSentenceWeight
+                );
+                return acc;
+            },
+            {}
+        );
+        selectedPrompt.delete();
+        activePrompt.update(
+            intializeActivePrompt(weightedPrompts, $activePrompt.weightMode)
+        );
         newPromptText = "";
     }
 
     function handleDeletePrompt() {
         if ($selectedPrompt) promptStore.delete($selectedPrompt);
-        selectedPromptStore.delete();
-        activePromptStore.delete();
-        panelModeStore.update("select");
+        selectedPrompt.delete();
+        activePrompt.delete();
+        panelMode.update("select");
     }
 
     const handleSinglePromptChange = debounce((id, text) => {
-        let weightedPrompts = {...$activePrompt.weightedPrompts};
-        
-        if(!text) {
-            const weightedPromptsById = Object.entries($activePrompt.weightedPrompts);
-            const newPrompts = weightedPromptsById.filter(([wpId]) => wpId !== id).map(([wpId, wp]) => [
-                wp.text,
-                wp.parsedWeight,
-            ]);
+        let weightedPrompts = { ...$activePrompt.weightedPrompts };
+
+        if (!text) {
+            const weightedPromptsById = Object.entries(
+                $activePrompt.weightedPrompts
+            );
+            const newPrompts = weightedPromptsById
+                .filter(([wpId]) => wpId !== id)
+                .map(([wpId, wp]) => [wp.text, wp.parsedWeight]);
 
             return handleSignificantPromptChange(newPrompts);
         }
-        const updatedWP = { ...weightedPrompts[id], text};
+        const updatedWP = { ...weightedPrompts[id], text };
         weightedPrompts[id] = updatedWP;
-    
-        activePromptStore.update({
+
+        activePrompt.update({
             ...$activePrompt,
             weightedPrompts,
         });
     }, 1000);
 
     const handleNewPromptChange = debounce((text) => {
-        const newPrompts = Object.entries($activePrompt.weightedPrompts).map(([wpId, wp]) => [
-            wp.text,
-            wp.parsedWeight,
-        ]);
+        const newPrompts = Object.entries($activePrompt.weightedPrompts).map(
+            ([wpId, wp]) => [wp.text, wp.parsedWeight]
+        );
 
         newPrompts.push([text, 1]);
 
