@@ -57,7 +57,6 @@
         );
 
         inProgressEmbeds = {} as Embeddings;
-        console.log($concepts);
         for (let p of prompts) {
             console.log("fetching embedding for", p[1]);
             const response = await getStoredEmbedding(p[1]);
@@ -142,7 +141,6 @@
                 Object.entries(activeEmbeddings).length,
                 Object.entries(activePrompt.weightedPrompts).length
             );
-            console.log(activeEmbeddings);
             return true;
         }
         if (

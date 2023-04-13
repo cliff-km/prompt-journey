@@ -12,8 +12,6 @@
     }
 
     const conceptUnsub = concepts.subscribe((c) => {
-        console.log("concepts", c);
-
         const unembeddedConcepts = Object.entries(c).filter(([cKey, embed]) => !embed);
         
         if ($key && unembeddedConcepts.length > 0) {
@@ -27,7 +25,6 @@
     });
 
     const embedUnsub = embedQueue.subscribe((q) => {
-        console.log("embedQueue", q);
         const requiresEmbedStart = Boolean(key.get() && queueLength() > 0 && !embedding);
 
         if(requiresEmbedStart) {
@@ -42,10 +39,8 @@
         embedQueue.update((q) => {
             q[next] = true;
             return q;
-        });
-        console.log("embedding", next);
+        })
         embedString(next).then((e) => {
-            console.log("embedded", next);
             concepts.update(next, e);
             const newQueue = { ...$embedQueue };
             delete newQueue[next];

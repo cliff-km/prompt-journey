@@ -14,6 +14,7 @@
         get2DEmbeddings,
         getKMeansClusters,
     } from "../lib/embedMap";
+    import { onMount } from "svelte";
 
     let controllerW = 0;
     let controllerH = 0;
@@ -161,7 +162,6 @@
         console.log("weights updated")
         weights = newWeights;
         dataPoints = newDataPoints;
-        console.log(weights, dataPoints);
     }
 
     function getEmbedClusterSets() {
@@ -202,8 +202,6 @@
                   )
                 : set6;
         console.log("set of 8 complete");
-
-        console.log(set2, set4, set6, set8)
         return {
             2: [...set2, ...padArray(2 - set2.length)],
             4: [...set4, ...padArray(4 - set4.length)],
@@ -293,6 +291,10 @@
     async function shuffleEmbeddinMap() {
         scaledEmbedMappings = get2DEmbeddings($embeddedConcepts);
     }
+
+    onMount(() => {
+        shuffleEmbeddinMap();
+    });
 </script>
 
 <div
