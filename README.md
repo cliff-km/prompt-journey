@@ -22,6 +22,7 @@ So, TBD.
 - Error handling 🙏
 - Built with tape and thumbtacks
 - Started hitting the bounds of localStorage. It was fun while it lasted.
+  - Partially addressed by sharing embeds between prompts but still very limited.
 
 If you find anything else, let me know with an issue.
 
