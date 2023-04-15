@@ -14,6 +14,7 @@
 
     let newPromptText = "";
     let promptCount = Object.keys($activePrompt.weightedPrompts).length;
+    let shiftDown = false;
 
     $: {
         const newPromptCount = Object.keys(
@@ -84,19 +85,22 @@
         panelMode.update("select");
     }
 
-    const handleSinglePromptChange = debounce((id, text) => {
+    function handlePromptRemove(id) {
+        console.log("remove", id);
+        const weightedPromptsById = Object.entries(
+            $activePrompt.weightedPrompts
+        );
+        const newPrompts = weightedPromptsById
+            .filter(([wpId]) => wpId !== id)
+            .map(([wpId, wp]) => [wp.text, wp.parsedWeight]);
+
+        return handleSignificantPromptChange(newPrompts);
+    }
+
+    function handleSinglePromptChange(id: number, text: string) {
+        console.log("change", id);
         let weightedPrompts = { ...$activePrompt.weightedPrompts };
 
-        if (!text) {
-            const weightedPromptsById = Object.entries(
-                $activePrompt.weightedPrompts
-            );
-            const newPrompts = weightedPromptsById
-                .filter(([wpId]) => wpId !== id)
-                .map(([wpId, wp]) => [wp.text, wp.parsedWeight]);
-
-            return handleSignificantPromptChange(newPrompts);
-        }
         const updatedWP = { ...weightedPrompts[id], text };
         weightedPrompts[id] = updatedWP;
 
@@ -104,9 +108,12 @@
             ...$activePrompt,
             weightedPrompts,
         });
-    }, 1000);
+    }
 
-    const handleNewPromptChange = debounce((text) => {
+    const debouncedUpdate = debounce(handleSinglePromptChange, 500);
+
+    function handleNewPromptChange(text: string) {
+        console.log("new", text);
         const newPrompts = Object.entries($activePrompt.weightedPrompts).map(
             ([wpId, wp]) => [wp.text, wp.parsedWeight]
         );
@@ -114,7 +121,42 @@
         newPrompts.push([text, 1]);
 
         return handleSignificantPromptChange(newPrompts);
-    }, 1000);
+    }
+
+    function handleKeyDown(e, id = null) {
+        const keypress = e.key;
+        const text = e.target.value;
+
+        if (keypress === "Shift") {
+            shiftDown = true;
+            return;
+        }
+
+        if (id !== null) {
+            if (keypress === "Enter" && text !== "") {
+                handleSinglePromptChange(id, text);
+            } else if (keypress === "Backspace" && text === "") {
+                handlePromptRemove(id);
+            }
+            
+            if (keypress === "Enter" && shiftDown) {
+                const weightedPromptsById = Object.entries($activePrompt.weightedPrompts);
+                const newPrompts = weightedPromptsById.map(([wpId, wp]) => [
+                    wp.text,
+                    wp.parsedWeight,
+                ]);
+
+                const newPromptId = parseInt(id)+1
+
+                console.log("adding prompt at", id+1)
+                newPrompts.splice(newPromptId, 0, ["", 1]);
+
+                return handleSignificantPromptChange(newPrompts);
+            }
+        } else if (keypress === "Enter" && text !== "") {
+            handleNewPromptChange(text);
+        }
+    }
 </script>
 
 <div class="flex px-8 py-2 justify-center bg-base-100">
@@ -135,7 +177,11 @@
         <li class="p-1">
             <input
                 value={text}
-                on:input={(e) => handleSinglePromptChange(id, e.target.value)}
+                on:input={(e) => debouncedUpdate(id, e.target.value)}
+                on:keydown={(e) => handleKeyDown(e, id)}
+                on:keyup={(e) => {
+                    if (e.key === "Shift") shiftDown = false;
+                }}
                 type="text"
                 placeholder=""
                 class="input input-bordered input-sm w-full"
@@ -146,9 +192,13 @@
         <input
             bind:value={newPromptText}
             type="text"
-            on:input={(e) => handleNewPromptChange(e.target.value)}
+            on:keydown={(e) => handleKeyDown(e)}
             placeholder="Add prompt"
             class="input input-bordered input-sm w-full italic"
         />
     </li>
 </ul>
+<div class="h-full w-full flex flex-col justify-end bg-base-100 p-2 text-xs select-none">
+    <p>Shift+Enter to add a line</p>
+    <p>Bksp to remove an empty line</p>
+</div>
