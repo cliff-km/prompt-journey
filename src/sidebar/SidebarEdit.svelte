@@ -198,7 +198,7 @@
         />
     </li>
 </ul>
-<div class="h-full w-full flex flex-col justify-end bg-base-100 p-2 text-xs select-none">
+<div class="w-full justify-end bg-base-100 p-2 text-xs select-none">
     <p>Shift+Enter to add a line</p>
     <p>Bksp to remove an empty line</p>
 </div>
