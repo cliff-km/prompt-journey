@@ -19,6 +19,7 @@ export type WeightedPrompt = {
     circleWeight?: number;
     embedWeight?: number;
     pieWeight?: number;
+    randomWeight?: number;
 }
 
 export type WeightedPromptDict = Record<number, WeightedPrompt>;
@@ -29,6 +30,7 @@ export enum WeightMode {
     Bars = "bars",
     Embed = "embed",
     Pie = "pie",
+    Random = "random",
 }
 
 export enum AppStage {
@@ -82,6 +84,7 @@ export type MultiPrompt = {
     embedClusters: number;
     embedPromptLimit: number;
     scaledEmbedMappings?: Record<number, Vec2>;
+    randomPromptLimit: number;
 }
 
 export type PointData = {

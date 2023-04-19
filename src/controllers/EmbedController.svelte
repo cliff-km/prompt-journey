@@ -6,6 +6,7 @@
     import { activeEmbeddings } from "../stores/activeEmbeddings";
     import { concepts } from "../stores/concepts";
     import { get2DEmbeddings, getKMeansClusters } from "../lib/embedMap";
+    import PromptBox from "../prompts/PromptBox.svelte";
 
     let embedPromise = null;
     let inProgressEmbeds = {} as Embeddings;
@@ -183,3 +184,4 @@
         <p style="color: red">{error.message}</p>
     {/await}
 {/if}
+<PromptBox />

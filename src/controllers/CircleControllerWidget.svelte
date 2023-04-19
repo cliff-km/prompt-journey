@@ -320,6 +320,7 @@
         {/if}
     {/if}
 </svg>
+<slot></slot>
 
 <style>
     :global(svg) {

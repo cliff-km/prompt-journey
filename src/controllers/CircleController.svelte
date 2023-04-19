@@ -2,6 +2,7 @@
     import { isUndefined } from "mathjs";
     import { activePrompt } from "../stores/activePrompt.js";
     import CircleControllerWidget from "./CircleControllerWidget.svelte";
+    import PromptBox from "../prompts/PromptBox.svelte";
 
     let controllerW;
     let controllerH;
@@ -57,3 +58,4 @@
         </div>
     {/if}
 </div>
+<PromptBox />

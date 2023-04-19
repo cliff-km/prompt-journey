@@ -2,6 +2,7 @@
     import { isUndefined } from "mathjs";
     import { activePrompt } from "../stores/activePrompt.js";
     import RingControllerWidget from "./RingControllerWidget.svelte";
+    import PromptBox from "../prompts/PromptBox.svelte";
 
     let controllerW;
     let controllerH;
@@ -69,3 +70,4 @@
         >
     </div>
 </div>
+<PromptBox />

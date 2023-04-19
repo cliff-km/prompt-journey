@@ -11,6 +11,7 @@ export function createWeightedPrompt(id: number, text: string, parsedWeight: num
         text,
         barWeight,
         parsedWeight,
+        randomWeight: Math.random(),
     }
 }
 
@@ -50,7 +51,8 @@ export function intializeActivePrompt(prompts: WeightedPromptDict, weightMode = 
         embedWeightScaling: 2,
         embedExponentialScaling: true,
         embedClusters: 0,
-        embedPromptLimit: Object.keys(prompts).length
+        embedPromptLimit: Object.keys(prompts).length,
+        randomPromptLimit: Object.keys(prompts).length,
     })
 }
 

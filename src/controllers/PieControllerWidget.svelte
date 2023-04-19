@@ -340,6 +340,7 @@
         {/each}
     {/if}
 </svg>
+<slot></slot>
 
 <style>
     :global(svg) {

@@ -278,3 +278,4 @@
     maxClusterCount={promptCount}
     onShuffle={shuffleEmbeddinMap}
 />
+<slot></slot>

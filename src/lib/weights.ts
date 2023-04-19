@@ -16,6 +16,7 @@ export function getWeightKey(weightMode: WeightMode) {
         case WeightMode.Embed: weightKey = "embedWeight"; break;
         case WeightMode.Pie: weightKey = "pieWeight"; break;
         case WeightMode.Ring: weightKey = "ringWeight"; break;
+        case WeightMode.Random: weightKey = "randomWeight"; break;
     }
     return weightKey;
 }
