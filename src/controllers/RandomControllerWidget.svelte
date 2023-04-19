@@ -23,6 +23,10 @@
         }
     ) as [number, number, WeightedPrompt][];
 
+    function getPromptCount () {
+        return Object.keys($activePrompt.weightedPrompts).length;
+    }
+
     $: weights = prompts.map(([id, idx, prompt]) => {
         return [id, prompt.randomWeight || 0];
     });
@@ -54,7 +58,7 @@
                     ...prompt,
                     randomWeight:
                         idx <
-                        ($activePrompt.randomPromptLimit || prompts.length)
+                        ($activePrompt.randomPromptLimit || getPromptCount())
                             ? Math.random()
                             : 0,
                 };
@@ -91,10 +95,10 @@
             </label>
             <input
                 on:change={(e) => setPromptLimit(parseInt(e.target.value))}
-                value={$activePrompt.randomPromptLimit || prompts.length}
+                value={$activePrompt.randomPromptLimit || getPromptCount()}
                 type="range"
                 min="1"
-                max={prompts.length}
+                max={getPromptCount()}
                 step="1"
                 class="range range-sm"
             />
