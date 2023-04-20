@@ -4,7 +4,7 @@
     import Point from "../svg/Point.svelte";
     import Line from "../svg/DashedLine.svelte";
     import PromptText from "../svg/PromptText.svelte";
-    import { getTextBoxDimensions } from "../lib/text";
+    import { getTextBoxDimensions, getDisplayText } from "../lib/text";
     import { getSVGInputLocation } from "../lib/vector";
 
     // state exports
@@ -179,7 +179,7 @@
                             zoomOffset[0] -
                             getTextBoxDimensions(
                                 textWidth,
-                                dp.text.length,
+                                getDisplayText(dp.text).length,
                                 fontSize
                             )[0] /
                                 2,
@@ -191,11 +191,11 @@
                     color={`rgba(255,255,255,${dp.opacity}`}
                     wh={getTextBoxDimensions(
                         textWidth,
-                        dp.text.length,
+                        getDisplayText(dp.text).length,
                         fontSize
                     )}
                     {fontSize}
-                    text={dp.text}
+                    text={getDisplayText(dp.text)}
                 />
             {/each}
             <Point

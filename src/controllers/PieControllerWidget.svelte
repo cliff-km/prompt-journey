@@ -13,7 +13,7 @@
         boundedAngle,
     } from "../lib/circle";
     import { getWeightOpacity } from "../lib/weights";
-    import { getTextBoxDimensions } from "../lib/text";
+    import { getTextBoxDimensions, getDisplayText } from "../lib/text";
     import { findBoxCenter, getSVGInputLocation } from "../lib/vector";
     import SolidLine from "../svg/SolidLine.svelte";
     import type { Vec2 } from "../types";
@@ -324,18 +324,18 @@
             <PromptText
                 xy={getTextLocation(
                     pointData[id].textXY,
-                    getTextBoxDimensions(textWidth, point.text.length, fontSize)
+                    getTextBoxDimensions(textWidth, getDisplayText(point.text).length, fontSize)
                 )}
                 color={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight
                 )}`}
                 wh={getTextBoxDimensions(
                     textWidth,
-                    point.text.length,
+                    getDisplayText(point.text).length,
                     fontSize
                 )}
                 {fontSize}
-                text={point.text}
+                text={getDisplayText(point.text)}
             />
         {/each}
     {/if}

@@ -22,3 +22,19 @@ export function getTextBoxDimensions(boxWidth: number, textLength: number, fontS
     const height = getTextBoxHeight(boxWidth, textLength, fontSize) + 10;
     return [boxWidth, height];
 }
+
+export function getDisplayText (text: string) {
+  let displayText = text;
+  
+  // if displaytext is too long try to split it at a comma and take the first part
+  // if that's still too long truncate it at 20 characters
+  if (text.length > 40) {
+      const split = text.split(",");
+      if (split.length > 1) {
+          displayText = split[0] + "...";
+      } else {
+          displayText = text.slice(0, 20) + "...";
+      }
+  }
+  return displayText;
+}

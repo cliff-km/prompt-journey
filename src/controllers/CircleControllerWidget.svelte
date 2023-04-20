@@ -15,7 +15,7 @@
         pointOnBoundary,
     } from "../lib/circle";
     import { getDisplayWeight, getWeightOpacity } from "../lib/weights";
-    import { getTextBoxDimensions } from "../lib/text";
+    import { getTextBoxDimensions, getDisplayText } from "../lib/text";
     import {
         getDistance,
         findBoxCenter,
@@ -276,18 +276,18 @@
             <PromptText
                 xy={getTextLocation(
                     pointData[id].xy,
-                    getTextBoxDimensions(textWidth, point.text.length, fontSize)
+                    getTextBoxDimensions(textWidth, getDisplayText(point.text).length, fontSize)
                 )}
                 color={`rgba(255,255,255,${getWeightOpacity(
                     pointData[id].unitWeight
                 )}`}
                 wh={getTextBoxDimensions(
                     textWidth,
-                    point.text.length,
+                    getDisplayText(point.text).length,
                     fontSize
                 )}
                 {fontSize}
-                text={point.text}
+                text={getDisplayText(point.text)}
             />
             <WeightMarker
                 xy={multiply(
