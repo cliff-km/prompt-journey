@@ -23,6 +23,7 @@ So, TBD.
 - Built with tape and thumbtacks
 - Started hitting the bounds of localStorage. It was fun while it lasted.
   - Partially addressed by sharing embeds between prompts but still very limited.
+- Generally handles small pools of prompts well but does not handle large pools which is something I'd like.
 
 If you find anything else, let me know with an issue.
 
