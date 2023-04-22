@@ -101,15 +101,7 @@
         let weightedPrompts = { ...$activePrompt.weightedPrompts };
 
         let maxDistance = 0;
-
-        // find furthest distance between datapoints
-        Object.values(dataPoints).forEach((pointA) => {
-            Object.values(dataPoints).forEach((pointB) => {
-                const dist = getDistance(pointA.xy, pointB.xy);
-                if (dist > maxDistance) maxDistance = dist;
-            });
-        });
-
+        
         const distances = Object.entries(dataPoints).reduce(
             (acc, [id, point]) => {
                 const distance = getDistance(pivot, point.xy);
@@ -118,6 +110,15 @@
             },
             {} as Record<number, number>
         );
+
+        //get closest n points
+        Object.entries(distances)
+            .sort((a, b) => a[1] - b[1])
+            .forEach(([id, dist], idx) => {
+                if (!weightedPrompts[parseInt(id)]) return;
+                const active = idx < promptLimit + 1;
+                if (active && dist > maxDistance) maxDistance = dist;
+            });
 
         const useExpScaling = (active: boolean, dist: number) => {
             const value = active
