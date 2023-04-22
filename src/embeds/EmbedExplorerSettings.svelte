@@ -42,7 +42,7 @@
     {/if}
     <div class="w-full px-2">
         <label class="label">
-            <span class="label-text"># Prompts</span>
+            <span class="label-text">{connectionLimit}/{maxConnectionLimit} Prompts</span>
         </label>
         <input
             on:change={(e)=>setConnectionLimit(parseInt(e.target.value))}

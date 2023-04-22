@@ -1,5 +1,6 @@
 import type { Concepts, EmbeddedConcepts, VecN } from '../types';
 import { derived, get, writable } from 'svelte/store'
+import { activePrompt } from './activePrompt';
 
 const STORE_KEY = 'concept';
 export function storableConcepts() {
@@ -10,19 +11,36 @@ export function storableConcepts() {
     set((isBrowser && Object.keys(localStorage).reduce((acc, key) => {
         if (key.startsWith(STORE_KEY + '_')) {
             const id = key.split(/_(.*)/s)[1];
-            acc[id] = JSON.parse(localStorage[key]) as VecN | null;
+            acc[id] = JSON.parse(localStorage[key]) as VecN;
         }
         return acc;
     }, {} as Concepts)) || {});
 
     return {
         subscribe,
-        update: (c: string, e: VecN | null) => {
+        update: (c: string, e: VecN) => {
             if (!c || !isBrowser) return;
             const concepts = get(store);
             concepts[c] = e;
-            localStorage[`concept_${c}`] = JSON.stringify(e);
             set(concepts);
+        },
+        cache: (n: number) => {
+            if (!isBrowser) return;
+            const concepts = get(store);
+            const activeConcepts = Object.values(activePrompt.get().weightedPrompts).map(p => p.text);
+            Object.entries(concepts)
+            .sort(([id1, data1], [id2, data2]) => {
+                if (activeConcepts.includes(id1) && !activeConcepts.includes(id2)) return -1;
+                if (!activeConcepts.includes(id1) && activeConcepts.includes(id2)) return 1;
+                return 0;
+            })
+            .forEach(([id, data], idx) => {
+                if (idx <= n) {
+                    localStorage[`concept_${id}`] = JSON.stringify(data);
+                } else {
+                    delete localStorage[`concept_${id}`];
+                }
+            });
         },
         get: () => {
             const concepts = get(store);

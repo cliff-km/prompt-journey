@@ -1,6 +1,7 @@
 <script lang="ts">
     import { processString } from "../lib/prompt.js";
     import { concepts } from "../stores/concepts.js";
+    import { embedQueue } from "../stores/embedQueue";
     import Paginator from "../mainview/Paginator.svelte";
     import debounce from "lodash/debounce";
 
@@ -18,7 +19,10 @@
 
             sentences.forEach((s) => {
                 if (!c[s]) {
-                    concepts.update(s, null);
+                    embedQueue.update((q) => {
+                        q[s] = false;
+                        return q;
+                    });
                 }
             });
         });
@@ -45,7 +49,10 @@
     }
 
     const changeConcept = debounce((concept: string) => {
-        concepts.update(concept, null);
+        embedQueue.update((q) => {
+            q[concept] = false;
+            return q;
+        });
     }, 500);
 </script>
 

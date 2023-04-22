@@ -5,6 +5,8 @@
     import { preferredEmbeddingModel } from "../stores/preferredEmbeddingModel.js";
     import { createOpenAI, listModels } from "../lib/openai.js";
     import { activePrompt } from "../stores/activePrompt.js";
+    import { cacheSize } from "../stores/cacheSize.js";
+    import { concepts } from "../stores/concepts.js";
 
     const supportedCompletionModels = [
         "text-davinci-003",
@@ -109,6 +111,27 @@
             </div>
         </div>
     {:then response}
+        <div class="flex justify-center">
+            <div class="px-10 w-full">
+                <label class="label">
+                    <span class="label-text"
+                        >Embed Cache Size: {$cacheSize}</span
+                    >
+                </label>
+                <input
+                    on:change={(e) => {
+                        cacheSize.update(parseInt(e.target.value));
+                        concepts.cache($cacheSize);
+                    }}
+                    value={$cacheSize}
+                    type="range"
+                    min="0"
+                    max={150}
+                    step="1"
+                    class="range range-sm"
+                />
+            </div>
+        </div>
         {#if completionModels.length > 0}
             <div class="flex justify-center">
                 <div class="form-control w-full max-w-xs mb-4">

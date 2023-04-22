@@ -46,8 +46,11 @@
     function pasteFromClipboard() {
         navigator.clipboard.readText().then((text) => {
             const sentences = processString(text);
+            const existingPrompts = Object.values($activePrompt.weightedPrompts).map(
+                (prompt) => [prompt.text, prompt.parsedWeight]
+            );
 
-            handleSignificantPromptChange(sentences);
+            handleSignificantPromptChange([...existingPrompts, ...sentences]);
         });
     }
 

@@ -4,6 +4,7 @@
     import { concepts } from "../stores/concepts";
     import { key } from "../stores/key";
     import { embedQueue } from "../stores/embedQueue";
+    import { cacheSize } from "../stores/cacheSize";
 
     let embedding = false;
 
@@ -42,6 +43,7 @@
         })
         embedString(next).then((e) => {
             concepts.update(next, e);
+            concepts.cache($cacheSize);
             const newQueue = { ...$embedQueue };
             delete newQueue[next];
             embedQueue.set(newQueue);

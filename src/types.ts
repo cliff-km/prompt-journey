@@ -51,7 +51,7 @@ export type SlotSet = {
     values: string[];
 }
 
-export type Concepts = Record<string, VecN | null>;
+export type Concepts = Record<string, VecN>;
 export type EmbeddedConcepts = Record<string, VecN>;
 
 export type PromptHistory = PromptEvent[];

@@ -23,23 +23,3 @@
         });
     }
 </script>
-
-<div class="flex justify-center p-2">
-    <div class="btn-group btn-group-horizontal w-full flex justify-end">
-        <button
-            class="btn btn-sm"
-            class:btn-active={$conceptMode === ConceptMode.List}
-            on:click={() => conceptMode.set(ConceptMode.List)}
-            ><IconList /></button
-        >
-        <button
-            class="btn btn-sm"
-            class:btn-active={$conceptMode === ConceptMode.Map}
-            on:click={() => conceptMode.set(ConceptMode.Map)}
-            ><IconScatter /></button
-        >
-    </div>
-    <button class="btn btn-sm btn-info ml-2" on:click={pasteConcepts}>
-        Paste
-    </button>
-</div>

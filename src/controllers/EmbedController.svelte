@@ -1,48 +1,69 @@
 <script lang="ts">
-    import type { Embeddings, MultiPrompt } from "../types";
+    import type { Concepts, Embeddings, MultiPrompt } from "../types";
     import { activePrompt } from "../stores/activePrompt";
     import EmbedControllerWidget from "./EmbedControllerWidget.svelte";
     import { key } from "../stores/key";
     import { activeEmbeddings } from "../stores/activeEmbeddings";
     import { concepts } from "../stores/concepts";
+    import { embedQueue } from "../stores/embedQueue";
     import { get2DEmbeddings, getKMeansClusters } from "../lib/embedMap";
     import PromptBox from "../prompts/PromptBox.svelte";
 
     let embedPromise = null;
-    let inProgressEmbeds = {} as Embeddings;
-
+    let inProgressEmbeds = {} as Concepts;
 
     $: {
         if ($key && embeddingsRequireUpdate($activePrompt, $activeEmbeddings)) {
             console.log("Embeddings require update");
-            embedPromise = fetchEmbeddings();
+            fetchEmbeddings();
         }
     }
 
-    async function getStoredEmbedding(text: string) {
-        console.log("waiting for embedding for", text);
+    async function getStoredEmbeddings(
+        promptText: string[]
+    ): Promise<Concepts> {
+        console.log("waiting for embeddings");
 
         return new Promise((resolve, reject) => {
+            inProgressEmbeds = {} as Concepts;
+
             const checkForEmbedding = () => {
-                const embeddingFromConcept = concepts.get()[text];
-                console.log("embeddingFromConcept", embeddingFromConcept);
-                if (embeddingFromConcept) {
-                    resolve(embeddingFromConcept);
-                } else if (embeddingFromConcept === null) {
-                    setTimeout(checkForEmbedding, 500);
-                } else if (embeddingFromConcept === undefined) {
-                    console.log("setting embedding to null for", text);
-                    concepts.update(text, null);
-                    setTimeout(checkForEmbedding, 5000);
+                fetchEmbeddings();
+
+                //check if inProgressEmbeds has all the embeddings
+                const allEmbeddingsFetched = promptText.every((text) => {
+                    return inProgressEmbeds[text] !== undefined;
+                });
+
+                if (allEmbeddingsFetched) {
+                    resolve(inProgressEmbeds);
                 } else {
-                    console.log(
-                        "not found embedding for",
-                        text,
-                        embeddingFromConcept
-                    );
-                    reject(embeddingFromConcept);
+                    setTimeout(checkForEmbedding, 100);
                 }
             };
+
+            const fetchEmbeddings = () => {
+                promptText.forEach((text) => {
+                    const embedding = concepts.get()[text];
+                    if (embedding) {
+                        inProgressEmbeds[text] = embedding;
+                    }
+                });
+            };
+
+            fetchEmbeddings();
+
+            //queue up missing embeddings
+            const missingEmbeddings = promptText.filter((text) => {
+                return !inProgressEmbeds[text];
+            });
+
+            missingEmbeddings.forEach((text) => {
+                embedQueue.update((q) => {
+                    q[text] = false;
+                    return q;
+                });
+            });
 
             checkForEmbedding();
         });
@@ -57,15 +78,19 @@
             ([id, prompt]) => [id, prompt.text]
         );
 
-        inProgressEmbeds = {} as Embeddings;
-        for (let p of prompts) {
-            console.log("fetching embedding for", p[1]);
-            const response = await getStoredEmbedding(p[1]);
-            inProgressEmbeds[p[0]] = response;
-        }
+        const promptText = prompts.map((p) => p[1]);
 
-        let orderedEmbeds = Object.entries(inProgressEmbeds).sort(
-            (a, b) => a[0] - b[0]
+        console.log("fetching embedding for", promptText);
+        embedPromise = getStoredEmbeddings(promptText);
+        await embedPromise;
+
+        const indexedEmbeds = {} as Embeddings;
+        prompts.forEach(([id, text]) => {
+            indexedEmbeds[parseInt(id)] = inProgressEmbeds[text];
+        });
+
+        let orderedEmbeds = Object.entries(indexedEmbeds).sort(
+            (a, b) => parseInt(a[0]) - parseInt(b[0])
         );
 
         const padArray = (n: number) => new Array(n).fill(null).map(() => []);
@@ -113,10 +138,10 @@
                 8: [...set8, ...padArray(8 - set8.length)],
             },
             lastEmbeddingChange: Date.now(),
-            scaledEmbedMappings: get2DEmbeddings(inProgressEmbeds),
+            scaledEmbedMappings: get2DEmbeddings(indexedEmbeds),
         });
 
-        activeEmbeddings.set(inProgressEmbeds);
+        activeEmbeddings.set(indexedEmbeds);
 
         console.log("embeddings complete");
     }
@@ -170,6 +195,9 @@
         <div class="w-full h-full flex justify-center">
             <div class="flex flex-col justify-center">
                 <div class="h-20 w-52">
+                    <p class="text-center text-sm">
+                        Fetching embeddings. This may take a while...
+                    </p>
                     <progress
                         class="progress progress-primary w-56"
                         value={Object.keys(inProgressEmbeds).length}

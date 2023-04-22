@@ -1,4 +1,4 @@
-import type { EmbeddedConcepts, Embeddings, PointData, Vec2 } from "../types";
+import type { EmbeddedConcepts, Embeddings, PointData, Vec2, VecN } from "../types";
 import * as clustering from "density-clustering";
 import TSNE from "tsne-js";
 import { getDistance } from "../lib/vector";
@@ -13,7 +13,7 @@ export function getHighestClusterAvailable(embedCount: number) {
     return 8;
 }
 
-export function getKMeansClusters(embeddings, k: number) {
+export function getKMeansClusters(embeddings: VecN[], k: number) {
     const kmeans = new clustering.KMEANS();
     const clusters = kmeans.run(embeddings, k);
     return clusters;

@@ -91,7 +91,7 @@
     <div class="px-2 py-4 pb-0 flex">
         <div class="w-full px-2">
             <label class="label">
-                <span class="label-text"># Prompts</span>
+                <span class="label-text">{$activePrompt.randomPromptLimit || getPromptCount()}/{getPromptCount()} Prompts</span>
             </label>
             <input
                 on:change={(e) => setPromptLimit(parseInt(e.target.value))}
