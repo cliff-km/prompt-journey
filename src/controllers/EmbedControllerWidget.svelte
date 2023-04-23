@@ -117,7 +117,7 @@
             .forEach(([id, dist], idx) => {
                 if (!weightedPrompts[parseInt(id)]) return;
                 const active = idx < promptLimit + 1;
-                if (active && dist > maxDistance) maxDistance = dist;
+                if (active && dist > maxDistance) maxDistance = dist * 1.1;
             });
 
         const useExpScaling = (active: boolean, dist: number) => {
