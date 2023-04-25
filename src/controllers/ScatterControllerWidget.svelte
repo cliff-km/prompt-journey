@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Embeddings, PointData, Vec2 } from "../types";
+    import { WeightMode, type Embeddings, type PointData, type Vec2 } from "../types";
     import EmbedExplorer from "../embeds/EmbedExplorer.svelte";
     import EmbedExplorerSettings from "../embeds/EmbedExplorerSettings.svelte";
     import { activePrompt } from "../stores/activePrompt.js";
@@ -12,8 +12,9 @@
         getHighestClusterAvailable,
         getClusterAnchors,
         pairPoints,
-        get2DEmbeddings
+        get2DEmbeddings,
     } from "../lib/embedMap";
+    import { onMount } from "svelte";
 
     let controllerW = 0;
     let controllerH = 0;
@@ -27,6 +28,7 @@
         Object.keys($activePrompt.weightedPrompts).length;
     $: expScaling = $activePrompt.embedExponentialScaling;
     $: weightScaling = $activePrompt.embedWeightScaling;
+    $: weightMode = $activePrompt.weightMode;
 
     $: {
         $activeEmbeddings &&
@@ -40,45 +42,34 @@
     }
 
     $: {
-        recomputeFromScaling(expScaling, weightScaling);
+        recomputeFromWeightMode(weightMode);
     }
 
     $: {
-        recomputeFromEmbeddings(
-            $activeEmbeddings,
-            $activePrompt.scaledEmbedMappings
-        );
+        recomputeFromScaling(expScaling, weightScaling);
     }
 
     $: {
         recomputeFromPromptLimit(promptLimit);
     }
 
-    function recomputeFromPromptLimit(promptLimit: number) {
-        if ($activeEmbeddings && $activePrompt.scaledEmbedMappings) {
-            updateDataPoints();
-            recomputeWeights(
-                markerLocation,
-                expScaling,
-                weightScaling,
-                promptLimit
-            );
-        }
+    function recomputeFromWeightMode(weightMode: string) {
+        updateDataPoints();
+        recomputeWeights(
+            markerLocation,
+            expScaling,
+            weightScaling,
+            promptLimit
+        );
     }
 
-    function recomputeFromEmbeddings(
-        embeddings: Embeddings,
-        scaledEmbedMappings: Record<number, Vec2> | undefined
-    ) {
-        if (embeddings && scaledEmbedMappings) {
-            updateDataPoints();
-            recomputeWeights(
-                markerLocation,
-                expScaling,
-                weightScaling,
-                promptLimit
-            );
-        }
+    function recomputeFromPromptLimit(promptLimit: number) {
+        recomputeWeights(
+            markerLocation,
+            expScaling,
+            weightScaling,
+            promptLimit
+        );
     }
 
     function recomputeFromScaling(expScaling: boolean, weightScaling: number) {
@@ -101,7 +92,7 @@
         let weightedPrompts = { ...$activePrompt.weightedPrompts };
 
         let maxDistance = 0;
-        
+
         const distances = Object.entries(dataPoints).reduce(
             (acc, [id, point]) => {
                 const distance = getDistance(pivot, point.xy);
@@ -158,55 +149,53 @@
 
         activePrompt.update({
             ...$activePrompt,
-            embedMarker: markerLocation,
+            embedMarker: [...markerLocation],
             weightedPrompts,
         });
     }
 
     function updateDataPoints() {
-        if (!$activeEmbeddings || !$activePrompt.scaledEmbedMappings) return;
-        const ids = Object.keys($activePrompt.scaledEmbedMappings);
+        const ids = Object.keys($activePrompt.weightedPrompts);
 
-        const findAverageClusterPoint = (cluster: number[]) => {
-            if (!cluster.length) return center;
-            const points = cluster.map((i) => newDataPoints[i].xy);
-            return avgPoint(points);
-        };
-
-        const newDataPoints = ids.reduce((acc, id, idx) => {
-            acc[id] = {
-                xy: $activePrompt.scaledEmbedMappings[idx],
-                text: $activePrompt.weightedPrompts[idx].text,
-                connected: true,
-                opacity: 1,
-            };
-            return acc;
-        }, {} as Record<string, PointData>);
-
-        if ($activePrompt.embedClusters && $activePrompt.embedClusterSets) {
-            const k = $activePrompt.embedClusters;
-            const clusters = $activePrompt.embedClusterSets[k];
-            let setA = clusters.map((c) => findAverageClusterPoint(c));
-            const setB = getClusterAnchors(k);
-
-            const pairs = pairPoints(setA, setB);
-
-            if (pairs) {
-                pairs.forEach((p) => {
-                    const clusterId = p.ids[0];
-                    const anchor = p.points[1];
-
-                    clusters[clusterId].forEach((id) => {
-                        newDataPoints[id].xy = avgPoint([
-                            newDataPoints[id].xy,
-                            anchor,
-                        ]);
-                    });
-                });
-            }
+        const size = Math.ceil(Math.sqrt(ids.length));
+        
+        let newDataPoints;
+        if(weightMode === WeightMode.EmbedGrid) {
+            newDataPoints = ids
+                .sort(() => 0.5 - Math.random())
+                .reduce((acc, id, idx) => {
+                    acc[id] = {
+                        xy: [
+                            (1 / size) * (idx % size) + (1 / size),
+                            (1 / size) * Math.floor(idx / size) +
+                                (1 / size),
+                        ] as Vec2,
+                        text: $activePrompt.weightedPrompts[parseInt(id)].text,
+                        connected: true,
+                        opacity: 1,
+                    };
+                    return acc;
+                }, {} as Record<string, PointData>);
+        } else {
+            newDataPoints = ids
+                .sort(() => 0.5 - Math.random())
+                .reduce((acc, id, idx) => {
+                    acc[id] = {
+                        xy: [
+                            (1 / size) * (idx % size) + (1 / size) * Math.random(),
+                            (1 / size) * Math.floor(idx / size) +
+                                (1 / size) * Math.random(),
+                        ] as Vec2,
+                        text: $activePrompt.weightedPrompts[parseInt(id)].text,
+                        connected: true,
+                        opacity: 1,
+                    };
+                    return acc;
+                }, {} as Record<string, PointData>);
         }
 
         dataPoints = newDataPoints;
+        return dataPoints;
     }
 
     function onMarkerMove(pos: Vec2) {
@@ -250,12 +239,25 @@
         });
     }
 
-    async function shuffleEmbeddinMap() {
-        activePrompt.update({
-            ...$activePrompt,
-            scaledEmbedMappings: get2DEmbeddings($activeEmbeddings),
-        });
+    async function shuffleEmbeddingMap() {
+        updateDataPoints();
+        recomputeWeights(
+            markerLocation,
+            expScaling,
+            weightScaling,
+            promptLimit
+        );
     }
+
+    onMount(() => {
+        updateDataPoints();
+        recomputeWeights(
+            markerLocation,
+            expScaling,
+            weightScaling,
+            promptLimit
+        );
+    });
 </script>
 
 <div
@@ -274,9 +276,7 @@
     connectionLimit={$activePrompt.promptLimit || promptCount}
     setConnectionLimit={updateEmbedPromptLimit}
     maxConnectionLimit={promptCount}
-    clusterCount={$activePrompt.embedClusters || 0}
-    setClusterCount={updateClusterCount}
-    maxClusterCount={promptCount}
-    onShuffle={shuffleEmbeddinMap}
+    maxClusterCount={0}
+    onShuffle={shuffleEmbeddingMap}
 />
-<slot></slot>
+<slot />

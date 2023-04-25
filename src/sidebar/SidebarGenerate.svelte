@@ -55,7 +55,7 @@
                                 text,
                                 parsedWeight
                             );
-                            if(!$concepts[text]) {
+                            if (!$concepts[text]) {
                                 concepts.update(text as string, null);
                             }
                             return acc;
@@ -63,11 +63,10 @@
                         {}
                     );
 
-
-
                     activePrompt.update(
                         intializeActivePrompt(
                             weightedPrompts,
+                            $activePrompt.promptLimit,
                             $activePrompt.weightMode
                         )
                     );
@@ -99,7 +98,7 @@
                                 text,
                                 parsedWeight
                             );
-                            if(!$concepts[text]) {
+                            if (!$concepts[text]) {
                                 concepts.update(text as string, null);
                             }
                             return acc;
@@ -110,6 +109,7 @@
                     activePrompt.update(
                         intializeActivePrompt(
                             weightedPrompts,
+                            $activePrompt.promptLimit,
                             $activePrompt.weightMode
                         )
                     );

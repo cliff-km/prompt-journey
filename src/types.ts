@@ -29,6 +29,8 @@ export enum WeightMode {
     Ring = "ring",
     Bars = "bars",
     Embed = "embed",
+    EmbedGrid = "embedGrid",
+    EmbedRandom = "embedRandom",
     Pie = "pie",
     Random = "random",
 }
@@ -82,9 +84,9 @@ export type MultiPrompt = {
     embedWeightScaling: number;
     embedExponentialScaling: boolean;
     embedClusters: number;
-    embedPromptLimit: number;
+    promptLimit: number;
     scaledEmbedMappings?: Record<number, Vec2>;
-    randomPromptLimit: number;
+    promptLimit: number;
 }
 
 export type PointData = {

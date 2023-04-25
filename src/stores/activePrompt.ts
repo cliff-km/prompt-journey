@@ -34,7 +34,7 @@ export function defaultPrompt() : WeightedPromptDict {
     }
 }
 
-export function intializeActivePrompt(prompts: WeightedPromptDict, weightMode = WeightMode.Pie) : MultiPrompt {
+export function intializeActivePrompt(prompts: WeightedPromptDict, promptLimit: number, weightMode = WeightMode.Random) : MultiPrompt {
     return ({
         weightedPrompts: prompts || {},
         weightMode,
@@ -51,8 +51,7 @@ export function intializeActivePrompt(prompts: WeightedPromptDict, weightMode = 
         embedWeightScaling: 2,
         embedExponentialScaling: true,
         embedClusters: 0,
-        embedPromptLimit: Object.keys(prompts).length,
-        randomPromptLimit: Object.keys(prompts).length,
+        promptLimit: promptLimit > Object.keys(prompts).length ? Object.keys(prompts).length : promptLimit,
     })
 }
 
@@ -61,9 +60,9 @@ export function storableActivePrompt() {
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
-    const savedActivePrompt = (isBrowser && localStorage[STORE_KEY]) ? JSON.parse(localStorage[STORE_KEY]) : intializeActivePrompt(defaultPrompt());
+    const savedActivePrompt = (isBrowser && localStorage[STORE_KEY]) ? JSON.parse(localStorage[STORE_KEY]) : intializeActivePrompt(defaultPrompt(), 30);
 
-    set({...intializeActivePrompt({}), ...savedActivePrompt});
+    set({...intializeActivePrompt({}, 30), ...savedActivePrompt});
 
     return {
         subscribe,
@@ -75,7 +74,7 @@ export function storableActivePrompt() {
 
             if (!p || !isBrowser) return;
             localStorage[STORE_KEY] = JSON.stringify(p);
-            set({...intializeActivePrompt({}), ...p});
+            set({...intializeActivePrompt({}, 30), ...p});
         },
         get: () => {
             const p = get(store);
@@ -84,7 +83,7 @@ export function storableActivePrompt() {
         delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
-            set(intializeActivePrompt(defaultPrompt()));
+            set(intializeActivePrompt(defaultPrompt(), 30));
         },
     };
 }

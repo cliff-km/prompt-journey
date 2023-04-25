@@ -8,14 +8,16 @@
         activePrompt,
     } from "../stores/activePrompt.js";
     import { panelMode } from "../stores/panelMode.js";
-    import {
-        selectedPrompt,
-    } from "../stores/selectedPrompt.js";
+    import { selectedPrompt } from "../stores/selectedPrompt.js";
 
     function selectNew() {
         selectedPrompt.delete();
         activePrompt.update(
-            intializeActivePrompt({}, $activePrompt.weightMode)
+            intializeActivePrompt(
+                {},
+                $activePrompt.promptLimit,
+                $activePrompt.weightMode
+            )
         );
         panelMode.update("edit");
     }

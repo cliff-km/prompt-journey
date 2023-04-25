@@ -4,6 +4,7 @@
     import { appStage } from "../stores/appStage.js";
     import ControlSelector from "./ControlSelector.svelte";
     import ControllerCircleSelector from "../controllers/ControllerCircleSelector.svelte";
+    import MapControllerSelector from "../controllers/MapControllerSelector.svelte";
     import { activePrompt } from "../stores/activePrompt.js";
     import { AppStage } from "../types";
     import ControlView from "./ControlView.svelte";
@@ -25,6 +26,9 @@
                     <ControlSelector />
                     {#if $activePrompt.weightMode === WeightMode.Circle || $activePrompt.weightMode === WeightMode.Pie || $activePrompt.weightMode === WeightMode.Ring}
                         <ControllerCircleSelector />
+                    {/if}
+                    {#if $activePrompt.weightMode === WeightMode.Embed || $activePrompt.weightMode === WeightMode.EmbedGrid || $activePrompt.weightMode === WeightMode.EmbedRandom}
+                        <MapControllerSelector />
                     {/if}
                 </div>
             {:else if $appStage === AppStage.Concept}

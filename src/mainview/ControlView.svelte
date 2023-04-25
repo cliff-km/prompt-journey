@@ -7,6 +7,7 @@
     import { activePrompt } from "../stores/activePrompt.js";
     import RingController from "../controllers/RingController.svelte";
     import RandomController from "../controllers/RandomController.svelte";
+    import ScatterController from "../controllers/ScatterController.svelte";
 </script>
 
 <div class="w-full h-full flex flex-col">
@@ -18,6 +19,8 @@
         <CircleController />
     {:else if $activePrompt.weightMode === WeightMode.Ring}
         <RingController />
+    {:else if $activePrompt.weightMode === WeightMode.EmbedGrid || $activePrompt.weightMode === WeightMode.EmbedRandom}
+        <ScatterController />
     {:else if $activePrompt.weightMode === WeightMode.Embed}
         <EmbedController />
     {/if}

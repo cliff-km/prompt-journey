@@ -46,9 +46,9 @@
     function pasteFromClipboard() {
         navigator.clipboard.readText().then((text) => {
             const sentences = processString(text);
-            const existingPrompts = Object.values($activePrompt.weightedPrompts).map(
-                (prompt) => [prompt.text, prompt.parsedWeight]
-            );
+            const existingPrompts = Object.values(
+                $activePrompt.weightedPrompts
+            ).map((prompt) => [prompt.text, prompt.parsedWeight]);
 
             handleSignificantPromptChange([...existingPrompts, ...sentences]);
         });
@@ -76,7 +76,11 @@
         );
         selectedPrompt.delete();
         activePrompt.update(
-            intializeActivePrompt(weightedPrompts, $activePrompt.weightMode)
+            intializeActivePrompt(
+                weightedPrompts,
+                $activePrompt.promptLimit,
+                $activePrompt.weightMode
+            )
         );
         newPromptText = "";
     }
@@ -141,17 +145,19 @@
             } else if (keypress === "Backspace" && text === "") {
                 handlePromptRemove(id);
             }
-            
+
             if (keypress === "Enter" && shiftDown) {
-                const weightedPromptsById = Object.entries($activePrompt.weightedPrompts);
+                const weightedPromptsById = Object.entries(
+                    $activePrompt.weightedPrompts
+                );
                 const newPrompts = weightedPromptsById.map(([wpId, wp]) => [
                     wp.text,
                     wp.parsedWeight,
                 ]);
 
-                const newPromptId = parseInt(id)+1
+                const newPromptId = parseInt(id) + 1;
 
-                console.log("adding prompt at", id+1)
+                console.log("adding prompt at", id + 1);
                 newPrompts.splice(newPromptId, 0, ["", 1]);
 
                 return handleSignificantPromptChange(newPrompts);

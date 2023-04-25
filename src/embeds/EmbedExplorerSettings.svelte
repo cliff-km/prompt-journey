@@ -54,6 +54,7 @@
             class="range range-sm"
         />
     </div>
+    {#if maxClusterCount > 0}
     <div class="">
         <div class="">
             <label class="label pb-1 m-0">
@@ -102,6 +103,7 @@
             </div>
         </div>
     </div>
+    {/if}
     <div class="w-32 px-2 pb-1 flex flex-col justify-end">
         <button
             on:click={onShuffle}

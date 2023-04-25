@@ -23,10 +23,6 @@
         }
     ) as [number, number, WeightedPrompt][];
 
-    function getPromptCount () {
-        return Object.keys($activePrompt.weightedPrompts).length;
-    }
-
     $: weights = prompts.map(([id, idx, prompt]) => {
         return [id, prompt.randomWeight || 0];
     });
@@ -44,7 +40,7 @@
     function setPromptLimit(limit: number) {
         activePrompt.update({
             ...$activePrompt,
-            randomPromptLimit: limit,
+            promptLimit: limit,
         });
 
         shuffle();
@@ -58,7 +54,7 @@
                     ...prompt,
                     randomWeight:
                         idx <
-                        ($activePrompt.randomPromptLimit || getPromptCount())
+                        ($activePrompt.promptLimit || prompts.length)
                             ? Math.random()
                             : 0,
                 };
@@ -91,14 +87,14 @@
     <div class="px-2 py-4 pb-0 flex">
         <div class="w-full px-2">
             <label class="label">
-                <span class="label-text">{$activePrompt.randomPromptLimit || getPromptCount()}/{getPromptCount()} Prompts</span>
+                <span class="label-text">{$activePrompt.promptLimit || prompts.length}/{prompts.length} Prompts</span>
             </label>
             <input
                 on:change={(e) => setPromptLimit(parseInt(e.target.value))}
-                value={$activePrompt.randomPromptLimit || getPromptCount()}
+                value={$activePrompt.promptLimit || prompts.length}
                 type="range"
                 min="1"
-                max={getPromptCount()}
+                max={prompts.length}
                 step="1"
                 class="range range-sm"
             />

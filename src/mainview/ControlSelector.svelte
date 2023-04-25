@@ -28,8 +28,8 @@
     </button>
     <button
         class="btn btn-sm"
-        class:btn-active={$activePrompt.weightMode === WeightMode.Embed}
-        on:click={() => selectControllerMode(WeightMode.Embed)}
+        class:btn-active={$activePrompt.weightMode === WeightMode.Embed || $activePrompt.weightMode === WeightMode.EmbedGrid || $activePrompt.weightMode === WeightMode.EmbedRandom}
+        on:click={() => selectControllerMode(WeightMode.EmbedGrid)}
     >
         <IconScatter />
     </button>
