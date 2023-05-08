@@ -1,20 +1,21 @@
 import { get, writable, derived } from 'svelte/store'
+import { OutputMode } from '../types';
 
-const STORE_KEY = 'outputMultiPrompt';
+const STORE_KEY = 'outputMode';
 
-export function storableOutputMultiPrompt() {
-    const store = writable(true);
+export function storableOutputMode() {
+    const store = writable(OutputMode.Multi);
     const { subscribe, set, update } = store;
     const isBrowser = typeof window !== 'undefined';
 
-    set((isBrowser && localStorage[STORE_KEY]) ? JSON.parse(localStorage[STORE_KEY]) : false);
+    set((isBrowser && localStorage[STORE_KEY]) ? localStorage[STORE_KEY] : OutputMode.Multi);
 
     return {
         subscribe,
-        update: (b: boolean) => {
+        update: (o: OutputMode) => {
             if (!isBrowser) return;
-            localStorage[STORE_KEY] = JSON.stringify(Boolean(b));
-            set(Boolean(b));
+            localStorage[STORE_KEY] = o;
+            set(o);
         },
         get: () => {
             const m = get(store);
@@ -23,9 +24,9 @@ export function storableOutputMultiPrompt() {
         delete: () => {
             if (!isBrowser) return;
             delete localStorage[STORE_KEY];
-            set(true);
+            set(OutputMode.Multi);
         },
     };
 }
 
-export const outputMultiPrompt = storableOutputMultiPrompt();
+export const outputMode = storableOutputMode();

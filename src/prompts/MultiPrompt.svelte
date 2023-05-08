@@ -6,6 +6,22 @@
     import { getPromptList } from "$lib/prompt";
     import { replaceAliasesWithSlotValue } from "$lib/slots.js";
     import { seed } from "../stores/slotSets";
+    import { outputMode } from "../stores/outputMode.js";
+    import { getPromptText } from "$lib/prompt";
+    import { promptText } from "../stores/promptText";
+
+    $: {
+        console.log("updating multi prompt text");
+        promptText.set(
+            getPromptText(
+                $activePrompt,
+                $seed,
+                $outputMode,
+                $useWeightOrdering,
+                $showZeroPrompts
+            )
+        );
+    }
 </script>
 
 <div class="overflow-y-auto h-full">

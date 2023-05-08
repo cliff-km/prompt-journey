@@ -3,7 +3,7 @@
     import { activePrompt } from "../stores/activePrompt.js";
     import { getDisplayWeight, getWeightOpacity } from "../lib/weights";
     import { seed } from "../stores/slotSets";
-    import { onDestroy } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
     // display state
     export let center = [0, 0];
@@ -33,6 +33,10 @@
         shuffle();
     });
 
+    onMount(()=>{
+        shuffle();
+    });
+
     onDestroy(() => {
         seedUnsub();
     });
@@ -54,7 +58,7 @@
                     ...prompt,
                     randomWeight:
                         idx <
-                        ($activePrompt.promptLimit || prompts.length)
+                        ($activePrompt.promptLimit || (prompts && prompts.length))
                             ? Math.random()
                             : 0,
                 };

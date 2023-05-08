@@ -24,6 +24,12 @@ export type WeightedPrompt = {
 
 export type WeightedPromptDict = Record<number, WeightedPrompt>;
 
+export enum OutputMode {
+    Single = "single",
+    Multi = "multi",
+    Magic = "magic",
+}
+
 export enum WeightMode {
     Circle = "circle",
     Ring = "ring",

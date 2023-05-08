@@ -15,6 +15,7 @@
         "text-ada-001",
         "gpt-3.5-turbo",
         "gpt-3.5-turbo-0301",
+        "gpt-4"
     ];
 
     const supportedEmbeddingModels = ["text-embedding-ada-002"];

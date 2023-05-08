@@ -17,7 +17,7 @@ export function storablePromptHistory() {
             if (!m || !isBrowser) return;
             const current = get(store);
             
-            const newHistory = [...current, m];
+            const newHistory = [...current.slice(-99), m];
             localStorage[STORE_KEY] = JSON.stringify(newHistory);
             set(newHistory);
         },

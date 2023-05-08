@@ -1,4 +1,4 @@
-import type { MultiPrompt } from "../types.js";
+import { OutputMode, type MultiPrompt } from "../types.js";
 import { replaceAliasesWithSlotValue } from "./slots.js";
 import { getDisplayWeight } from "./weights.js";
 
@@ -85,9 +85,12 @@ export function processString(input: string) {
 
 export function getPromptList(activePrompt: MultiPrompt, useWeightOrdering: boolean, showZeroPrompts: boolean) {
     let list = Object.entries(activePrompt.weightedPrompts);
+    console.log(list);
 
     if (useWeightOrdering) list = list.sort((a, b) => getDisplayWeight(activePrompt, parseInt(b[0])) - getDisplayWeight(activePrompt, parseInt(a[0])));
+    console.log(list);
     if (!showZeroPrompts) list = list.filter((e) => showZeroPrompts || getDisplayWeight(activePrompt, parseInt(e[0])));
+    console.log(list);
 
     return list;
 }
@@ -121,8 +124,9 @@ function joinSentencesAndFragments(textList: string[]) {
 
 
 
-export function getPromptText(activePrompt: MultiPrompt, seed: string, outputMultiPrompt: boolean, useWeightOrdering: boolean, showZeroPrompts: boolean) {
-    if (outputMultiPrompt) return getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp], idx) => {
+export function getPromptText(activePrompt: MultiPrompt, seed: string, outputMode: OutputMode, useWeightOrdering: boolean, showZeroPrompts: boolean) {
+    console.log('get prompt text', activePrompt, seed, outputMode, useWeightOrdering, showZeroPrompts)
+    if (outputMode === OutputMode.Multi) return getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp], idx) => {
         const text = replaceAliasesWithSlotValue(wp.text, `${seed}${id}${idx}`)
         return `${text}::${getDisplayWeight(
             activePrompt,
@@ -131,7 +135,12 @@ export function getPromptText(activePrompt: MultiPrompt, seed: string, outputMul
     })
         .join(" ");
 
-    const promptTextList = getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp], idx) => replaceAliasesWithSlotValue(wp.text, `${seed}${id}${idx}`))
+    const promptTextList = getPromptList(activePrompt, useWeightOrdering, showZeroPrompts).map(([id, wp], idx) => replaceAliasesWithSlotValue(wp.text, `${seed}${id}${idx}`));
+    if (outputMode === OutputMode.Single) {
+        const promptText = joinSentencesAndFragments(promptTextList);
+        console.log(promptText);
+        return promptText;
+    }
 
-    return joinSentencesAndFragments(promptTextList);
+    return promptTextList.join('\n');
 }
